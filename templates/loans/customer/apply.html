@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for Loan - Alba Capital{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+                    </div>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{% url 'customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Dashboard</a>
+                        <a href="{% url 'loans:customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">My Loans</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-700">
+                        <span class="font-semibold">{{ user.get_full_name }}</span>
+                    </span>
+                    <a href="{% url 'logout' %}" class="text-sm font-medium text-gray-600 hover:text-alba-orange transition">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Apply for a Loan</h1>
+            <p class="mt-2 text-sm text-gray-600">Choose a loan product and complete the application form</p>
+        </div>
+
+        <!-- Loan Products Overview -->
+        <div class="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 bg-alba-navy">
+                <h3 class="text-lg font-semibold text-white">Available Loan Products</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+                {% for product in products %}
+                <div class="p-6 hover:bg-gray-50 transition">
+                    <h4 class="text-lg font-semibold text-gray-900">{{ product.name }}</h4>
+                    <p class="mt-1 text-sm text-gray-600">{{ product.get_category_display }}</p>
+                    <div class="mt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Amount Range:</span>
+                            <span class="font-medium">KES {{ product.min_amount|floatformat:0 }} - {{ product.max_amount|floatformat:0 }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Interest Rate:</span>
+                            <span class="font-medium">{{ product.interest_rate }}% {{ product.get_interest_method_display }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Tenure:</span>
+                            <span class="font-medium">{{ product.min_tenure_months }} - {{ product.max_tenure_months }} months</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Application Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white shadow rounded-lg overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-lg font-semibold text-gray-900">Loan Application Form</h3>
+                    </div>
+                    
+                    <form method="post" id="loanApplicationForm" class="p-6">
+                        {% csrf_token %}
+                        
+                        <div class="space-y-6">
+                            <!-- Loan Product -->
+                            <div>
+                                <label for="{{ form.loan_product.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    Loan Product *
+                                </label>
+                                {{ form.loan_product }}
+                                {% if form.loan_product.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.loan_product.errors.0 }}</p>
+                                {% else %}
+                                    <p class="mt-1 text-xs text-gray-500">Select the type of loan you need</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Requested Amount -->
+                            <div>
+                                <label for="{{ form.requested_amount.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    Requested Amount (KES) *
+                                </label>
+                                {{ form.requested_amount }}
+                                {% if form.requested_amount.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.requested_amount.errors.0 }}</p>
+                                {% else %}
+                                    <p class="mt-1 text-xs text-gray-500">Enter the amount you wish to borrow</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Tenure -->
+                            <div>
+                                <label for="{{ form.tenure_months.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    Loan Tenure (Months) *
+                                </label>
+                                {{ form.tenure_months }}
+                                {% if form.tenure_months.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.tenure_months.errors.0 }}</p>
+                                {% else %}
+                                    <p class="mt-1 text-xs text-gray-500">How many months to repay</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Repayment Frequency -->
+                            <div>
+                                <label for="{{ form.repayment_frequency.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    Repayment Frequency *
+                                </label>
+                                {{ form.repayment_frequency }}
+                                {% if form.repayment_frequency.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.repayment_frequency.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Purpose -->
+                            <div>
+                                <label for="{{ form.purpose.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                    Loan Purpose *
+                                </label>
+                                {{ form.purpose }}
+                                {% if form.purpose.errors %}
+                                    <p class="mt-1 text-sm text-red-600">{{ form.purpose.errors.0 }}</p>
+                                {% else %}
+                                    <p class="mt-1 text-xs text-gray-500">Briefly describe how you will use this loan</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="mt-8 pt-6 border-t border-gray-200 flex justify-between">
+                            <a href="{% url 'loans:customer_dashboard' %}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+                                Cancel
+                            </a>
+                            <button type="submit" class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 transition">
+                                Create Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Loan Calculator -->
+            <div class="lg:col-span-1">
+                <div class="bg-white shadow rounded-lg overflow-hidden sticky top-8">
+                    <div class="px-6 py-4 bg-alba-navy">
+                        <h3 class="text-lg font-semibold text-white">Loan Calculator</h3>
+                    </div>
+                    <div class="p-6">
+                        <div id="calculatorResults" class="space-y-4">
+                            <div class="text-center py-8 text-gray-500">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <p class="mt-2 text-sm">Fill in the loan details to see your payment breakdown</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Card -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 110 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3 flex-1">
+                    <h3 class="text-sm font-medium text-blue-800">What happens after submission?</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Your application will be reviewed by our credit team</li>
+                            <li>We'll perform a credit analysis and may contact your employer</li>
+                            <li>You'll be notified of the decision within 24-48 hours</li>
+                            <li>Approved loans are typically disbursed within 3 business days</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productField = document.getElementById('{{ form.loan_product.id_for_label }}');
+    const amountField = document.getElementById('{{ form.requested_amount.id_for_label }}');
+    const tenureField = document.getElementById('{{ form.tenure_months.id_for_label }}');
+    
+    function updateCalculator() {
+        const productId = productField.value;
+        const amount = amountField.value;
+        const tenure = tenureField.value;
+        
+        if (productId && amount && tenure) {
+            fetch(`{% url 'loans:calculate_loan' %}?product_id=${productId}&amount=${amount}&tenure=${tenure}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('calculatorResults');
+                    resultsDiv.innerHTML = `
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Principal Amount:</span>
+                                <span class="text-sm font-semibold">KES ${parseFloat(data.principal).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Interest:</span>
+                                <span class="text-sm font-semibold">KES ${parseFloat(data.interest).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Fees:</span>
+                                <span class="text-sm font-semibold">KES ${parseFloat(data.fees).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                            </div>
+                            <div class="pt-3 border-t border-gray-200">
+                                <div class="flex justify-between">
+                                    <span class="text-sm font-medium text-gray-900">Total Repayment:</span>
+                                    <span class="text-sm font-bold text-alba-orange">KES ${parseFloat(data.total).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                            </div>
+                            <div class="pt-3 border-t border-gray-200">
+                                <div class="flex justify-between">
+                                    <span class="text-sm font-medium text-gray-900">Monthly Installment:</span>
+                                    <span class="text-lg font-bold text-alba-navy">KES ${parseFloat(data.installment).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error calculating loan:', error);
+                });
+        }
+    }
+    
+    productField.addEventListener('change', updateCalculator);
+    amountField.addEventListener('input', updateCalculator);
+    tenureField.addEventListener('input', updateCalculator);
+});
+</script>
+{% endblock %}

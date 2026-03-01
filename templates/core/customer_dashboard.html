@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Dashboard - Alba Capital{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+                    <span class="ml-3 px-2 py-1 text-xs font-semibold bg-alba-orange text-white rounded">Customer Portal</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'loans:customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">
+                        My Loans
+                    </a>
+                    <span class="text-sm text-gray-700">
+                        <span class="font-semibold">{{ user_name }}</span>
+                    </span>
+                    <a href="{% url 'logout' %}" class="text-sm font-medium text-alba-orange hover:text-alba-navy transition">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Banner -->
+        <div class="bg-gradient-to-r from-alba-navy to-gray-800 rounded-lg shadow-lg p-8 mb-8 text-white">
+            <h1 class="text-3xl font-bold">Welcome, {{ user_name }}!</h1>
+            <p class="mt-2 text-gray-300">Member since {{ member_since|date:"F Y" }}</p>
+            <div class="mt-4">
+                <a href="{% url 'loans:apply_for_loan' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-alba-navy bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                    Apply for a Loan
+                    <svg class="ml-2 -mr-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Active Loans</p>
+                        <p class="text-2xl font-bold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Applications</p>
+                        <p class="text-2xl font-bold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-alba-orange bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <svg class="h-6 w-6 text-alba-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Borrowed</p>
+                        <p class="text-2xl font-bold text-gray-900">KES 0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+            <div class="px-6 py-5 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
+            </div>
+            <div class="px-6 py-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="{% url 'loans:apply_for_loan' %}" class="flex items-center p-4 bg-alba-orange bg-opacity-10 rounded-lg hover:bg-opacity-20 transition">
+                        <div class="flex-shrink-0">
+                            <svg class="h-8 w-8 text-alba-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900">New Loan Application</h4>
+                            <p class="text-xs text-gray-600">Apply for a new loan</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'loans:my_applications' %}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                        <div class="flex-shrink-0">
+                            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900">My Applications</h4>
+                            <p class="text-xs text-gray-600">View application status</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{% url 'loans:my_loans' %}" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
+                        <div class="flex-shrink-0">
+                            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900">My Loans</h4>
+                            <p class="text-xs text-gray-600">View active loans</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Getting Started Section -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Getting Started</h3>
+                <p class="mt-1 text-sm text-gray-500">Complete these steps to apply for your first loan</p>
+            </div>
+            <div class="px-6 py-4">
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center">
+                                <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-gray-900">Account Created</h4>
+                            <p class="text-sm text-gray-500">You've successfully created your customer account</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="h-6 w-6 rounded-full bg-alba-orange flex items-center justify-center">
+                                <span class="text-xs text-white font-semibold">2</span>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-gray-900">Complete Your Profile</h4>
+                            <p class="text-sm text-gray-500">
+                                <a href="{% url 'loans:customer_profile' %}" class="text-alba-orange hover:underline">Update your profile</a> with employment and financial information
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center">
+                                <span class="text-xs text-gray-600">3</span>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-gray-700">Apply for a Loan</h4>
+                            <p class="text-sm text-gray-500">Choose a loan product and submit your application</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="mt-8 bg-green-50 border border-green-200 rounded-lg p-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3 flex-1">
+                    <h3 class="text-sm font-medium text-green-800">MVP Phase 2 - Loan Management Now Active!</h3>
+                    <div class="mt-2 text-sm text-green-700">
+                        <p>You can now apply for loans, track applications, and manage your repayments through the customer portal.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

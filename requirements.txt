@@ -1,59 +1,26 @@
-# Django and Core Dependencies
+# Core Framework
 Django==5.0.2
-psycopg2-binary==2.9.9
 python-decouple==3.8
-python-dotenv==1.0.1
 
-# Database and Models
-django-extensions==3.2.3
-django-model-utils==4.3.1
+# Database
+psycopg2-binary==2.9.9
 
-# Authentication and Security
-django-allauth==0.61.1
-django-crispy-forms==2.1
-crispy-tailwind==1.0.3
-argon2-cffi==23.1.0
-django-otp==1.5.4  # Multi-Factor Authentication
-pyotp==2.9.0  # TOTP implementation
-qrcode==8.0  # QR code generation for MFA
+# Security & Authentication
+django-otp==1.5.0
+qrcode==7.4.2
 
-# API and Integrations
+# Date/Time Utilities
+python-dateutil==2.8.2
+
+# API & Forms
 djangorestframework==3.14.0
-requests==2.31.0
-celery==5.3.6
-redis==5.0.1
 
-# Financial and Payments
-africastalking==1.2.5  # SMS Gateway
-python-mpesa==1.0.0  # M-Pesa Integration
+# Frontend
+django-tailwind==3.8.0
 
-# Reporting and Export
-openpyxl==3.1.2
-reportlab==4.2.5  # PDF generation
-WeasyPrint==63.1  # HTML to PDF
-pandas==2.2.0
+# Development
+django-extensions==3.2.3
 
-# Forms and Validation
-django-phonenumber-field==7.3.0
-phonenumbers==8.13.29
-
-# Utilities
-Pillow==10.2.0
-django-import-export==3.3.7
-django-filter==24.1
-django-tables2==2.7.0
-
-# Monitoring and Debugging (Development)
-django-debug-toolbar==4.3.0
-
-# Production Server
+# Production
 gunicorn==21.2.0
 whitenoise==6.6.0
-
-# Task Queue
-django-celery-beat==2.5.0
-django-celery-results==2.5.1
-
-# Date and Time
-python-dateutil==2.8.2
-pytz==2024.1

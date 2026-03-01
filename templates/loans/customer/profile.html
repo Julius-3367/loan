@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Alba Capital{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+                    </div>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{% url 'customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Dashboard</a>
+                        <a href="{% url 'loans:customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">My Loans</a>
+                        <a href="{% url 'loans:customer_profile' %}" class="text-sm font-medium text-alba-orange">Profile</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-700">
+                        <span class="font-semibold">{{ user.get_full_name }}</span>
+                    </span>
+                    <a href="{% url 'logout' %}" class="text-sm font-medium text-gray-600 hover:text-alba-orange transition">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">My Profile</h1>
+            <p class="mt-2 text-sm text-gray-600">Complete your profile to apply for loans</p>
+        </div>
+
+        <!-- Profile Status Card -->
+        <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    {% if customer.kyc_verified %}
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">KYC Verified</h3>
+                        <p class="text-sm text-gray-600">Your profile has been verified by {{ customer.kyc_verified_by.get_full_name }}</p>
+                    </div>
+                    {% else %}
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-medium text-gray-900">KYC Pending</h3>
+                        <p class="text-sm text-gray-600">Your profile will be verified by our team within 24 hours</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Form -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <form method="post" class="divide-y divide-gray-200">
+                {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <div class="px-6 py-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                            {{ form.date_of_birth }}
+                            {% if form.date_of_birth.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.date_of_birth.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">ID/Passport Number *</label>
+                            {{ form.id_number }}
+                            {% if form.id_number.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.id_number.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Physical Address</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">County</label>
+                            {{ form.county }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">City/Town</label>
+                            {{ form.city }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employment Information -->
+                <div class="px-6 py-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Employment Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Employment Status *</label>
+                            {{ form.employment_status }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Employer Name</label>
+                            {{ form.employer_name }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Employer Contact</label>
+                            {{ form.employer_contact }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Employer Email</label>
+                            {{ form.employer_email }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Monthly Income (KES) *</label>
+                            {{ form.monthly_income }}
+                            {% if form.monthly_income.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.monthly_income.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date of Employment</label>
+                            {{ form.employment_date }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Information -->
+                <div class="px-6 py-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Financial Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Existing Monthly Loan Obligations (KES)</label>
+                            {{ form.existing_loans }}
+                            <p class="mt-1 text-xs text-gray-500">Total monthly payments for other loans</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Bank Name</label>
+                            {{ form.bank_name }}
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Bank Account Number</label>
+                            {{ form.bank_account }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
+                    <p class="text-sm text-gray-600">* Required fields</p>
+                    <div class="flex space-x-3">
+                        <a href="{% url 'loans:customer_dashboard' %}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                            Cancel
+                        </a>
+                        <button type="submit" class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                            Save Profile
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

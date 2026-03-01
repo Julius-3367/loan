@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}My Applications - Alba Capital{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+                    </div>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{% url 'customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Dashboard</a>
+                        <a href="{% url 'loans:customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Loan Dashboard</a>
+                        <a href="{% url 'loans:my_applications' %}" class="text-sm font-medium text-alba-orange">My Applications</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-700">
+                        <span class="font-semibold">{{ user.get_full_name }}</span>
+                    </span>
+                    <a href="{% url 'logout' %}" class="text-sm font-medium text-gray-600 hover:text-alba-orange transition">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="md:flex md:items-center md:justify-between mb-8">
+            <div class="flex-1 min-w-0">
+                <h1 class="text-3xl font-bold text-gray-900">My Loan Applications</h1>
+                <p class="mt-2 text-sm text-gray-600">Track the status of your loan applications</p>
+            </div>
+            <div class="mt-4 flex md:mt-0 md:ml-4">
+                <a href="{% url 'loans:apply_for_loan' %}" class="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 transition">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    New Application
+                </a>
+            </div>
+        </div>
+
+        <!-- Applications List -->
+        <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+            {% if applications %}
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Application
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Loan Product
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Amount
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for app in applications %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ app.application_number }}</div>
+                                <div class="text-xs text-gray-500">{{ app.tenure_months }} months</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ app.loan_product.name }}</div>
+                                <div class="text-xs text-gray-500">{{ app.loan_product.get_category_display }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-semibold text-gray-900">KES {{ app.requested_amount|floatformat:2 }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                    {% if app.status == 'APPROVED' or app.status == 'DISBURSED' %}bg-green-100 text-green-800
+                                    {% elif app.status == 'REJECTED' %}bg-red-100 text-red-800
+                                    {% elif app.status == 'PENDING_APPROVAL' or app.status == 'CREDIT_ANALYSIS' %}bg-yellow-100 text-yellow-800
+                                    {% elif app.status == 'DRAFT' %}bg-gray-100 text-gray-800
+                                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    {{ app.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ app.created_at|date:"M d, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a href="{% url 'loans:application_detail' app.pk %}" class="text-alba-orange hover:text-alba-navy transition">
+                                    View Details →
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">No applications yet</h3>
+                    <p class="mt-2 text-sm text-gray-500">Get started by creating your first loan application</p>
+                    <div class="mt-6">
+                        <a href="{% url 'loans:apply_for_loan' %}" class="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 transition">
+                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Apply for Loan
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Status Legend -->
+        <div class="mt-8 bg-white border border-gray-200 rounded-lg p-6">
+            <h3 class="text-sm font-medium text-gray-900 mb-4">Application Status Guide</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="flex items-center">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Draft</span>
+                    <span class="ml-2 text-xs text-gray-600">Not yet submitted</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Under Review</span>
+                    <span class="ml-2 text-xs text-gray-600">Being processed</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending Approval</span>
+                    <span class="ml-2 text-xs text-gray-600">Awaiting decision</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
+                    <span class="ml-2 text-xs text-gray-600">Awaiting disbursement</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

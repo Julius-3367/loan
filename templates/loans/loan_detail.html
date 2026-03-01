@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block title %}Loan {{ loan.loan_number }} - Alba Capital{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+                    </div>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{% url 'customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Dashboard</a>
+                        <a href="{% url 'loans:customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">My Loans</a>
+                        <a href="{% url 'loans:my_loans' %}" class="text-sm font-medium text-alba-orange">Active Loans</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-700">
+                        <span class="font-semibold">{{ user.get_full_name }}</span>
+                    </span>
+                    <a href="{% url 'logout' %}" class="text-sm font-medium text-gray-600 hover:text-alba-orange transition">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Loan {{ loan.loan_number }}</h1>
+                    <p class="mt-2 text-sm text-gray-600">{{ loan.loan_product.name }} - {{ loan.loan_product.get_category_display }}</p>
+                </div>
+                <span class="inline-flex px-4 py-2 text-sm font-semibold rounded-lg
+                    {% if loan.status == 'ACTIVE' %}bg-green-100 text-green-800
+                    {% elif loan.status == 'OVERDUE' %}bg-red-100 text-red-800
+                    {% elif loan.status == 'PAID' %}bg-blue-100 text-blue-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ loan.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Loan Summary Card -->
+                <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 bg-alba-navy">
+                        <h3 class="text-lg font-semibold text-white">Loan Summary</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Principal Amount</p>
+                                <p class="mt-1 text-lg font-bold text-gray-900">KES {{ loan.principal_amount|floatformat:2 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Interest Rate</p>
+                                <p class="mt-1 text-lg font-semibold text-gray-900">{{ loan.interest_rate }}% {{ loan.get_interest_type_display }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Total Repayable</p>
+                                <p class="mt-1 text-lg font-bold text-alba-orange">KES {{ loan.total_amount|floatformat:2 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Outstanding Balance</p>
+                                <p class="mt-1 text-lg font-bold text-red-600">KES {{ loan.outstanding_balance|floatformat:2 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">{{ loan.get_repayment_frequency_display }} Installment</p>
+                                <p class="mt-1 text-base font-semibold text-gray-900">KES {{ loan.installment_amount|floatformat:2 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Loan Tenure</p>
+                                <p class="mt-1 text-base font-semibold text-gray-900">{{ loan.tenure_months }} months</p>
+                            </div>
+                        </div>
+
+                        <!-- Payment Progress -->
+                        <div class="mt-6">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">Payment Progress</span>
+                                <span class="text-sm font-medium text-gray-700">{{ loan.get_payment_progress_percentage }}%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                <div class="bg-alba-orange h-4 rounded-full transition-all duration-300" 
+                                     style="width: {{ loan.get_payment_progress_percentage }}%"></div>
+                            </div>
+                            <div class="flex justify-between mt-2">
+                                <span class="text-xs text-gray-500">Paid: KES {{ total_paid|floatformat:2 }}</span>
+                                <span class="text-xs text-gray-500">Remaining: KES {{ loan.outstanding_balance|floatformat:2 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Important Dates -->
+                <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Important Dates</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-3 gap-6">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Disbursement Date</p>
+                                <p class="mt-1 text-sm font-semibold text-gray-900">{{ loan.disbursement_date|date:"M d, Y" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">First Payment Date</p>
+                                <p class="mt-1 text-sm font-semibold text-gray-900">{{ loan.first_repayment_date|date:"M d, Y" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Maturity Date</p>
+                                <p class="mt-1 text-sm font-semibold text-gray-900">{{ loan.maturity_date|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Repayment History -->
+                <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Repayment History</h3>
+                    </div>
+                    {% if repayments %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Receipt No.
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Payment Date
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Amount Paid
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Principal
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Interest
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Penalty
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Payment Method
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for repayment in repayments %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ repayment.receipt_number }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ repayment.payment_date|date:"M d, Y" }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-semibold text-gray-900">KES {{ repayment.amount_paid|floatformat:2 }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">KES {{ repayment.principal_paid|floatformat:2 }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">KES {{ repayment.interest_paid|floatformat:2 }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">
+                                            {% if repayment.penalty_paid %}
+                                                KES {{ repayment.penalty_paid|floatformat:2 }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            {{ repayment.get_payment_method_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Repayment Summary -->
+                    <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                        <div class="grid grid-cols-4 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Total Paid</p>
+                                <p class="mt-1 text-sm font-bold text-green-600">KES {{ total_paid|floatformat:2 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Principal Paid</p>
+                                <p class="mt-1 text-sm font-semibold text-gray-900">KES {{ total_principal_paid|floatformat:2 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Interest Paid</p>
+                                <p class="mt-1 text-sm font-semibold text-gray-900">KES {{ total_interest_paid|floatformat:2 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-medium">Penalties Paid</p>
+                                <p class="mt-1 text-sm font-semibold text-gray-900">KES {{ total_penalty_paid|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="px-6 py-12 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No repayments yet</h3>
+                        <p class="mt-1 text-sm text-gray-500">Repayments will appear here once you start paying.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Quick Actions -->
+                <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <button class="w-full px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 transition">
+                            Make a Payment
+                        </button>
+                        <button class="w-full px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+                            Download Statement
+                        </button>
+                        <a href="{% url 'loans:my_loans' %}" class="block w-full px-4 py-2 text-center border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
+                            Back to Loans
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Loan Product Details -->
+                <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Loan Product</h3>
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-medium">Product Name</p>
+                            <p class="mt-1 text-sm font-semibold text-gray-900">{{ loan.loan_product.name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-medium">Category</p>
+                            <p class="mt-1 text-sm text-gray-900">{{ loan.loan_product.get_category_display }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-medium">Interest Type</p>
+                            <p class="mt-1 text-sm text-gray-900">{{ loan.get_interest_type_display }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-medium">Repayment Frequency</p>
+                            <p class="mt-1 text-sm text-gray-900">{{ loan.get_repayment_frequency_display }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Schedule -->
+                <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900">Next Payment</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-center">
+                            <p class="text-sm text-gray-500">Due Date</p>
+                            <p class="mt-1 text-xl font-bold text-gray-900">{{ loan.next_payment_date|date:"M d, Y" }}</p>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500">Amount Due</p>
+                                <p class="mt-1 text-2xl font-bold text-alba-orange">KES {{ loan.installment_amount|floatformat:2 }}</p>
+                            </div>
+                            
+                            {% if days_overdue %}
+                            <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+                                <p class="text-sm font-medium text-red-800">{{ days_overdue }} days overdue</p>
+                                <p class="text-xs text-red-600 mt-1">Please make a payment as soon as possible</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Support -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <h4 class="text-sm font-semibold text-blue-900">Need Help?</h4>
+                    <p class="mt-2 text-xs text-blue-700">
+                        For any questions about your loan or payment issues, please contact our support team.
+                    </p>
+                    <div class="mt-4 space-y-2">
+                        <div class="flex items-center text-xs text-blue-900">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span>+254 XXX XXX XXX</span>
+                        </div>
+                        <div class="flex items-center text-xs text-blue-900">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <span>support@albacapital.co.ke</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

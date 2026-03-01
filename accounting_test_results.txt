@@ -1,0 +1,131 @@
+Traceback (most recent call last):
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 329, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: accounting_journal_lines.project_code
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/julius/loan_system/test_real_world_accounting.py", line 561, in run_complete_test
+    self.simulate_january_operations()
+  File "/usr/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/test_real_world_accounting.py", line 341, in simulate_january_operations
+    entry = self.create_journal_entry(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/test_real_world_accounting.py", line 399, in create_journal_entry
+    JournalLine.objects.create(
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/models/query.py", line 679, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/home/julius/loan_system/accounting/models.py", line 590, in save
+    super().save(*args, **kwargs)
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/models/base.py", line 822, in save
+    self.save_base(
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/models/base.py", line 909, in save_base
+    updated = self._save_table(
+              ^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/models/base.py", line 1067, in _save_table
+    results = self._do_insert(
+              ^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/models/base.py", line 1108, in _do_insert
+    return manager._insert(
+           ^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/models/query.py", line 1847, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1823, in execute_sql
+    cursor.execute(sql, params)
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/julius/loan_system/venv/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 329, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: NOT NULL constraint failed: accounting_journal_lines.project_code
+================================================================================
+ALBA CAPITAL ERP - REAL WORLD ACCOUNTING TEST
+Simulating January 2026 Operations
+================================================================================
+
+✅ Setup complete
+   User: credit@albacapital.com
+   Fiscal Period: January 2026
+   Accounts loaded: 9
+
+📊 Setting up Cost Centers...
+--------------------------------------------------------------------------------
+   Exists: CC-HQ - Head Office - Nairobi CBD
+   Exists: CC-NAI-001 - Nairobi Westlands Branch
+   Exists: CC-NAI-002 - Nairobi Eastleigh Branch
+   Exists: CC-MBA-001 - Mombasa Branch
+   Exists: CC-KIS-001 - Kisumu Branch
+
+✅ 5 cost centers ready
+
+📋 Setting up Projects...
+--------------------------------------------------------------------------------
+   Exists: PRJ-2026-001 - Digital Transformation Initiative
+      Budget: KES 5,000,000.00
+   Exists: PRJ-2026-002 - Q1 Marketing Campaign
+      Budget: KES 2,000,000.00
+
+✅ 2 projects ready
+
+💱 Setting up Currencies...
+--------------------------------------------------------------------------------
+   Exists: KES - Kenyan Shilling (Base Currency)
+   Exists: USD - US Dollar
+   Exchange Rate: 1 USD = 145.500000 KES (as of 2026-01-15)
+
+✅ Multi-currency setup complete
+
+🏦 Simulating January 2026 Operations...
+================================================================================
+
+📅 Week 1 (Jan 1-7): Loan Disbursements
+--------------------------------------------------------------------------------
+   ✓ 2026-01-05: KES 500,000.00 - Business Loan - Mama Mboga Traders [CC-NAI-001]
+   ✓ 2026-01-05: KES 1,000,000.00 - SME Loan - Eastleigh Electronics [CC-NAI-001]
+   ✓ 2026-01-06: KES 750,000.00 - Business Loan - Coastal Traders Ltd [CC-MBA-001]
+   ✓ 2026-01-07: KES 300,000.00 - Agricultural Loan - Kisumu Farmers Coop [CC-KIS-001]
+
+   Total Disbursed: KES 2,550,000.00
+
+📅 Week 2 (Jan 8-14): Loan Repayments & Interest Income
+--------------------------------------------------------------------------------
+   ✓ 2026-01-10: Principal KES 50,000.00 + Interest KES 5,000.00 [CC-NAI-001]
+   ✓ 2026-01-11: Principal KES 75,000.00 + Interest KES 7,500.00 [CC-NAI-001]
+   ✓ 2026-01-12: Principal KES 100,000.00 + Interest KES 10,000.00 [CC-MBA-001]
+   ✓ 2026-01-13: Principal KES 30,000.00 + Interest KES 3,000.00 [CC-KIS-001]
+
+   Total Principal: KES 255,000.00
+   Total Interest Income: KES 25,500.00
+
+📅 Week 3 (Jan 15-21): Operating Expenses
+--------------------------------------------------------------------------------
+
+❌ Error: NOT NULL constraint failed: accounting_journal_lines.project_code

@@ -373,3 +373,456 @@ class AccountingService:
             reference=reference,
             auto_post=auto_post,
         )
+    
+    # =============================================================================
+    # CASH FLOW STATEMENT
+    # =============================================================================
+    
+    @staticmethod
+    def get_cash_flow_statement(fiscal_year, start_date=None, end_date=None):
+        """
+        Generate Statement of Cash Flows (Indirect Method)
+        
+        Classifies cash flows into three categories:
+        1. Operating Activities - Day-to-day business operations
+        2. Investing Activities - Purchase/sale of long-term assets
+        3. Financing Activities - Borrowing and equity transactions
+        
+        Args:
+            fiscal_year: FiscalYear instance
+            start_date: Optional start date (defaults to fiscal year start)
+            end_date: Optional end date (defaults to fiscal year end or today)
+        
+        Returns:
+            dict with operating, investing, financing cash flows
+        """
+        from django.db.models import Sum, Q
+        from .models import Account
+        
+        if start_date is None:
+            start_date = fiscal_year.start_date
+        
+        if end_date is None:
+            end_date = min(fiscal_year.end_date, timezone.now().date())
+        
+        # Get all cash and bank accounts (typically 1000-1099)
+        cash_accounts = Account.objects.filter(
+            Q(code__startswith='1000') | Q(code__startswith='1001') | 
+            Q(code__startswith='1002') | Q(code__startswith='1003'),
+            account_type__name='ASSET',
+            is_active=True
+        )
+        
+        # Calculate opening and closing cash balances
+        opening_balance = Decimal('0.00')
+        closing_balance = Decimal('0.00')
+        
+        for account in cash_accounts:
+            # Opening balance (as of start_date - 1 day)
+            opening_balance += account.get_balance(start_date)
+            # Closing balance (as of end_date)
+            closing_balance += account.get_balance(end_date)
+        
+        # =================================================================
+        # OPERATING ACTIVITIES (Indirect Method)
+        # =================================================================
+        
+        # Start with net income
+        revenue_accounts = Account.objects.filter(
+            account_type__name='REVENUE',
+            is_active=True
+        )
+        expense_accounts = Account.objects.filter(
+            account_type__name='EXPENSE',
+            is_active=True
+        )
+        
+        total_revenue = sum(
+            account.get_balance(end_date) 
+            for account in revenue_accounts
+        )
+        total_expenses = sum(
+            account.get_balance(end_date) 
+            for account in expense_accounts
+        )
+        net_income = total_revenue - total_expenses
+        
+        # Non-cash adjustments
+        operating_activities = {
+            'net_income': net_income,
+            'adjustments': [],
+            'total_adjustments': Decimal('0.00'),
+        }
+        
+        # Add back depreciation (non-cash expense)
+        depreciation_accounts = Account.objects.filter(
+            Q(name__icontains='depreciation') | Q(code__startswith='5300'),
+            account_type__name='EXPENSE',
+            is_active=True
+        )
+        depreciation_expense = sum(
+            account.get_balance(end_date)
+            for account in depreciation_accounts
+        )
+        if depreciation_expense > 0:
+            operating_activities['adjustments'].append({
+                'description': 'Depreciation expense',
+                'amount': depreciation_expense
+            })
+            operating_activities['total_adjustments'] += depreciation_expense
+        
+        # Add back bad debt provision (non-cash expense)
+        bad_debt_accounts = Account.objects.filter(
+            Q(name__icontains='bad debt') | Q(code__startswith='5200'),
+            account_type__name='EXPENSE',
+            is_active=True
+        )
+        bad_debt_expense = sum(
+            account.get_balance(end_date)
+            for account in bad_debt_accounts
+        )
+        if bad_debt_expense > 0:
+            operating_activities['adjustments'].append({
+                'description': 'Bad debt provision',
+                'amount': bad_debt_expense
+            })
+            operating_activities['total_adjustments'] += bad_debt_expense
+        
+        # Changes in working capital (simplified - would need period comparison)
+        # For now, we'll leave this as a placeholder
+        operating_activities['working_capital_changes'] = []
+        
+        operating_activities['net_cash_from_operations'] = (
+            net_income + operating_activities['total_adjustments']
+        )
+        
+        # =================================================================
+        # INVESTING ACTIVITIES
+        # =================================================================
+        
+        investing_activities = {
+            'items': [],
+            'total': Decimal('0.00')
+        }
+        
+        # Loan disbursements (cash outflow)
+        loan_disbursement_entries = JournalEntry.objects.filter(
+            fiscal_year=fiscal_year,
+            date__gte=start_date,
+            date__lte=end_date,
+            status='POSTED',
+            entry_type='LOAN_DISBURSEMENT'
+        )
+        
+        loan_disbursements_total = Decimal('0.00')
+        for entry in loan_disbursement_entries:
+            # Get the credit side (cash out)
+            credits = entry.lines.filter(credit_amount__gt=0).aggregate(
+                total=Sum('credit_amount')
+            )
+            amount = credits['total'] or Decimal('0.00')
+            loan_disbursements_total += amount
+        
+        if loan_disbursements_total > 0:
+            investing_activities['items'].append({
+                'description': 'Loan disbursements',
+                'amount': -loan_disbursements_total  # Negative = cash outflow
+            })
+            investing_activities['total'] -= loan_disbursements_total
+        
+        # Fixed asset purchases
+        fixed_asset_accounts = Account.objects.filter(
+            Q(code__startswith='15') | Q(name__icontains='fixed asset'),
+            account_type__name='ASSET',
+            is_active=True
+        )
+        
+        fixed_asset_purchases = Decimal('0.00')
+        for account in fixed_asset_accounts:
+            # Get debits in period (purchases)
+            period_debits = JournalEntryLine.objects.filter(
+                journal_entry__fiscal_year=fiscal_year,
+                journal_entry__date__gte=start_date,
+                journal_entry__date__lte=end_date,
+                journal_entry__status='POSTED',
+                account=account,
+                debit_amount__gt=0
+            ).aggregate(total=Sum('debit_amount'))
+            
+            amount = period_debits['total'] or Decimal('0.00')
+            fixed_asset_purchases += amount
+        
+        if fixed_asset_purchases > 0:
+            investing_activities['items'].append({
+                'description': 'Purchase of fixed assets',
+                'amount': -fixed_asset_purchases  # Negative = cash outflow
+            })
+            investing_activities['total'] -= fixed_asset_purchases
+        
+        # =================================================================
+        # FINANCING ACTIVITIES
+        # =================================================================
+        
+        financing_activities = {
+            'items': [],
+            'total': Decimal('0.00')
+        }
+        
+        # Loan repayments received (cash inflow)
+        loan_repayment_entries = JournalEntry.objects.filter(
+            fiscal_year=fiscal_year,
+            date__gte=start_date,
+            date__lte=end_date,
+            status='POSTED',
+            entry_type='LOAN_REPAYMENT'
+        )
+        
+        loan_repayments_total = Decimal('0.00')
+        for entry in loan_repayment_entries:
+            # Get the debit side (cash in)
+            debits = entry.lines.filter(
+                debit_amount__gt=0,
+                account__code__startswith='10'  # Cash accounts
+            ).aggregate(total=Sum('debit_amount'))
+            amount = debits['total'] or Decimal('0.00')
+            loan_repayments_total += amount
+        
+        if loan_repayments_total > 0:
+            financing_activities['items'].append({
+                'description': 'Loan repayments received',
+                'amount': loan_repayments_total  # Positive = cash inflow
+            })
+            financing_activities['total'] += loan_repayments_total
+        
+        # Equity contributions (share capital)
+        equity_accounts = Account.objects.filter(
+            Q(code__startswith='30') | Q(name__icontains='share capital'),
+            account_type__name='EQUITY',
+            is_active=True
+        )
+        
+        equity_contributions = Decimal('0.00')
+        for account in equity_accounts:
+            period_credits = JournalEntryLine.objects.filter(
+                journal_entry__fiscal_year=fiscal_year,
+                journal_entry__date__gte=start_date,
+                journal_entry__date__lte=end_date,
+                journal_entry__status='POSTED',
+                account=account,
+                credit_amount__gt=0
+            ).aggregate(total=Sum('credit_amount'))
+            
+            amount = period_credits['total'] or Decimal('0.00')
+            equity_contributions += amount
+        
+        if equity_contributions > 0:
+            financing_activities['items'].append({
+                'description': 'Equity contributions',
+                'amount': equity_contributions  # Positive = cash inflow
+            })
+            financing_activities['total'] += equity_contributions
+        
+        # =================================================================
+        # SUMMARY
+        # =================================================================
+        
+        net_cash_change = (
+            operating_activities['net_cash_from_operations'] +
+            investing_activities['total'] +
+            financing_activities['total']
+        )
+        
+        calculated_closing_balance = opening_balance + net_cash_change
+        
+        return {
+            'period': {
+                'start_date': start_date,
+                'end_date': end_date,
+                'fiscal_year': fiscal_year.name
+            },
+            'cash_balances': {
+                'opening_balance': opening_balance,
+                'closing_balance': closing_balance,
+                'calculated_closing': calculated_closing_balance,
+                'reconciliation_difference': closing_balance - calculated_closing_balance
+            },
+            'operating_activities': operating_activities,
+            'investing_activities': investing_activities,
+            'financing_activities': financing_activities,
+            'summary': {
+                'net_cash_from_operations': operating_activities['net_cash_from_operations'],
+                'net_cash_from_investing': investing_activities['total'],
+                'net_cash_from_financing': financing_activities['total'],
+                'net_increase_in_cash': net_cash_change
+            }
+        }
+    
+    # =============================================================================
+    # COST ACCOUNTING REPORTS
+    # =============================================================================
+    
+    @staticmethod
+    def get_cost_center_report(cost_center_code, fiscal_year, as_of_date=None):
+        """
+        Generate cost center performance report
+        
+        Args:
+            cost_center_code: Cost center code
+            fiscal_year: FiscalYear instance
+            as_of_date: Optional date (defaults to today)
+        
+        Returns:
+            dict with expenses by account
+        """
+        from django.db.models import Sum
+        
+        if as_of_date is None:
+            as_of_date = timezone.now().date()
+        
+        # Get all journal lines for this cost center
+        lines = JournalEntryLine.objects.filter(
+            cost_center=cost_center_code,
+            journal_entry__fiscal_year=fiscal_year,
+            journal_entry__status='POSTED',
+            journal_entry__date__lte=as_of_date
+        )
+        
+        # Group by account
+        expense_by_account = lines.values(
+            'account__code',
+            'account__name',
+            'account__account_type__name'
+        ).annotate(
+            total_debit=Sum('debit_amount'),
+            total_credit=Sum('credit_amount')
+        ).order_by('account__code')
+        
+        total_expenses = Decimal('0.00')
+        total_revenue = Decimal('0.00')
+        
+        expenses_list = []
+        revenue_list = []
+        
+        for item in expense_by_account:
+            net_amount = item['total_debit'] - item['total_credit']
+            
+            if item['account__account_type__name'] == 'EXPENSE':
+                expenses_list.append({
+                    'code': item['account__code'],
+                    'name': item['account__name'],
+                    'amount': net_amount
+                })
+                total_expenses += net_amount
+            elif item['account__account_type__name'] == 'REVENUE':
+                revenue_list.append({
+                    'code': item['account__code'],
+                    'name': item['account__name'],
+                    'amount': item['total_credit'] - item['total_debit']
+                })
+                total_revenue += (item['total_credit'] - item['total_debit'])
+        
+        return {
+            'cost_center': cost_center_code,
+            'fiscal_year': fiscal_year.name,
+            'as_of_date': as_of_date,
+            'revenue': {
+                'items': revenue_list,
+                'total': total_revenue
+            },
+            'expenses': {
+                'items': expenses_list,
+                'total': total_expenses
+            },
+            'net_profit_loss': total_revenue - total_expenses
+        }
+    
+    @staticmethod
+    def get_project_cost_report(project_code, as_of_date=None):
+        """
+        Generate project cost report with budget variance
+        
+        Args:
+            project_code: Project code
+            as_of_date: Optional date (defaults to today)
+        
+        Returns:
+            dict with costs, revenue, and variance
+        """
+        from django.db.models import Sum, Q
+        from .models import Project
+        
+        if as_of_date is None:
+            as_of_date = timezone.now().date()
+        
+        # Get project
+        try:
+            project = Project.objects.get(code=project_code)
+        except Project.DoesNotExist:
+            raise ValidationError(f'Project {project_code} not found')
+        
+        # Get actual costs
+        cost_lines = JournalEntryLine.objects.filter(
+            project_code=project_code,
+            journal_entry__status='POSTED',
+            journal_entry__date__lte=as_of_date,
+            account__account_type__name='EXPENSE'
+        )
+        
+        costs_by_account = cost_lines.values(
+            'account__code',
+            'account__name'
+        ).annotate(
+            amount=Sum('debit_amount')
+        ).order_by('account__code')
+        
+        total_actual_cost = sum(item['amount'] for item in costs_by_account)
+        
+        # Get actual revenue
+        revenue_lines = JournalEntryLine.objects.filter(
+            project_code=project_code,
+            journal_entry__status='POSTED',
+            journal_entry__date__lte=as_of_date,
+            account__account_type__name='REVENUE'
+        )
+        
+        revenue_by_account = revenue_lines.values(
+            'account__code',
+            'account__name'
+        ).annotate(
+            amount=Sum('credit_amount')
+        ).order_by('account__code')
+        
+        total_actual_revenue = sum(item['amount'] for item in revenue_by_account)
+        
+        return {
+            'project': {
+                'code': project.code,
+                'name': project.name,
+                'status': project.status,
+                'manager': project.manager.get_full_name() if project.manager else None,
+                'start_date': project.start_date,
+                'end_date': project.end_date
+            },
+            'budget': {
+                'cost': project.budgeted_cost,
+                'revenue': project.budgeted_revenue,
+                'profit': project.budgeted_revenue - project.budgeted_cost
+            },
+            'actual': {
+                'cost': total_actual_cost,
+                'cost_detail': list(costs_by_account),
+                'revenue': total_actual_revenue,
+                'revenue_detail': list(revenue_by_account),
+                'profit': total_actual_revenue - total_actual_cost
+            },
+            'variance': {
+                'cost': project.budgeted_cost - total_actual_cost,
+                'cost_pct': ((project.budgeted_cost - total_actual_cost) / project.budgeted_cost * 100) 
+                            if project.budgeted_cost > 0 else Decimal('0.00'),
+                'revenue': total_actual_revenue - project.budgeted_revenue,
+                'revenue_pct': ((total_actual_revenue - project.budgeted_revenue) / project.budgeted_revenue * 100)
+                              if project.budgeted_revenue > 0 else Decimal('0.00'),
+            },
+            'as_of_date': as_of_date
+        }
+

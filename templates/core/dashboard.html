@@ -1,196 +1,159 @@
 {% extends 'base.html' %}
-{% load humanize %}
 
 {% block title %}Dashboard - Alba Capital ERP{% endblock %}
 
-{% block content %}
-<div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-    <p class="text-gray-600 mt-2">Welcome back, {{ user.get_full_name }}</p>
-</div>
-
-<!-- Pending Approvals Alert -->
-{% if pending_customers_count > 0 %}
-<div class="mb-6 bg-orange-50 border-l-4 border-orange-500 p-6 rounded-r-lg shadow-sm">
-    <div class="flex items-start">
-        <div class="flex-shrink-0">
-            <i class="fas fa-exclamation-triangle text-orange-500 text-2xl"></i>
-        </div>
-        <div class="ml-4 flex-1">
-            <h3 class="text-lg font-semibold text-orange-900">
-                {{ pending_customers_count }} Customer{{ pending_customers_count|pluralize }} Awaiting Approval
-            </h3>
-            <p class="text-orange-700 mt-1">New customer registrations require KYC verification before they can apply for loans.</p>
-            
-            {% if pending_customers %}
-            <div class="mt-4 space-y-2">
-                {% for customer in pending_customers %}
-                <div class="flex items-center justify-between bg-white p-3 rounded border border-orange-200">
-                    <div class="flex-1">
-                        <p class="font-semibold text-gray-900">{{ customer.get_full_name }}</p>
-                        <p class="text-sm text-gray-600">
-                            <i class="fas fa-envelope mr-1"></i>{{ customer.email }} | 
-                            <i class="fas fa-phone ml-2 mr-1"></i>{{ customer.phone_number }} |
-                            <i class="fas fa-clock ml-2 mr-1"></i>{{ customer.created_at|timesince }} ago
-                        </p>
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-alba-navy shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-2xl font-bold text-white">Alba Capital</span>
+                        <span class="ml-3 px-2 py-1 text-xs font-semibold bg-alba-orange text-white rounded">ERP</span>
                     </div>
-                    <a href="/admin/loans/customer/{{ customer.id }}/change/" class="ml-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-sm font-medium">
-                        <i class="fas fa-check-circle mr-1"></i>Review
-                    </a>
+                    <div class="hidden md:ml-10 md:flex md:space-x-8">
+                        <a href="{% url 'dashboard' %}" class="border-alba-orange text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Dashboard
+                        </a>
+                    </div>
                 </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <a href="/admin/loans/customer/?is_active__exact=0" class="inline-block mt-4 px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-medium">
-                <i class="fas fa-users mr-2"></i>View All Pending Customers ({{ pending_customers_count }})
-            </a>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Pending Loan Applications Alert -->
-{% if pending_loan_applications_count > 0 %}
-<div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg shadow-sm">
-    <div class="flex items-start">
-        <div class="flex-shrink-0">
-            <i class="fas fa-file-alt text-blue-500 text-2xl"></i>
-        </div>
-        <div class="ml-4 flex-1">
-            <h3 class="text-lg font-semibold text-blue-900">
-                {{ pending_loan_applications_count }} Loan Application{{ pending_loan_applications_count|pluralize }} Pending Review
-            </h3>
-            <a href="/admin/loans/loanapplication/?status__in=SUBMITTED,UNDER_REVIEW,PENDING_APPROVAL" class="inline-block mt-3 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-                <i class="fas fa-clipboard-check mr-2"></i>Review Applications
-            </a>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Total Loans -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm">Total Loans</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ total_loans|default:0 }}</h3>
-            </div>
-            <div class="bg-primary-100 p-3 rounded-full">
-                <i class="fas fa-hand-holding-usd text-primary-600 text-2xl"></i>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Outstanding Balance -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm">Outstanding Balance</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-1">KES {{ outstanding_balance|floatformat:0|intcomma|default:"0" }}</h3>
-            </div>
-            <div class="bg-green-100 p-3 rounded-full">
-                <i class="fas fa-money-bill-wave text-green-600 text-2xl"></i>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Pending Applications -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm">Pending Applications</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ pending_applications|default:0 }}</h3>
-            </div>
-            <div class="bg-yellow-100 p-3 rounded-full">
-                <i class="fas fa-file-alt text-yellow-600 text-2xl"></i>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Collections Today -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm">Collections Today</p>
-                <h3 class="text-2xl font-bold text-gray-900 mt-1">KES {{ collections_today|floatformat:0|intcomma|default:"0" }}</h3>
-            </div>
-            <div class="bg-purple-100 p-3 rounded-full">
-                <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Recent Applications -->
-    <div class="bg-white rounded-lg shadow">
-        <div class="p-6 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Recent Applications</h2>
-        </div>
-        <div class="p-6">
-            {% if recent_applications %}
-            <div class="space-y-3">
-                {% for app in recent_applications %}
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
-                    <div class="flex-1">
-                        <p class="font-semibold text-gray-900">{{ app.customer.get_full_name }}</p>
-                        <p class="text-sm text-gray-600">
-                            {{ app.loan_product.name }} - KES {{ app.requested_amount|floatformat:0|intcomma }}
-                        </p>
-                        <p class="text-xs text-gray-500 mt-1">
-                            <i class="fas fa-clock mr-1"></i>{{ app.created_at|timesince }} ago
-                        </p>
+                <div class="flex items-center">
+                    <div class="ml-3 relative flex items-center space-x-4">
+                        <span class="text-gray-300 text-sm">
+                            <span class="font-semibold text-white">{{ user.get_full_name }}</span>
+                            <span class="text-xs block text-gray-400">{{ user.get_role_display }}</span>
+                        </span>
+                        <a href="{% url 'logout' %}" class="bg-alba-orange bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                            Logout
+                        </a>
                     </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Staff Dashboard</h1>
+            <p class="text-gray-600 mt-2">Welcome back, {{ user.get_full_name }}!</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Total Users -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ total_users }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Users -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Staff Members</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ staff_users }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-alba-orange rounded-md p-3">
+                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Customers</dt>
+                            <dd class="text-3xl font-semibold text-gray-900">{{ customers }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-5 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
+            </div>
+            <div class="px-6 py-4">
+                <div class="flow-root">
+                    <ul class="-my-5 divide-y divide-gray-200">
+                        {% for log in recent_audit_logs %}
+                        <li class="py-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-shrink-0">
+                                    <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <span class="text-xs font-medium text-gray-600">
+                                            {{ log.user.first_name.0 }}{{ log.user.last_name.0 }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                        {{ log.user.get_full_name }}
+                                    </p>
+                                    <p class="text-sm text-gray-500 truncate">
+                                        {{ log.description }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        {{ log.action }}
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="py-4">
+                            <p class="text-sm text-gray-500">No recent activity</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="/admin/" class="block p-6 bg-white rounded-lg shadow hover:shadow-lg transition">
+                <div class="flex items-center">
+                    <svg class="h-8 w-8 text-alba-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
                     <div class="ml-4">
-                        {% if app.status == 'SUBMITTED' %}
-                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">Submitted</span>
-                        {% elif app.status == 'UNDER_REVIEW' %}
-                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Under Review</span>
-                        {% elif app.status == 'APPROVED' %}
-                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Approved</span>
-                        {% elif app.status == 'REJECTED' %}
-                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Rejected</span>
-                        {% else %}
-                        <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">{{ app.get_status_display }}</span>
-                        {% endif %}
+                        <h4 class="text-sm font-semibold text-gray-900">Admin Panel</h4>
+                        <p class="text-xs text-gray-500">Manage system</p>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-            <a href="/admin/loans/loanapplication/" class="inline-block mt-4 text-alba-orange hover:underline text-sm font-medium">
-                <i class="fas fa-arrow-right mr-1"></i>View All Applications
-            </a>
-            {% else %}
-            <p class="text-gray-500 text-center py-8">No recent applications</p>
-            {% endif %}
-        </div>
-    </div>
-    
-    <!-- Quick Actions -->
-    <div class="bg-white rounded-lg shadow">
-        <div class="p-6 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Quick Actions</h2>
-        </div>
-        <div class="p-6 grid grid-cols-2 gap-4">
-            <a href="/admin/loans/loan/add/" class="flex items-center justify-center p-4 bg-primary-50 rounded-lg hover:bg-primary-100 transition">
-                <i class="fas fa-plus-circle text-primary-600 mr-2"></i>
-                <span class="text-primary-600 font-semibold">New Loan</span>
-            </a>
-            <a href="/admin/loans/payment/add/" class="flex items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
-                <i class="fas fa-receipt text-green-600 mr-2"></i>
-                <span class="text-green-600 font-semibold">Record Payment</span>
-            </a>
-            <a href="/admin/loans/customer/add/" class="flex items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
-                <i class="fas fa-user-plus text-purple-600 mr-2"></i>
-                <span class="text-purple-600 font-semibold">New Customer</span>
-            </a>
-            <a href="{% url 'reporting:dashboard' %}" class="flex items-center justify-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
-                <i class="fas fa-file-invoice text-orange-600 mr-2"></i>
-                <span class="text-orange-600 font-semibold">Generate Report</span>
             </a>
         </div>
-    </div>
+    </main>
 </div>
 {% endblock %}

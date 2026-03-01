@@ -1,13 +1,12 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{% block title %}Dashboard{% endblock %} - Alba Capital ERP</title>
+    <meta name="description" content="Alba Capital ERP System">
+    <title>{% block title %}Alba Capital ERP{% endblock %}</title>
     
-    <!-- Tailwind CSS CDN (Development Only - Use compiled CSS in production) -->
+    <!-- Tailwind CSS CDN (for MVP - will use local build later) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -16,269 +15,69 @@
                     colors: {
                         'alba-navy': '#22354e',
                         'alba-orange': '#ff805d',
-                        'sidebar-bg': '#1a202c',
                     }
                 }
             }
         }
     </script>
     
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Inter Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    {% block extra_css %}{% endblock %}
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full font-sans">
-    
-    {% if user.is_authenticated %}
-    <!-- Dashboard Layout with Sidebar -->
-    <div class="flex h-screen overflow-hidden bg-gray-50">
-        
-        <!-- Sidebar -->
-        <aside id="sidebar" class="flex flex-col w-64 bg-sidebar-bg text-white transition-all duration-300 ease-in-out">
-            <!-- Logo -->
-            <div class="flex items-center justify-between px-4 py-6 border-b border-gray-700">
-                <div class="flex items-center space-x-3">
-                    <img src="{% static 'img/alba_capital_logo.png' %}" alt="Alba Capital" class="h-10 w-auto">
-                </div>
-                <button id="sidebar-toggle" class="lg:hidden text-gray-400 hover:text-white">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            
-            <!-- Navigation -->
-            <nav class="flex-1 overflow-y-auto py-4 scrollbar-thin">
-                <div class="space-y-1">
-                    <!-- Dashboard -->
-                    <a href="{% url 'core:dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                        <i class="fas fa-home mr-3"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    
-                    <!-- Accounting Section -->
-                    {% if perms.accounting.view_account %}
-                    <div class="px-4 pt-4 pb-2">
-                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Accounting</h3>
+<body class="h-full bg-gray-50">
+    {% block body %}
+    <!-- Messages -->
+    {% if messages %}
+    <div class="fixed top-4 right-4 z-50 space-y-2">
+        {% for message in messages %}
+        <div class="max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
+            <div class="p-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        {% if message.tags == 'success' %}
+                        <svg class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {% elif message.tags == 'error' %}
+                        <svg class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {% elif message.tags == 'warning' %}
+                        <svg class="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        {% else %}
+                        <svg class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {% endif %}
                     </div>
-                    <a href="{% url 'accounting:dashboard' %}" class="sidebar-link">
-                        <i class="fas fa-calculator mr-3"></i>
-                        <span>Accounting</span>
-                    </a>
-                    <a href="{% url 'accounting:account_list' %}" class="sidebar-link">
-                        <i class="fas fa-list mr-3"></i>
-                        <span>Chart of Accounts</span>
-                    </a>
-                    <a href="{% url 'accounting:journal_entry_list' %}" class="sidebar-link">
-                        <i class="fas fa-book mr-3"></i>
-                        <span>Journal Entries</span>
-                    </a>
-                    {% endif %}
-                    
-                    <!-- Loans Section -->
-                    {% if perms.loans.view_loan %}
-                    <div class="px-4 pt-4 pb-2">
-                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Loans</h3>
-                    </div>
-                    <a href="{% url 'loans:dashboard' %}" class="sidebar-link">
-                        <i class="fas fa-hand-holding-usd mr-3"></i>
-                        <span>Loans</span>
-                    </a>
-                    <a href="/admin/loans/loanproduct/" class="sidebar-link">
-                        <i class="fas fa-tags mr-3"></i>
-                        <span>Loan Products</span>
-                    </a>
-                    <a href="{% url 'loans:application_list' %}" class="sidebar-link">
-                        <i class="fas fa-file-alt mr-3"></i>
-                        <span>Applications</span>
-                    </a>
-                    <a href="{% url 'loans:customer_list' %}" class="sidebar-link">
-                        <i class="fas fa-users mr-3"></i>
-                        <span>Customers</span>
-                    </a>
-                    {% endif %}
-                    
-                    <!-- Investors Section -->
-                    {% if perms.investors.view_investoraccount %}
-                    <div class="px-4 pt-4 pb-2">
-                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Investors</h3>
-                    </div>
-                    <a href="{% url 'investors:dashboard' %}" class="sidebar-link">
-                        <i class="fas fa-users mr-3"></i>
-                        <span>Investors</span>
-                    </a>
-                    <a href="{% url 'investors:account_list' %}" class="sidebar-link">
-                        <i class="fas fa-wallet mr-3"></i>
-                        <span>Accounts</span>
-                    </a>
-                    {% endif %}
-                    
-                    <!-- Payroll Section -->
-                    {% if perms.payroll.view_employee %}
-                    <div class="px-4 pt-4 pb-2">
-                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Payroll</h3>
-                    </div>
-                    <a href="{% url 'payroll:dashboard' %}" class="sidebar-link">
-                        <i class="fas fa-money-check-alt mr-3"></i>
-                        <span>Payroll</span>
-                    </a>
-                    {% endif %}
-                    
-                    <!-- Reports Section -->
-                    {% if perms.reporting.view_report %}
-                    <div class="px-4 pt-4 pb-2">
-                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Reports</h3>
-                    </div>
-                    <a href="{% url 'reporting:dashboard' %}" class="sidebar-link">
-                        <i class="fas fa-chart-bar mr-3"></i>
-                        <span>Reports</span>
-                    </a>
-                    {% endif %}
-                    
-                    <!-- Settings -->
-                    {% if user.is_staff %}
-                    <div class="px-4 pt-4 pb-2">
-                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">System</h3>
-                    </div>
-                    <a href="/admin/" class="sidebar-link">
-                        <i class="fas fa-cog mr-3"></i>
-                        <span>Admin Panel</span>
-                    </a>
-                    <a href="{% url 'core:audit_logs' %}" class="sidebar-link">
-                        <i class="fas fa-history mr-3"></i>
-                        <span>Audit Log</span>
-                    </a>
-                    {% endif %}
-                </div>
-            </nav>
-            
-            <!-- User Profile Section -->
-            <div class="border-t border-gray-700 p-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
-                        <span class="text-sm font-semibold">{{ user.first_name.0 }}{{ user.last_name.0 }}</span>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate">{{ user.get_full_name }}</p>
-                        <p class="text-xs text-gray-400 truncate">{{ user.email }}</p>
+                    <div class="ml-3 w-0 flex-1 pt-0.5">
+                        <p class="text-sm font-medium text-gray-900">
+                            {{ message }}
+                        </p>
                     </div>
                 </div>
             </div>
-        </aside>
-        
-        <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Top Navigation Bar -->
-            <header class="bg-white border-b border-gray-200 shadow-sm z-10">
-                <div class="flex items-center justify-between px-6 py-4">
-                    <!-- Mobile Menu Button -->
-                    <button id="mobile-menu-btn" class="lg:hidden text-gray-600 hover:text-gray-900">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    
-                    <!-- Breadcrumb -->
-                    <div class="hidden lg:flex items-center space-x-2 text-sm">
-                        <a href="{% url 'core:dashboard' %}" class="text-gray-500 hover:text-gray-700">Home</a>
-                        {% block breadcrumb %}{% endblock %}
-                    </div>
-                    
-                    <!-- Right Side Actions -->
-                    <div class="flex items-center space-x-4">
-                        <!-- Notifications -->
-                        <button class="relative text-gray-600 hover:text-gray-900">
-                            <i class="fas fa-bell text-xl"></i>
-                            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">3</span>
-                        </button>
-                        
-                        <!-- User Dropdown -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" class="flex items-center space-x-3 text-gray-700 hover:text-gray-900">
-                                <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                                    {{ user.first_name.0 }}{{ user.last_name.0 }}
-                                </div>
-                                <span class="hidden md:block text-sm font-medium">{{ user.get_full_name }}</span>
-                                <i class="fas fa-chevron-down text-xs"></i>
-                            </button>
-                            
-                            <!-- Dropdown Menu -->
-                            <div x-show="open" @click.away="open = false" class="dropdown-menu" style="display: none;">
-                                <a href="{% url 'core:profile' %}" class="dropdown-item">
-                                    <i class="fas fa-user mr-2"></i> Profile
-                                </a>
-                                <hr class="my-1 border-gray-200">
-                                <a href="{% url 'core:logout' %}" class="dropdown-item text-red-600">
-                                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Messages -->
-            {% if messages %}
-            <div class="px-6 pt-4">
-                {% for message in messages %}
-                <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
-                    <i class="fas fa-{% if message.tags == 'error' %}times-circle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} mr-2"></i>
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
-                {% block content %}{% endblock %}
-            </main>
         </div>
-    </div>
-    
-    {% else %}
-    <!-- Login/Public Layout -->
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-        {% if messages %}
-        <div class="container mx-auto px-4 pt-4">
-            {% for message in messages %}
-            <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        
-        <div class="container mx-auto px-4 py-8">
-            {% block public_content %}{% endblock %}
-        </div>
+        {% endfor %}
     </div>
     {% endif %}
     
-    <!-- Alpine.js for Dropdowns -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {% block content %}{% endblock %}
+    {% endblock %}
     
-    <!-- Mobile Sidebar Toggle -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            
-            if (mobileMenuBtn) {
-                mobileMenuBtn.addEventListener('click', function() {
-                    sidebar.classList.toggle('-translate-x-full');
-                });
-            }
-            
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('-translate-x-full');
-                });
-            }
-        });
+        // Auto-dismiss messages after 5 seconds
+        setTimeout(function() {
+            const messages = document.querySelectorAll('[class*="ring-black"]');
+            messages.forEach(function(message) {
+                message.style.transition = 'opacity 0.5s';
+                message.style.opacity = '0';
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+            });
+        }, 5000);
     </script>
     
     {% block extra_js %}{% endblock %}

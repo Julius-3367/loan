@@ -587,6 +587,12 @@ class JournalEntryLine(models.Model):
         db_index=True,
         help_text="Department code for reporting"
     )
+    project_code = models.CharField(
+        max_length=50,
+        blank=True,
+        db_index=True,
+        help_text="Project code for job costing"
+    )
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -601,6 +607,7 @@ class JournalEntryLine(models.Model):
             models.Index(fields=['account', 'journal_entry']),
             models.Index(fields=['cost_center']),
             models.Index(fields=['department']),
+            models.Index(fields=['project_code']),
         ]
     
     def __str__(self):
@@ -803,3 +810,713 @@ class BankReconciliation(models.Model):
     def get_variance(self):
         """Get reconciliation variance"""
         return self.statement_balance - self.book_balance
+
+
+# =============================================================================
+# ADVANCED COST ACCOUNTING MODELS
+# =============================================================================
+
+class CostCenter(models.Model):
+    """
+    Cost Center / Department / Branch / Division
+    Enables departmental profitability analysis and budget tracking
+    
+    Supports hierarchical structure (e.g., Sales → East Region → Nairobi Branch)
+    """
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        db_index=True,
+        help_text='Unique cost center code (e.g., CC-SALES-001)'
+    )
+    name = models.CharField(
+        max_length=200,
+        help_text='Cost center name (e.g., Nairobi Branch)'
+    )
+    description = models.TextField(
+        blank=True,
+        help_text='Detailed description of cost center purpose'
+    )
+    
+    # Hierarchy support
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='children',
+        help_text='Parent cost center for hierarchical reporting'
+    )
+    
+    # Management
+    manager = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='managed_cost_centers',
+        help_text='Manager responsible for this cost center'
+    )
+    
+    # Budget tracking
+    default_budget_account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='cost_center_budgets',
+        help_text='Default expense account for budget tracking'
+    )
+    
+    # Status
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
+        help_text='Whether cost center is currently active'
+    )
+    
+    # Audit
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='created_cost_centers'
+    )
+    
+    class Meta:
+        db_table = 'accounting_cost_centers'
+        verbose_name = 'Cost Center'
+        verbose_name_plural = 'Cost Centers'
+        ordering = ['code']
+        indexes = [
+            models.Index(fields=['code']),
+            models.Index(fields=['parent', 'is_active']),
+        ]
+    
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+    
+    def get_full_path(self):
+        """Get hierarchical path (e.g., 'Sales > East Region > Nairobi Branch')"""
+        path = [self.name]
+        current = self
+        while current.parent:
+            current = current.parent
+            path.insert(0, current.name)
+        return ' > '.join(path)
+    
+    def get_total_expenses(self, fiscal_year, as_of_date=None):
+        """Get total expenses for this cost center in fiscal year"""
+        from django.db.models import Sum, Q
+        
+        filters = Q(
+            journal_entry__fiscal_year=fiscal_year,
+            journal_entry__status='POSTED',
+            cost_center=self.code
+        )
+        
+        if as_of_date:
+            filters &= Q(journal_entry__date__lte=as_of_date)
+        
+        result = JournalEntryLine.objects.filter(filters).aggregate(
+            total_debit=Sum('debit_amount'),
+            total_credit=Sum('credit_amount')
+        )
+        
+        total_debit = result['total_debit'] or Decimal('0.00')
+        total_credit = result['total_credit'] or Decimal('0.00')
+        
+        return total_debit - total_credit
+
+
+class Project(models.Model):
+    """
+    Project / Job Costing
+    Track costs and revenues by project for profitability analysis
+    
+    Use Cases:
+    - Marketing campaigns
+    - System implementations
+    - Branch openings
+    - Loan product launches
+    """
+    STATUS_CHOICES = [
+        ('PLANNING', 'Planning'),
+        ('ACTIVE', 'Active'),
+        ('COMPLETED', 'Completed'),
+        ('CLOSED', 'Closed'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+    
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        db_index=True,
+        help_text='Unique project code (e.g., PRJ-2026-001)'
+    )
+    name = models.CharField(
+        max_length=200,
+        help_text='Project name'
+    )
+    description = models.TextField(
+        blank=True,
+        help_text='Detailed project description'
+    )
+    
+    # Dates
+    start_date = models.DateField(
+        help_text='Project start date'
+    )
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text='Expected/actual project end date'
+    )
+    
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='PLANNING',
+        db_index=True
+    )
+    
+    # Financial
+    budgeted_cost = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text='Total budgeted project cost'
+    )
+    budgeted_revenue = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text='Expected project revenue'
+    )
+    
+    # Organizational
+    cost_center = models.ForeignKey(
+        CostCenter,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='projects',
+        help_text='Cost center responsible for this project'
+    )
+    manager = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='managed_projects',
+        help_text='Project manager'
+    )
+    
+    # Customer (optional - for client projects)
+    customer_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text='Customer name if applicable'
+    )
+    
+    # Audit
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='created_projects'
+    )
+    
+    class Meta:
+        db_table = 'accounting_projects'
+        verbose_name = 'Project'
+        verbose_name_plural = 'Projects'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['code']),
+            models.Index(fields=['status', 'start_date']),
+            models.Index(fields=['manager', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+    
+    def get_actual_cost(self, as_of_date=None):
+        """Calculate total actual costs posted to this project"""
+        from django.db.models import Sum, Q
+        
+        filters = Q(
+            journal_entry__status='POSTED',
+            project_code=self.code,
+            account__account_type__name='EXPENSE'
+        )
+        
+        if as_of_date:
+            filters &= Q(journal_entry__date__lte=as_of_date)
+        
+        result = JournalEntryLine.objects.filter(filters).aggregate(
+            total=Sum('debit_amount')
+        )
+        
+        return result['total'] or Decimal('0.00')
+    
+    def get_actual_revenue(self, as_of_date=None):
+        """Calculate total actual revenue posted to this project"""
+        from django.db.models import Sum, Q
+        
+        filters = Q(
+            journal_entry__status='POSTED',
+            project_code=self.code,
+            account__account_type__name='REVENUE'
+        )
+        
+        if as_of_date:
+            filters &= Q(journal_entry__date__lte=as_of_date)
+        
+        result = JournalEntryLine.objects.filter(filters).aggregate(
+            total=Sum('credit_amount')
+        )
+        
+        return result['total'] or Decimal('0.00')
+    
+    def get_variance(self, as_of_date=None):
+        """Get budget variance (positive = under budget, negative = over budget)"""
+        actual = self.get_actual_cost(as_of_date)
+        return self.budgeted_cost - actual
+    
+    def get_profit(self, as_of_date=None):
+        """Calculate project profit/loss"""
+        revenue = self.get_actual_revenue(as_of_date)
+        cost = self.get_actual_cost(as_of_date)
+        return revenue - cost
+
+
+# =============================================================================
+# MULTI-CURRENCY SUPPORT
+# =============================================================================
+
+class Currency(models.Model):
+    """
+    Currency master data for multi-currency support
+    """
+    code = models.CharField(
+        max_length=3,
+        unique=True,
+        db_index=True,
+        help_text='ISO 4217 currency code (e.g., KES, USD, EUR)'
+    )
+    name = models.CharField(
+        max_length=100,
+        help_text='Currency name (e.g., Kenyan Shilling)'
+    )
+    symbol = models.CharField(
+        max_length=10,
+        help_text='Currency symbol (e.g., KSh, $, €)'
+    )
+    
+    is_base = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='Base/functional currency (only one should be True)'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'accounting_currencies'
+        verbose_name = 'Currency'
+        verbose_name_plural = 'Currencies'
+        ordering = ['code']
+    
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+    
+    def clean(self):
+        """Ensure only one base currency"""
+        if self.is_base:
+            # Check if another base currency exists
+            existing_base = Currency.objects.filter(is_base=True).exclude(pk=self.pk)
+            if existing_base.exists():
+                raise ValidationError('Only one base currency is allowed')
+
+
+class ExchangeRate(models.Model):
+    """
+    Daily exchange rates for currency conversion
+    """
+    from_currency = models.ForeignKey(
+        Currency,
+        on_delete=models.PROTECT,
+        related_name='rates_from',
+        help_text='Source currency'
+    )
+    to_currency = models.ForeignKey(
+        Currency,
+        on_delete=models.PROTECT,
+        related_name='rates_to',
+        help_text='Target currency'
+    )
+    rate = models.DecimalField(
+        max_digits=20,
+        decimal_places=6,
+        validators=[MinValueValidator(Decimal('0.000001'))],
+        help_text='Exchange rate (1 from_currency = X to_currency)'
+    )
+    date = models.DateField(
+        db_index=True,
+        help_text='Rate effective date'
+    )
+    
+    SOURCE_CHOICES = [
+        ('CBK', 'Central Bank of Kenya'),
+        ('MANUAL', 'Manual Entry'),
+        ('API', 'External API'),
+    ]
+    source = models.CharField(
+        max_length=20,
+        choices=SOURCE_CHOICES,
+        default='MANUAL',
+        help_text='Rate source'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='created_exchange_rates'
+    )
+    
+    class Meta:
+        db_table = 'accounting_exchange_rates'
+        verbose_name = 'Exchange Rate'
+        verbose_name_plural = 'Exchange Rates'
+        ordering = ['-date']
+        indexes = [
+            models.Index(fields=['from_currency', 'to_currency', 'date']),
+            models.Index(fields=['date']),
+        ]
+        unique_together = [['from_currency', 'to_currency', 'date']]
+    
+    def __str__(self):
+        return f"{self.from_currency.code}/{self.to_currency.code} = {self.rate} on {self.date}"
+    
+    @staticmethod
+    def get_rate(from_currency, to_currency, date):
+        """Get exchange rate for a specific date"""
+        try:
+            rate_record = ExchangeRate.objects.get(
+                from_currency=from_currency,
+                to_currency=to_currency,
+                date=date
+            )
+            return rate_record.rate
+        except ExchangeRate.DoesNotExist:
+            # Try inverse rate
+            try:
+                inverse_rate = ExchangeRate.objects.get(
+                    from_currency=to_currency,
+                    to_currency=from_currency,
+                    date=date
+                )
+                return Decimal('1.0') / inverse_rate.rate
+            except ExchangeRate.DoesNotExist:
+                raise ValidationError(
+                    f'Exchange rate not found for {from_currency.code} to {to_currency.code} on {date}'
+                )
+    
+    @staticmethod
+    def convert_amount(amount, from_currency, to_currency, date):
+        """Convert amount from one currency to another"""
+        if from_currency == to_currency:
+            return amount
+        
+        rate = ExchangeRate.get_rate(from_currency, to_currency, date)
+        return amount * rate
+
+
+# =============================================================================
+# FIXED ASSET MANAGEMENT
+# =============================================================================
+
+class FixedAsset(models.Model):
+    """
+    Fixed Asset Register
+    Track fixed assets with depreciation
+    """
+    CATEGORY_CHOICES = [
+        ('LAND', 'Land'),
+        ('BUILDINGS', 'Buildings'),
+        ('VEHICLES', 'Vehicles'),
+        ('EQUIPMENT', 'Equipment'),
+        ('FURNITURE', 'Furniture & Fixtures'),
+        ('COMPUTERS', 'Computers & IT Equipment'),
+        ('SOFTWARE', 'Software'),
+        ('LEASEHOLD', 'Leasehold Improvements'),
+    ]
+    
+    DEPRECIATION_METHOD_CHOICES = [
+        ('STRAIGHT_LINE', 'Straight Line'),
+        ('DECLINING_BALANCE', 'Declining Balance'),
+        ('DOUBLE_DECLINING', 'Double Declining Balance'),
+        ('UNITS_OF_PRODUCTION', 'Units of Production'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('ACTIVE', 'Active'),
+        ('DISPOSED', 'Disposed'),
+        ('FULLY_DEPRECIATED', 'Fully Depreciated'),
+        ('WRITTEN_OFF', 'Written Off'),
+    ]
+    
+    # Identification
+    asset_number = models.CharField(
+        max_length=50,
+        unique=True,
+        db_index=True,
+        help_text='Unique asset number (e.g., FA-2026-001)'
+    )
+    name = models.CharField(
+        max_length=200,
+        help_text='Asset description'
+    )
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        db_index=True
+    )
+    
+    # Purchase details
+    purchase_date = models.DateField(
+        db_index=True,
+        help_text='Date of purchase/acquisition'
+    )
+    purchase_cost = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text='Total cost including acquisition costs'
+    )
+    salvage_value = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text='Estimated salvage/residual value'
+    )
+    
+    # Depreciation parameters
+    useful_life_years = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        validators=[MinValueValidator(Decimal('0.1'))],
+        help_text='Estimated useful life in years'
+    )
+    depreciation_method = models.CharField(
+        max_length=30,
+        choices=DEPRECIATION_METHOD_CHOICES,
+        default='STRAIGHT_LINE'
+    )
+    depreciation_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Depreciation rate % (for declining balance methods)'
+    )
+    
+    # GL Accounts
+    asset_account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name='fixed_assets',
+        help_text='Asset GL account (e.g., 1500 - Fixed Assets)'
+    )
+    accumulated_depreciation_account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name='accumulated_depreciation_assets',
+        help_text='Accumulated depreciation account (contra-asset)'
+    )
+    depreciation_expense_account = models.ForeignKey(
+        Account,
+        on_delete=models.PROTECT,
+        related_name='depreciation_expense_assets',
+        help_text='Depreciation expense account'
+    )
+    
+    # Cost allocation
+    cost_center = models.ForeignKey(
+        CostCenter,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='fixed_assets'
+    )
+    
+    # Physical details
+    location = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text='Physical location of asset'
+    )
+    custodian = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='custodian_assets',
+        help_text='Employee responsible for asset'
+    )
+    serial_number = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text='Manufacturer serial number'
+    )
+    
+    # Status
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='ACTIVE',
+        db_index=True
+    )
+    disposal_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text='Date of disposal/sale'
+    )
+    disposal_proceeds = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text='Proceeds from disposal'
+    )
+    
+    # Audit
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='created_fixed_assets'
+    )
+    
+    class Meta:
+        db_table = 'accounting_fixed_assets'
+        verbose_name = 'Fixed Asset'
+        verbose_name_plural = 'Fixed Assets'
+        ordering = ['asset_number']
+        indexes = [
+            models.Index(fields=['asset_number']),
+            models.Index(fields=['category', 'status']),
+            models.Index(fields=['purchase_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.asset_number} - {self.name}"
+    
+    def get_depreciable_amount(self):
+        """Calculate depreciable amount (cost - salvage value)"""
+        return self.purchase_cost - self.salvage_value
+    
+    def calculate_annual_depreciation(self):
+        """Calculate annual depreciation expense"""
+        depreciable_amount = self.get_depreciable_amount()
+        
+        if self.depreciation_method == 'STRAIGHT_LINE':
+            return depreciable_amount / self.useful_life_years
+        elif self.depreciation_method == 'DECLINING_BALANCE':
+            # Simplified - would need carrying value for accurate calculation
+            rate = self.depreciation_rate or (Decimal('100') / self.useful_life_years)
+            return self.purchase_cost * (rate / Decimal('100'))
+        else:
+            return Decimal('0.00')
+    
+    def get_accumulated_depreciation(self, as_of_date=None):
+        """Get total accumulated depreciation"""
+        from django.db.models import Sum
+        
+        schedules = self.depreciation_schedules.filter(
+            journal_entry__status='POSTED'
+        )
+        
+        if as_of_date:
+            schedules = schedules.filter(period_end_date__lte=as_of_date)
+        
+        result = schedules.aggregate(total=Sum('depreciation_expense'))
+        return result['total'] or Decimal('0.00')
+    
+    def get_carrying_value(self, as_of_date=None):
+        """Get net book value (cost - accumulated depreciation)"""
+        accumulated = self.get_accumulated_depreciation(as_of_date)
+        return self.purchase_cost - accumulated
+
+
+class DepreciationSchedule(models.Model):
+    """
+    Calculated depreciation schedule for fixed assets
+    One record per depreciation period (typically monthly)
+    """
+    fixed_asset = models.ForeignKey(
+        FixedAsset,
+        on_delete=models.CASCADE,
+        related_name='depreciation_schedules'
+    )
+    
+    period_start_date = models.DateField(
+        help_text='Period start date'
+    )
+    period_end_date = models.DateField(
+        help_text='Period end date'
+    )
+    
+    opening_balance = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        help_text='Net book value at period start'
+    )
+    depreciation_expense = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text='Depreciation expense for this period'
+    )
+    accumulated_depreciation = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        help_text='Total accumulated depreciation'
+    )
+    closing_balance = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        help_text='Net book value at period end'
+    )
+    
+    # Link to posted journal entry
+    journal_entry = models.ForeignKey(
+        JournalEntry,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='depreciation_schedules',
+        help_text='Posted journal entry for depreciation'
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'accounting_depreciation_schedules'
+        verbose_name = 'Depreciation Schedule'
+        verbose_name_plural = 'Depreciation Schedules'
+        ordering = ['fixed_asset', 'period_end_date']
+        indexes = [
+            models.Index(fields=['fixed_asset', 'period_end_date']),
+            models.Index(fields=['period_end_date']),
+        ]
+        unique_together = [['fixed_asset', 'period_end_date']]
+    
+    def __str__(self):
+        return f"{self.fixed_asset.asset_number} - {self.period_end_date}"

@@ -1,0 +1,118 @@
+Traceback (most recent call last):
+  File "/home/julius/loan_system/test_real_world_accounting.py", line 562, in run_complete_test
+    self.generate_reports()
+  File "/home/julius/loan_system/test_real_world_accounting.py", line 446, in generate_reports
+    for item in income_stmt['revenue']['items']:
+                ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+TypeError: list indices must be integers or slices, not str
+================================================================================
+ALBA CAPITAL ERP - REAL WORLD ACCOUNTING TEST
+Simulating January 2026 Operations
+================================================================================
+
+✅ Setup complete
+   User: credit@albacapital.com
+   Fiscal Period: January 2026
+   Accounts loaded: 9
+
+📊 Setting up Cost Centers...
+--------------------------------------------------------------------------------
+   Exists: CC-HQ - Head Office - Nairobi CBD
+   Exists: CC-NAI-001 - Nairobi Westlands Branch
+   Exists: CC-NAI-002 - Nairobi Eastleigh Branch
+   Exists: CC-MBA-001 - Mombasa Branch
+   Exists: CC-KIS-001 - Kisumu Branch
+
+✅ 5 cost centers ready
+
+📋 Setting up Projects...
+--------------------------------------------------------------------------------
+   Exists: PRJ-2026-001 - Digital Transformation Initiative
+      Budget: KES 5,000,000.00
+   Exists: PRJ-2026-002 - Q1 Marketing Campaign
+      Budget: KES 2,000,000.00
+
+✅ 2 projects ready
+
+💱 Setting up Currencies...
+--------------------------------------------------------------------------------
+   Exists: KES - Kenyan Shilling (Base Currency)
+   Exists: USD - US Dollar
+   Exchange Rate: 1 USD = 145.500000 KES (as of 2026-01-15)
+
+✅ Multi-currency setup complete
+
+🏦 Simulating January 2026 Operations...
+================================================================================
+
+📅 Week 1 (Jan 1-7): Loan Disbursements
+--------------------------------------------------------------------------------
+   ✓ 2026-01-05: KES 500,000.00 - Business Loan - Mama Mboga Traders [CC-NAI-001]
+   ✓ 2026-01-05: KES 1,000,000.00 - SME Loan - Eastleigh Electronics [CC-NAI-001]
+   ✓ 2026-01-06: KES 750,000.00 - Business Loan - Coastal Traders Ltd [CC-MBA-001]
+   ✓ 2026-01-07: KES 300,000.00 - Agricultural Loan - Kisumu Farmers Coop [CC-KIS-001]
+
+   Total Disbursed: KES 2,550,000.00
+
+📅 Week 2 (Jan 8-14): Loan Repayments & Interest Income
+--------------------------------------------------------------------------------
+   ✓ 2026-01-10: Principal KES 50,000.00 + Interest KES 5,000.00 [CC-NAI-001]
+   ✓ 2026-01-11: Principal KES 75,000.00 + Interest KES 7,500.00 [CC-NAI-001]
+   ✓ 2026-01-12: Principal KES 100,000.00 + Interest KES 10,000.00 [CC-MBA-001]
+   ✓ 2026-01-13: Principal KES 30,000.00 + Interest KES 3,000.00 [CC-KIS-001]
+
+   Total Principal: KES 255,000.00
+   Total Interest Income: KES 25,500.00
+
+📅 Week 3 (Jan 15-21): Operating Expenses
+--------------------------------------------------------------------------------
+   ✓ 2026-01-15: KES 500,000.00 - Staff Salaries - Head Office [CC-HQ]
+   ✓ 2026-01-15: KES 300,000.00 - Staff Salaries - Westlands Branch [CC-NAI-001]
+   ✓ 2026-01-15: KES 250,000.00 - Staff Salaries - Eastleigh Branch [CC-NAI-002]
+   ✓ 2026-01-15: KES 200,000.00 - Staff Salaries - Mombasa Branch [CC-MBA-001]
+   ✓ 2026-01-15: KES 180,000.00 - Staff Salaries - Kisumu Branch [CC-KIS-001]
+   ✓ 2026-01-05: KES 250,000.00 - Office Rent - Nairobi CBD [CC-HQ]
+   ✓ 2026-01-05: KES 150,000.00 - Office Rent - Westlands [CC-NAI-001]
+   ✓ 2026-01-05: KES 120,000.00 - Office Rent - Mombasa [CC-MBA-001]
+   ✓ 2026-01-08: KES 45,000.00 - Electricity - January [CC-HQ]
+   ✓ 2026-01-08: KES 30,000.00 - Water & Electricity [CC-NAI-001]
+   ✓ 2026-01-20: KES 500,000.00 - Radio Advertising - Capital FM [CC-HQ] [Project: PRJ-2026-002]
+   ✓ 2026-01-21: KES 300,000.00 - Digital Marketing - Facebook Ads [CC-HQ] [Project: PRJ-2026-002]
+
+   Total Operating Expenses: KES 2,825,000.00
+
+📅 Week 4 (Jan 22-31): Additional Transactions
+--------------------------------------------------------------------------------
+   ✓ 2026-01-22: KES 20,000.00 - Loan Processing Fees [CC-NAI-001]
+   ✓ 2026-01-25: KES 35,000.00 - Loan Processing Fees [CC-MBA-001]
+
+   Total Fee Income: KES 55,000.00
+
+✅ January operations simulation complete!
+
+📊 GENERATING FINANCIAL REPORTS
+================================================================================
+
+1️⃣  TRIAL BALANCE - January 31, 2026
+--------------------------------------------------------------------------------
+Account Code    Account Name                                       Debit          Credit
+-------------------------------------------------------------------------------------
+1010            Cash and Bank                                       0.00    5,039,500.00
+1200            Loans Receivable                            2,295,000.00            0.00
+4010            Interest Income - Loans                             0.00       25,500.00
+4020            Fee Income - Loan Fees                              0.00       55,000.00
+5020            Salaries and Wages                          1,430,000.00            0.00
+5030            Rent Expense                                  520,000.00            0.00
+5040            Utilities Expense                              75,000.00            0.00
+5060            Marketing and Advertising                     800,000.00            0.00
+-------------------------------------------------------------------------------------
+TOTALS                                                     5,120,000.00    5,120,000.00
+
+   Balanced: ✅ YES
+
+2️⃣  INCOME STATEMENT - January 2026
+--------------------------------------------------------------------------------
+
+REVENUE:
+
+❌ Error: list indices must be integers or slices, not str
