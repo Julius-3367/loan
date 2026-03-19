@@ -37,6 +37,30 @@ urlpatterns = [
     # Active loans
     path("my-loans/", views.my_loans, name="my_loans"),
     path("loan/<int:pk>/", views.loan_detail, name="loan_detail"),
+    # Repayment schedule
+    path(
+        "loan/<int:loan_pk>/schedule/",
+        views.repayment_schedule,
+        name="repayment_schedule",
+    ),
+    # PDF statement download
+    path(
+        "loan/<int:loan_pk>/statement/",
+        views.download_statement,
+        name="download_statement",
+    ),
+    # Notifications
+    path("notifications/", views.notifications_list, name="notifications"),
+    path(
+        "notifications/<int:pk>/read/",
+        views.mark_notification_read,
+        name="mark_notification_read",
+    ),
+    path(
+        "notifications/mark-all-read/",
+        views.mark_all_notifications_read,
+        name="mark_all_notifications_read",
+    ),
     # AJAX
     path("api/calculate-loan/", views.calculate_loan, name="calculate_loan"),
 ]
