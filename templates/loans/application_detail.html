@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+instally{% extends 'base.html' %}
 
 {% block title %}Application {{ application.application_number }} - Alba Capital{% endblock %}
 
@@ -272,6 +272,57 @@
                             <p class="text-xs text-gray-500">{{ application.customer.employer_name }}</p>
                             {% endif %}
                         </div>
+                        
+                        <!-- KYC Status -->
+                        <div class="pt-3 border-t border-gray-200">
+                            <p class="text-xs text-gray-500 uppercase font-medium mb-2">KYC Verification Status</p>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">ID Verification:</span>
+                                    {% if application.customer.kyc_verified %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800">Verified</span>
+                                    {% else %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-800">Not Verified</span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">Face Recognition:</span>
+                                    {% if application.customer.face_recognition_verified %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800">Verified</span>
+                                    {% else %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded bg-red-100 text-red-800">Not Verified</span>
+                                    {% endif %}
+                                </div>
+                                {% if is_staff %}
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-600">Employer Verification:</span>
+                                    {% if employer_verification and employer_verification.status == 'VERIFIED' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800">Verified</span>
+                                    {% elif employer_verification and employer_verification.status == 'PENDING' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-800">Pending</span>
+                                    {% else %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-800">Not Started</span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Credit Score Status -->
+                        {% if credit_score %}
+                        <div class="pt-3 border-t border-gray-200">
+                            <p class="text-xs text-gray-500 uppercase font-medium mb-2">Credit Assessment</p>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold 
+                                    {% if credit_score.recommendation == 'APPROVED' %}text-green-600
+                                    {% elif credit_score.recommendation == 'CONDITIONAL' %}text-yellow-600
+                                    {% else %}text-red-600{% endif %}">
+                                    {{ credit_score.total_score }}/100
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">{{ credit_score.recommendation }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -286,6 +337,21 @@
                             <a href="{% url 'loans:submit_application' application.pk %}" class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 transition">
                                 Submit Application
                             </a>
+                            {% endif %}
+                            
+                            <!-- KYC Actions -->
+                            {% if not application.customer.kyc_verified %}
+                            <div class="block w-full px-4 py-2 text-center border border-red-300 rounded-md text-sm font-medium text-red-700 bg-red-50">
+                                KYC Verification Required
+                            </div>
+                            {% endif %}
+                            
+                            {% if not application.customer.face_recognition_verified %}
+                            <div class="block w-full px-4 py-2 text-center border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50">
+                                Face Recognition Required
+                            </div>
+                            {% endif %}
+                            
                             <a href="{% url 'loans:upload_document' application.pk %}" class="block w-full px-4 py-2 text-center border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition">
                                 Upload Document
                             </a>
@@ -294,14 +360,52 @@
                                 Add Guarantor
                             </a>
                             {% endif %}
-                            {% endif %}
                         {% endif %}
                         
                         {% if is_staff %}
-                            {% if application.status in 'SUBMITTED,UNDER_REVIEW,CREDIT_ANALYSIS,PENDING_APPROVAL' %}
-                            <a href="{% url 'loans:process_application' application.pk %}" class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 transition">
-                                Process Application
+                            <!-- Staff Approval Actions -->
+                            {% if application.status == 'SUBMITTED' %}
+                            <a href="{% url 'loans:process_application' application.pk %}" class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition">
+                                Start Review
                             </a>
+                            {% endif %}
+                            
+                            {% if application.status == 'UNDER_REVIEW' %}
+                            <a href="{% url 'loans:process_application' application.pk %}" class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 transition">
+                                Continue Review
+                            </a>
+                            {% endif %}
+                            
+                            {% if application.status == 'CREDIT_ANALYSIS' %}
+                            <a href="{% url 'loans:process_application' application.pk %}" class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition">
+                                Credit Analysis
+                            </a>
+                            {% endif %}
+                            
+                            {% if application.status == 'PENDING_APPROVAL' %}
+                            <a href="{% url 'loans:process_application' application.pk %}" class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition">
+                                Approve Application
+                            </a>
+                            {% endif %}
+                            
+                            <!-- KYC Verification Actions for Staff -->
+                            {% if not application.customer.kyc_verified %}
+                            <div class="block w-full px-4 py-2 text-center border border-red-300 rounded-md text-sm font-medium text-red-700 bg-red-50">
+                                Customer KYC Not Verified
+                            </div>
+                            {% endif %}
+                            
+                            {% if not application.customer.face_recognition_verified %}
+                            <div class="block w-full px-4 py-2 text-center border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50">
+                                Face Recognition Not Verified
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Employer Verification -->
+                            {% if application.customer.employer_name and not employer_verification %}
+                            <div class="block w-full px-4 py-2 text-center border border-yellow-300 rounded-md text-sm font-medium text-yellow-700 bg-yellow-50">
+                                Employment Verification Pending
+                            </div>
                             {% endif %}
                         {% endif %}
                         
@@ -342,15 +446,118 @@
                                     <div class="relative pb-8">
                                         <div class="relative flex space-x-3">
                                             <div>
-                                                <span class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
+                                                <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
                                                     <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
                                                     </svg>
                                                 </span>
                                             </div>
                                             <div class="min-w-0 flex-1 pt-1.5">
-                                                <p class="text-sm font-medium text-gray-900">Submitted</p>
+                                                <p class="text-sm font-medium text-gray-900">Submitted for Review</p>
                                                 <p class="text-xs text-gray-500">{{ application.submitted_at|date:"M d, Y g:i A" }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endif %}
+                                
+                                <!-- KYC Verification Timeline -->
+                                {% if application.customer.kyc_verified %}
+                                <li>
+                                    <div class="relative pb-8">
+                                        <div class="relative flex space-x-3">
+                                            <div>
+                                                <span class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
+                                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="min-w-0 flex-1 pt-1.5">
+                                                <p class="text-sm font-medium text-gray-900">KYC Verified</p>
+                                                <p class="text-xs text-gray-500">Identity verification completed</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endif %}
+                                
+                                {% if application.customer.face_recognition_verified %}
+                                <li>
+                                    <div class="relative pb-8">
+                                        <div class="relative flex space-x-3">
+                                            <div>
+                                                <span class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
+                                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="min-w-0 flex-1 pt-1.5">
+                                                <p class="text-sm font-medium text-gray-900">Face Recognition Verified</p>
+                                                <p class="text-xs text-gray-500">Biometric verification completed</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endif %}
+                                
+                                {% if application.reviewed_at %}
+                                <li>
+                                    <div class="relative pb-8">
+                                        <div class="relative flex space-x-3">
+                                            <div>
+                                                <span class="h-8 w-8 rounded-full bg-orange-500 flex items-center justify-center ring-8 ring-white">
+                                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                                                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100-4h-.09A1.65 1.65 0 008 4.65a1 1 0 00-.09-.09H8a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2h-.09a1.65 1.65 0 00-.09.09 1.65 1.65 0 00-.09-.09H12a1 1 0 100-2 2 2 0 00-2 2v10a2 2 0 002 2h4a2 2 0 002-2V5z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="min-w-0 flex-1 pt-1.5">
+                                                <p class="text-sm font-medium text-gray-900">Under Review</p>
+                                                <p class="text-xs text-gray-500">{{ application.reviewed_at|date:"M d, Y g:i A" }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endif %}
+                                
+                                {% if application.status == 'CREDIT_ANALYSIS' %}
+                                <li>
+                                    <div class="relative pb-8">
+                                        <div class="relative flex space-x-3">
+                                            <div>
+                                                <span class="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center ring-8 ring-white">
+                                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="min-w-0 flex-1 pt-1.5">
+                                                <p class="text-sm font-medium text-gray-900">Credit Analysis</p>
+                                                <p class="text-xs text-gray-500">Credit assessment in progress</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endif %}
+                                
+                                {% if application.status == 'PENDING_APPROVAL' %}
+                                <li>
+                                    <div class="relative pb-8">
+                                        <div class="relative flex space-x-3">
+                                            <div>
+                                                <span class="h-8 w-8 rounded-full bg-yellow-500 flex items-center justify-center ring-8 ring-white">
+                                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <div class="min-w-0 flex-1 pt-1.5">
+                                                <p class="text-sm font-medium text-gray-900">Pending Approval</p>
+                                                <p class="text-xs text-gray-500">Ready for final approval</p>
                                             </div>
                                         </div>
                                     </div>
@@ -359,7 +566,7 @@
                                 
                                 {% if application.approved_at %}
                                 <li>
-                                    <div class="relative">
+                                    <div class="relative pb-8">
                                         <div class="relative flex space-x-3">
                                             <div>
                                                 <span class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">

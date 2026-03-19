@@ -1,221 +1,453 @@
 """
-Views for authentication and dashboard
+Core views for Alba Capital ERP System
+Handles: landing page, authentication, customer dashboard, user approval
 """
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
-from django.views.generic import TemplateView, FormView
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.generic import TemplateView
+
 from .forms import LoginForm, UserRegistrationForm
-from .models import User, AuditLog
+from .models import AuditLog, User
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 
 def get_client_ip(request):
-    """Get client IP address from request"""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    """Extract client IP from request headers"""
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+        return x_forwarded_for.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR")
 
 
-def create_audit_log(user, action, model_name, object_id='', description='', request=None):
-    """Helper function to create audit log entries"""
-    log = AuditLog.objects.create(
+def create_audit_log(user, action, model_name, object_id, description, request=None):
+    """Create an immutable audit log entry"""
+    AuditLog.objects.create(
         user=user,
         action=action,
         model_name=model_name,
-        object_id=str(object_id),
+        object_id=str(object_id) if object_id else "",
         description=description,
         ip_address=get_client_ip(request) if request else None,
-        user_agent=request.META.get('HTTP_USER_AGENT', '') if request else ''
+        user_agent=request.META.get("HTTP_USER_AGENT", "") if request else "",
     )
-    return log
+
+
+# ---------------------------------------------------------------------------
+# Public pages
+# ---------------------------------------------------------------------------
 
 
 def landing_page(request):
-    """Landing page view - public homepage"""
-    # Redirect authenticated users to their appropriate dashboard
+    """Public landing / marketing page"""
     if request.user.is_authenticated:
-        if request.user.is_staff:
-            return redirect('dashboard')
-        else:
-            return redirect('customer_dashboard')
-    
-    return render(request, 'landing.html')
+        return redirect("dashboard")
+    return render(request, "landing.html")
 
 
-class LoginView(FormView):
-    """Login view with email-based authentication"""
-    
-    template_name = 'core/login.html'
-    form_class = LoginForm
-    success_url = reverse_lazy('dashboard')
-    
+def csrf_failure(request, reason=""):
+    """Custom CSRF failure page"""
+    return render(
+        request,
+        "core/login.html",
+        {
+            "error": "Security token expired. Please try again.",
+        },
+        status=403,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
+
+
+class LoginView(TemplateView):
+    template_name = "core/login.html"
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect('dashboard')
+            return redirect("dashboard")
         return super().dispatch(request, *args, **kwargs)
-    
-    def form_valid(self, form):
-        user = form.get_user()
-        
-        login(self.request, user)
-        
-        # Create audit log
-        create_audit_log(
-            user=user,
-            action='LOGIN',
-            model_name='User',
-            object_id=user.id,
-            description=f'User logged in: {user.email}',
-            request=self.request
-        )
-        
-        # Remember me functionality
-        if not form.cleaned_data.get('remember_me'):
-            self.request.session.set_expiry(0)
-        
-        messages.success(self.request, f'Welcome back, {user.get_full_name()}!')
-        
-        # Redirect based on role
-        if user.role == User.CUSTOMER:
-            return redirect('customer_dashboard')
-        return redirect('dashboard')
-    
-    def form_invalid(self, form):
-        # Check if the user exists but is inactive (pending approval)
-        email = form.data.get('username')  # LoginForm uses 'username' field for email
-        if email:
-            try:
-                user = User.objects.get(email=email)
+
+    def get(self, request, *args, **kwargs):
+        form = LoginForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request, *args, **kwargs):
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["username"]  # AuthenticationForm uses 'username'
+            password = form.cleaned_data["password"]
+            user = authenticate(request, username=email, password=password)
+
+            if user is not None:
                 if not user.is_active:
                     messages.error(
-                        self.request,
-                        'Your account is pending approval. Please wait for an administrator to approve your account before you can login.'
+                        request,
+                        "Your account has been deactivated. Please contact support.",
                     )
-                    return super().form_invalid(form)
-            except User.DoesNotExist:
-                pass
-        
-        messages.error(self.request, 'Invalid email or password. Please try again.')
-        return super().form_invalid(form)
+                    return render(request, self.template_name, {"form": form})
+
+                if not user.is_approved and user.role == User.CUSTOMER:
+                    messages.warning(
+                        request,
+                        "Your account is pending approval. You will be notified once approved.",
+                    )
+                    return render(request, self.template_name, {"form": form})
+
+                login(request, user)
+
+                if not form.cleaned_data.get("remember_me"):
+                    request.session.set_expiry(0)
+
+                create_audit_log(
+                    user,
+                    "LOGIN",
+                    "User",
+                    user.pk,
+                    f"User {user.email} logged in",
+                    request,
+                )
+                messages.success(request, f"Welcome back, {user.get_short_name()}!")
+                return redirect("dashboard")
+            else:
+                messages.error(request, "Invalid email or password.")
+        else:
+            messages.error(request, "Please correct the errors below.")
+
+        return render(request, self.template_name, {"form": form})
 
 
-class RegisterView(FormView):
-    """Customer registration view"""
-    
-    template_name = 'core/register.html'
-    form_class = UserRegistrationForm
-    success_url = reverse_lazy('login')
-    
+class RegisterView(TemplateView):
+    template_name = "core/register.html"
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect('dashboard')
+            return redirect("dashboard")
         return super().dispatch(request, *args, **kwargs)
-    
-    def form_valid(self, form):
-        user = form.save(commit=False)
-        user.role = User.CUSTOMER  # All registrations are customers
-        user.is_active = False  # Require admin approval before login
-        user.save()
-        
-        # Create audit log
-        create_audit_log(
-            user=user,
-            action='CREATE',
-            model_name='User',
-            object_id=user.id,
-            description=f'New customer registered: {user.email} (pending approval)',
-            request=self.request
-        )
-        
-        messages.success(
-            self.request,
-            'Registration successful! Your account is pending approval. You will be notified when an admin approves your account.'
-        )
-        return super().form_valid(form)
-    
-    def form_invalid(self, form):
-        messages.error(self.request, 'Registration failed. Please check the form and try again.')
-        return super().form_invalid(form)
+
+    def get(self, request, *args, **kwargs):
+        form = UserRegistrationForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request, *args, **kwargs):
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = User.CUSTOMER
+            user.is_approved = False
+            user.save()
+            create_audit_log(
+                user,
+                "CREATE",
+                "User",
+                user.pk,
+                f"New customer registered: {user.email}",
+                request,
+            )
+            messages.success(
+                request,
+                (
+                    "Registration successful! Your account is pending approval. "
+                    "You will receive a notification once approved."
+                ),
+            )
+            return redirect("login")
+        return render(request, self.template_name, {"form": form})
 
 
-@login_required
 def logout_view(request):
-    """Logout view"""
-    
-    # Create audit log before logout
-    create_audit_log(
-        user=request.user,
-        action='LOGOUT',
-        model_name='User',
-        object_id=request.user.id,
-        description=f'User logged out: {request.user.email}',
-        request=request
-    )
-    
+    """Log the user out and redirect to landing page"""
+    if request.user.is_authenticated:
+        create_audit_log(
+            request.user,
+            "LOGOUT",
+            "User",
+            request.user.pk,
+            f"User {request.user.email} logged out",
+            request,
+        )
     logout(request)
-    messages.success(request, 'You have been logged out successfully.')
-    return redirect('login')
+    messages.info(request, "You have been logged out successfully.")
+    return redirect("landing")
+
+
+# ---------------------------------------------------------------------------
+# Dashboards
+# ---------------------------------------------------------------------------
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
-    """Main dashboard view - role-based access"""
-    
-    template_name = 'core/dashboard.html'
-    
+    """Entry-point dashboard — routes by role"""
+
     def dispatch(self, request, *args, **kwargs):
-        # Redirect customers to customer portal
-        if request.user.is_authenticated and request.user.role == User.CUSTOMER:
-            return redirect('customer_dashboard')
+        if not request.user.is_authenticated:
+            return redirect("login")
+
+        user = request.user
+
+        if user.role == User.CUSTOMER:
+            return redirect("customer_dashboard")
+
+        # All staff/admin roles go to admin dashboard
+        if user.is_superuser or user.role in [
+            User.ADMIN,
+            User.CREDIT_OFFICER,
+            User.FINANCE_OFFICER,
+            User.HR_OFFICER,
+            User.MANAGEMENT,
+        ]:
+            return redirect("admin_dashboard")
+
         return super().dispatch(request, *args, **kwargs)
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-        
-        # Basic dashboard stats
-        context['total_users'] = User.objects.count()
-        context['staff_users'] = User.objects.filter(
-            role__in=[
+
+    def get(self, request, *args, **kwargs):
+        return redirect("login")
+
+
+class AdminDashboardView(LoginRequiredMixin, TemplateView):
+    """Admin / staff overview dashboard"""
+
+    template_name = "core/admin_dashboard.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not (
+            request.user.is_superuser
+            or request.user.role
+            in [
                 User.ADMIN,
                 User.CREDIT_OFFICER,
                 User.FINANCE_OFFICER,
                 User.HR_OFFICER,
-                User.MANAGEMENT
+                User.MANAGEMENT,
             ]
+        ):
+            messages.error(request, "Access denied.")
+            return redirect("dashboard")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_users"] = User.objects.count()
+        context["customer_count"] = User.objects.filter(role=User.CUSTOMER).count()
+        context["pending_approvals"] = User.objects.filter(
+            is_approved=False, role=User.CUSTOMER
         ).count()
-        context['customers'] = User.objects.filter(role=User.CUSTOMER).count()
-        context['recent_audit_logs'] = AuditLog.objects.select_related('user')[:10]
-        
+        context["staff_count"] = User.objects.exclude(role=User.CUSTOMER).count()
+        context["recent_audit_logs"] = AuditLog.objects.select_related("user").order_by(
+            "-timestamp"
+        )[:10]
+
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        this_month = timezone.now().replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+        last_month_end = this_month - timedelta(seconds=1)
+        last_month_start = last_month_end.replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+
+        context["this_month_users"] = User.objects.filter(
+            date_joined__gte=this_month
+        ).count()
+        context["last_month_users"] = User.objects.filter(
+            date_joined__gte=last_month_start, date_joined__lt=this_month
+        ).count()
+
+        last_month_count = context["last_month_users"]
+        this_month_count = context["this_month_users"]
+        if last_month_count > 0:
+            context["growth_rate"] = round(
+                ((this_month_count - last_month_count) / last_month_count) * 100, 1
+            )
+        else:
+            context["growth_rate"] = 100 if this_month_count > 0 else 0
+
+        context["recent_registrations"] = User.objects.order_by("-date_joined")[:5]
         return context
 
 
 class CustomerDashboardView(LoginRequiredMixin, TemplateView):
     """Customer portal dashboard"""
-    
-    template_name = 'core/customer_dashboard.html'
-    
+
+    template_name = "core/customer_dashboard.html"
+
     def dispatch(self, request, *args, **kwargs):
-        # Only customers can access this
         if request.user.is_authenticated and request.user.role != User.CUSTOMER:
-            messages.warning(request, 'Access denied. This is the customer portal.')
-            return redirect('dashboard')
+            messages.warning(request, "Access denied. This is the customer portal.")
+            return redirect("dashboard")
         return super().dispatch(request, *args, **kwargs)
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        
-        # Customer-specific stats (will expand when loan module is added)
-        context['user_name'] = user.get_full_name()
-        context['user_email'] = user.email
-        context['member_since'] = user.date_joined
-        
+
+        context["user_name"] = user.get_full_name()
+        context["user_email"] = user.email
+        context["member_since"] = user.date_joined
+
+        # --- Loan / customer profile data ---
+        try:
+            from loans.models import (  # noqa: PLC0415
+                Customer,
+                Loan,
+                LoanApplication,
+                LoanProduct,
+            )
+
+            customer_profile, _ = Customer.objects.get_or_create(user=user)
+            context["customer_profile"] = customer_profile
+            context["kyc_verified"] = customer_profile.kyc_verified
+            context["monthly_income"] = customer_profile.monthly_income or 0
+            context["employment_status"] = (
+                customer_profile.get_employment_status_display()
+            )
+            context["employer_name"] = customer_profile.employer_name or ""
+            context["has_national_id"] = bool(customer_profile.national_id_file)
+            context["has_bank_statement"] = bool(customer_profile.bank_statement_file)
+            context["has_face_photo"] = bool(customer_profile.face_recognition_photo)
+
+            kyc_fields = [
+                customer_profile.id_number,
+                customer_profile.date_of_birth,
+                customer_profile.address,
+                customer_profile.monthly_income,
+                customer_profile.employer_name,
+                customer_profile.national_id_file,
+                customer_profile.bank_statement_file,
+                customer_profile.face_recognition_photo,
+            ]
+            context["kyc_completion"] = int(
+                sum(1 for f in kyc_fields if f) / len(kyc_fields) * 100
+            )
+
+            applications = LoanApplication.objects.filter(  # type: ignore[attr-defined]
+                customer=customer_profile
+            ).order_by("-created_at")
+            context["applications_count"] = applications.count()
+            context["recent_applications"] = applications[:5]
+
+            active_loans = Loan.objects.filter(  # type: ignore[attr-defined]
+                customer=customer_profile, status="ACTIVE"
+            )
+            context["active_loans_count"] = active_loans.count()
+            context["recent_loans"] = active_loans.order_by("-disbursement_date")[:5]
+            from django.db.models import Sum
+
+            context["total_borrowed"] = (
+                active_loans.aggregate(total=Sum("principal_amount"))["total"] or 0
+            )
+
+            context["available_products"] = LoanProduct.objects.filter(  # type: ignore[attr-defined]
+                is_active=True
+            )[:3]
+
+        except Exception:
+            context.update(
+                {
+                    "customer_profile": None,
+                    "kyc_verified": False,
+                    "kyc_completion": 0,
+                    "monthly_income": 0,
+                    "employment_status": "Not Set",
+                    "employer_name": "",
+                    "has_national_id": False,
+                    "has_bank_statement": False,
+                    "has_face_photo": False,
+                    "applications_count": 0,
+                    "recent_applications": [],
+                    "active_loans_count": 0,
+                    "recent_loans": [],
+                    "total_borrowed": 0,
+                    "available_products": [],
+                }
+            )
+
         return context
 
+
+# ---------------------------------------------------------------------------
+# User approval (admin only)
+# ---------------------------------------------------------------------------
+
+
+def _is_admin(user):
+    return user.is_superuser or user.role == User.ADMIN
+
+
+@login_required
+def user_approval_list(request):
+    """List customers pending approval"""
+    if not _is_admin(request.user):
+        messages.error(request, "You do not have permission to access user approval.")
+        return redirect("dashboard")
+
+    pending_users = User.objects.filter(is_approved=False, role=User.CUSTOMER).order_by(
+        "-date_joined"
+    )
+    approved_users = User.objects.filter(is_approved=True, role=User.CUSTOMER).order_by(
+        "-date_joined"
+    )[:20]
+
+    return render(
+        request,
+        "core/user_approval.html",
+        {
+            "pending_users": pending_users,
+            "approved_users": approved_users,
+        },
+    )
+
+
+@login_required
+def approve_user(request, user_id):
+    """Approve a customer account"""
+    if not _is_admin(request.user):
+        messages.error(request, "Permission denied.")
+        return redirect("dashboard")
+
+    user = get_object_or_404(User, pk=user_id)
+    user.is_approved = True
+    user.save()
+    create_audit_log(
+        request.user,
+        "APPROVE",
+        "User",
+        user.pk,
+        f"Approved user account: {user.email}",
+        request,
+    )
+    messages.success(request, f"{user.get_full_name()} has been approved.")
+    return redirect("user_approval_list")
+
+
+@login_required
+def reject_user(request, user_id):
+    """Reject / deactivate a customer account"""
+    if not _is_admin(request.user):
+        messages.error(request, "Permission denied.")
+        return redirect("dashboard")
+
+    user = get_object_or_404(User, pk=user_id)
+    user.is_active = False
+    user.save()
+    create_audit_log(
+        request.user,
+        "REJECT",
+        "User",
+        user.pk,
+        f"Rejected user account: {user.email}",
+        request,
+    )
+    messages.success(request, f"{user.get_full_name()} has been rejected.")
+    return redirect("user_approval_list")

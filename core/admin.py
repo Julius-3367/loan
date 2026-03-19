@@ -3,13 +3,61 @@ Django admin configuration for Core models
 """
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import Group
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin, GroupAdmin as BaseGroupAdmin
 from django.utils.html import format_html
 from .models import User, AuditLog
 
 
+class FixedModelAdmin(admin.ModelAdmin):
+    """Base admin class with __copy__ method to fix Django template context issue"""
+    
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+
+class FixedUserAdmin(BaseUserAdmin):
+    """Fixed UserAdmin with __copy__ method"""
+    
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+
+class FixedGroupAdmin(BaseGroupAdmin):
+    """Fixed GroupAdmin with __copy__ method"""
+    
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+
+# Unregister default Django admin classes and register fixed versions
+admin.site.unregister(Group)
+@admin.register(Group)
+class GroupAdmin(FixedGroupAdmin):
+    """Fixed GroupAdmin with __copy__ method"""
+    
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
+
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(FixedUserAdmin):
     """Admin interface for Custom User model"""
     
     list_display = ['email', 'get_full_name', 'role', 'is_active', 'is_staff', 'date_joined']
@@ -33,6 +81,13 @@ class UserAdmin(BaseUserAdmin):
     )
     
     readonly_fields = ['date_joined', 'last_login']
+    
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
     
     @admin.action(description='Approve selected users')
     def approve_users(self, request, queryset):

@@ -1,0 +1,178 @@
+{% extends 'loans/customer/dashboard.html' %}
+
+{% block title %}Upload Document - Alba Capital{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+                    </div>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{% url 'customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Dashboard</a>
+                        <a href="{% url 'loans:customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">My Loans</a>
+                        <a href="{% url 'loans:my_applications' %}" class="text-sm font-medium text-alba-orange">My Applications</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-700">
+                        <span class="font-semibold">{{ user.get_full_name }}</span>
+                    </span>
+                    <a href="{% url 'logout' %}" class="text-sm font-medium text-gray-600 hover:text-alba-orange transition">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Upload Document</h1>
+                    <p class="mt-2 text-sm text-gray-600">
+                        Upload supporting documents for application {{ application.application_number }}
+                    </p>
+                </div>
+                <a href="{% url 'loans:application_detail' application.pk %}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                    Back to Application
+                </a>
+            </div>
+        </div>
+
+        <!-- Document Requirements -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Required Documents</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>National ID Card (front and back)</li>
+                            <li>Recent passport photo</li>
+                            <li>Proof of income (payslips or bank statements)</li>
+                            <li>Proof of residence (utility bill or lease agreement)</li>
+                            <li>Employment verification letter</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-5 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Upload Document</h3>
+                <p class="mt-1 text-sm text-gray-600">
+                    Accepted formats: PDF, JPG, PNG (Max file size: 5MB)
+                </p>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data" class="px-6 py-4">
+                {% csrf_token %}
+                
+                <div class="space-y-6">
+                    <!-- Document Type -->
+                    <div>
+                        <label for="document_type" class="block text-sm font-medium text-gray-700">Document Type *</label>
+                        <select name="document_type" id="document_type" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                            <option value="">Select document type</option>
+                            <option value="ID_CARD">National ID Card</option>
+                            <option value="PASSPORT_PHOTO">Passport Photo</option>
+                            <option value="PROOF_OF_INCOME">Proof of Income</option>
+                            <option value="PROOF_OF_RESIDENCE">Proof of Residence</option>
+                            <option value="EMPLOYMENT_VERIFICATION">Employment Verification</option>
+                            <option value="BANK_STATEMENTS">Bank Statements</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Document Description -->
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                        <input type="text" name="description" id="description"
+                               placeholder="Brief description of the document"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                    </div>
+                    
+                    <!-- File Upload -->
+                    <div>
+                        <label for="document_file" class="block text-sm font-medium text-gray-700">Document File *</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="document_file" class="relative cursor-pointer bg-white rounded-md font-medium text-alba-orange hover:text-alba-navy focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-alba-orange">
+                                        <span>Upload a file</span>
+                                        <input id="document_file" name="document_file" type="file" class="sr-only" required accept=".pdf,.jpg,.jpeg,.png">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500">PDF, JPG, PNG up to 5MB</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Existing Documents -->
+                    {% if application.documents.exists %}
+                    <div>
+                        <h4 class="text-md font-medium text-gray-900 mb-3">Already Uploaded Documents</h4>
+                        <div class="space-y-2">
+                            {% for doc in application.documents.all %}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                                <div class="flex items-center">
+                                    <svg class="h-5 w-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ doc.get_document_type_display }}</div>
+                                        <div class="text-sm text-gray-500">{{ doc.description|default:"No description" }}</div>
+                                        <div class="text-xs text-gray-400">Uploaded: {{ doc.uploaded_at|date:"M d, Y H:i" }}</div>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    {% if doc.document_file %}
+                                    <a href="{{ doc.document_file.url }}" target="_blank" 
+                                       class="text-blue-600 hover:text-blue-800 text-sm">
+                                        View
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="mt-8 flex justify-end space-x-4">
+                    <a href="{% url 'loans:application_detail' application.pk %}" 
+                       class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                        Upload Document
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

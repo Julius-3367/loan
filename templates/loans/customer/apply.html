@@ -2,6 +2,57 @@
 
 {% block title %}Apply for Loan - Alba Capital{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Enhanced loan product dropdown styling */
+#{{ form.loan_product.id_for_label }} {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+#{{ form.loan_product.id_for_label }} option {
+    padding: 8px 12px;
+    font-weight: 500;
+}
+
+#{{ form.loan_product.id_for_label }} option:first-child {
+    font-weight: 600;
+    color: #1f2937;
+    background-color: #f9fafb;
+}
+
+.loan-product-card {
+    transition: all 0.3s ease;
+}
+
+.loan-product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.loan-product-card.selected {
+    border-color: #ea580c;
+    background-color: #fef7ed;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+.animate-pulse-once {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1);
+}
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="min-h-screen bg-gray-50">
     <!-- Navigation -->
@@ -41,24 +92,58 @@
         <div class="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 bg-alba-navy">
                 <h3 class="text-lg font-semibold text-white">Available Loan Products</h3>
+                <p class="mt-1 text-sm text-alba-orange">Choose the loan type that best suits your needs</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200">
                 {% for product in products %}
-                <div class="p-6 hover:bg-gray-50 transition">
-                    <h4 class="text-lg font-semibold text-gray-900">{{ product.name }}</h4>
-                    <p class="mt-1 text-sm text-gray-600">{{ product.get_category_display }}</p>
-                    <div class="mt-4 space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Amount Range:</span>
-                            <span class="font-medium">KES {{ product.min_amount|floatformat:0 }} - {{ product.max_amount|floatformat:0 }}</span>
+                <div class="p-6 hover:bg-gray-50 transition cursor-pointer loan-product-card" onclick="selectLoanProduct({{ product.id }})" id="product-card-{{ product.id }}">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0">
+                            {% if product.category == 'SALARY_ADVANCE' %}
+                            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {% elif product.category == 'BUSINESS_LOAN' %}
+                            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            {% elif product.category == 'ASSET_FINANCING' %}
+                            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.402-2.599z" />
+                            </svg>
+                            {% endif %}
                         </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Interest Rate:</span>
-                            <span class="font-medium">{{ product.interest_rate }}% {{ product.get_interest_method_display }}</span>
+                        <div class="ml-4">
+                            <h4 class="text-lg font-semibold text-gray-900">{{ product.name }}</h4>
+                            <p class="text-sm text-gray-600">{{ product.get_category_display }}</p>
                         </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-gray-600">Tenure:</span>
-                            <span class="font-medium">{{ product.min_tenure_months }} - {{ product.max_tenure_months }} months</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Amount Range:</span>
+                            <span class="text-sm font-medium text-gray-900">KES {{ product.min_amount|floatformat:0 }} - {{ product.max_amount|floatformat:0 }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Interest Rate:</span>
+                            <span class="text-sm font-medium text-gray-900">{{ product.interest_rate }}% {{ product.get_interest_method_display }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Tenure:</span>
+                            <span class="text-sm font-medium text-gray-900">{{ product.min_tenure_months }} - {{ product.max_tenure_months }} months</span>
+                        </div>
+                        
+                        {% if product.description %}
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <p class="text-sm text-gray-600">{{ product.description|truncatechars:100 }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-4">
+                            <button type="button" onclick="selectLoanProduct({{ product.id }})" 
+                                    class="w-full px-4 py-2 bg-alba-orange text-white rounded-md hover:bg-alba-navy transition text-sm font-medium">
+                                Select This Loan
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -81,13 +166,28 @@
                             <!-- Loan Product -->
                             <div>
                                 <label for="{{ form.loan_product.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                                    Loan Product *
+                                    Select Loan Product *
                                 </label>
-                                {{ form.loan_product }}
+                                <div class="mt-1">
+                                    {{ form.loan_product }}
+                                </div>
                                 {% if form.loan_product.errors %}
                                     <p class="mt-1 text-sm text-red-600">{{ form.loan_product.errors.0 }}</p>
                                 {% else %}
-                                    <p class="mt-1 text-xs text-gray-500">Select the type of loan you need</p>
+                                    <div class="mt-2 p-3 bg-blue-50 rounded-md">
+                                        <div class="flex">
+                                            <div class="flex-shrink-0">
+                                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm text-blue-800">
+                                                    <strong>Choose the type of loan you need:</strong> Each loan product has different terms, interest rates, and amounts. Select the one that best fits your requirements.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 {% endif %}
                             </div>
 
@@ -205,7 +305,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const amountField = document.getElementById('{{ form.requested_amount.id_for_label }}');
     const tenureField = document.getElementById('{{ form.tenure_months.id_for_label }}');
     
-    function updateCalculator() {
+    // Make updateLoanCalculator globally accessible
+    window.updateLoanCalculator = function() {
         const productId = productField.value;
         const amount = amountField.value;
         const tenure = tenureField.value;
@@ -246,13 +347,55 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(error => {
                     console.error('Error calculating loan:', error);
+                    const resultsDiv = document.getElementById('calculatorResults');
+                    resultsDiv.innerHTML = `
+                        <div class="text-center py-4 text-red-600">
+                            <p class="text-sm">Error calculating loan details</p>
+                        </div>
+                    `;
                 });
         }
-    }
+    };
     
-    productField.addEventListener('change', updateCalculator);
-    amountField.addEventListener('input', updateCalculator);
-    tenureField.addEventListener('input', updateCalculator);
+    // Function to select loan product from overview cards
+    window.selectLoanProduct = function(productId) {
+        productField.value = productId;
+        
+        // Remove previous selection highlights
+        document.querySelectorAll('.loan-product-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Highlight selected card
+        const selectedCard = document.getElementById(`product-card-${productId}`);
+        if (selectedCard) {
+            selectedCard.classList.add('selected', 'animate-pulse-once');
+            setTimeout(() => {
+                selectedCard.classList.remove('animate-pulse-once');
+            }, 2000);
+        }
+        
+        // Trigger change event to update calculator
+        const event = new Event('change', { bubbles: true });
+        productField.dispatchEvent(event);
+        
+        // Scroll to form
+        document.getElementById('loanApplicationForm').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+        
+        // Highlight the field
+        productField.classList.add('ring-2', 'ring-alba-orange', 'ring-offset-2');
+        setTimeout(() => {
+            productField.classList.remove('ring-2', 'ring-alba-orange', 'ring-offset-2');
+        }, 2000);
+    };
+    
+    // Add event listeners
+    productField.addEventListener('change', window.updateLoanCalculator);
+    amountField.addEventListener('input', window.updateLoanCalculator);
+    tenureField.addEventListener('input', window.updateLoanCalculator);
 });
 </script>
 {% endblock %}

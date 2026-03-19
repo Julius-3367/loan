@@ -5,21 +5,19 @@ python-decouple==3.8
 # Database
 psycopg2-binary==2.9.9
 
-# Security & Authentication
-django-otp==1.5.0
-qrcode==7.4.2
-
 # Date/Time Utilities
 python-dateutil==2.8.2
 
-# API & Forms
+# API
 djangorestframework==3.14.0
-
-# Frontend
-django-tailwind==3.8.0
 
 # Development
 django-extensions==3.2.3
+
+# Type stubs (for IDE and static analysis)
+django-stubs==6.0.1
+django-stubs-ext==6.0.1
+djangorestframework-stubs==3.16.8
 
 # Production
 gunicorn==21.2.0

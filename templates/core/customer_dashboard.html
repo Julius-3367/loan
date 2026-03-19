@@ -43,53 +43,219 @@
             </div>
         </div>
 
-        <!-- Stats Section -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Active Loans</p>
-                        <p class="text-2xl font-bold text-gray-900">0</p>
+        <!-- KYC Success Alert -->
+        {% if customer_profile and customer_profile.kyc_verified %}
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-green-800">KYC Verification Complete</h3>
+                    <div class="mt-2 text-sm text-green-700">
+                        <p>Your account has been fully verified! You now have access to all loan products and services.</p>
+                        <p class="mt-1">Verified on: {{ kyc_verified_at|date:"F d, Y" }} by {{ customer_profile.kyc_verified_by.get_full_name|default:"Verification Team" }}</p>
                     </div>
                 </div>
             </div>
+        </div>
+        {% endif %}
 
+        <!-- KYC Status Alert -->
+        {% if customer_profile and customer_profile.is_kyc_fully_uploaded and not customer_profile.kyc_verified %}
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">KYC Under Review</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <p>Your KYC documents have been uploaded and are currently under review. Our team will verify them within 24 hours.</p>
+                        <div class="mt-2">
+                            {% if customer_profile.national_id_file and not customer_profile.national_id_verified %}
+                            <p>• National ID: Pending verification</p>
+                            {% endif %}
+                            {% if customer_profile.bank_statement_file and not customer_profile.bank_statement_verified %}
+                            <p>• Bank Statement: Pending verification</p>
+                            {% endif %}
+                            {% if customer_profile.face_recognition_photo and not customer_profile.face_recognition_verified %}
+                            <p>• Face Recognition: Pending verification</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- KYC Status Section -->
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+            <div class="px-6 py-5 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">KYC Verification Status</h3>
+            </div>
+            <div class="px-6 py-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            {% if kyc_verified %}
+                                <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            {% else %}
+                                <div class="h-10 w-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                    <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">
+                                {% if kyc_verified %}KYC Verified{% else %}KYC Pending{% endif %}
+                            </p>
+                            <p class="text-sm text-gray-500">
+                                {% if kyc_verified %}Verified on {{ kyc_verified_at|date:"M d, Y" }}{% else %}Complete verification to access full loan features{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-2xl font-bold {% if kyc_verified %}text-green-600{% else %}text-yellow-600{% endif %}">
+                            {{ kyc_completion }}%
+                        </span>
+                        <p class="text-sm text-gray-500">Complete</p>
+                    </div>
+                </div>
+                
+                <!-- KYC Progress -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-sm text-gray-700">National ID</span>
+                            {% if has_national_id %}
+                                {% if customer_profile.national_id_verified %}
+                                    <svg class="ml-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                {% else %}
+                                    <svg class="ml-2 h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <span class="text-sm {% if has_national_id %}{% if customer_profile.national_id_verified %}text-green-600{% else %}text-yellow-600{% endif %}{% else %}text-gray-400{% endif %}">
+                            {% if has_national_id %}
+                                {% if customer_profile.national_id_verified %}✓ Verified{% else %}Uploaded - Pending{% endif %}
+                            {% else %}
+                                Not Uploaded
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-sm text-gray-700">Bank Statement</span>
+                            {% if has_bank_statement %}
+                                {% if customer_profile.bank_statement_verified %}
+                                    <svg class="ml-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                {% else %}
+                                    <svg class="ml-2 h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <span class="text-sm {% if has_bank_statement %}{% if customer_profile.bank_statement_verified %}text-green-600{% else %}text-yellow-600{% endif %}{% else %}text-gray-400{% endif %}">
+                            {% if has_bank_statement %}
+                                {% if customer_profile.bank_statement_verified %}✓ Verified{% else %}Uploaded - Pending{% endif %}
+                            {% else %}
+                                Not Uploaded
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-sm text-gray-700">Face Recognition</span>
+                            {% if has_face_photo %}
+                                {% if customer_profile.face_recognition_verified %}
+                                    <svg class="ml-2 h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                {% else %}
+                                    <svg class="ml-2 h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <span class="text-sm {% if has_face_photo %}{% if customer_profile.face_recognition_verified %}text-green-600{% else %}text-yellow-600{% endif %}{% else %}text-gray-400{% endif %}">
+                            {% if has_face_photo %}
+                                {% if customer_profile.face_recognition_verified %}✓ Verified{% else %}Uploaded - Pending{% endif %}
+                            {% else %}
+                                Not Uploaded
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                {% if not kyc_verified %}
+                <div class="mt-4">
+                    <a href="{% url 'loans:customer_profile' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                        Complete KYC Verification
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Financial Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center">
+                <div class="flex items-center mb-4">
                     <div class="flex-shrink-0">
                         <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
                             <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Applications</p>
-                        <p class="text-2xl font-bold text-gray-900">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="h-12 w-12 bg-alba-orange bg-opacity-20 rounded-lg flex items-center justify-center">
-                            <svg class="h-6 w-6 text-alba-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Borrowed</p>
-                        <p class="text-2xl font-bold text-gray-900">KES 0</p>
+                        <p class="text-sm font-medium text-gray-600">Monthly Income</p>
+                        <p class="text-2xl font-bold text-gray-900">KES {{ monthly_income|default:0 }}</p>
                     </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                    <p>Employment: {{ employment_status }}</p>
+                    {% if employer_name %}<p>Employer: {{ employer_name }}</p>{% endif %}
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Monthly Obligations</p>
+                        <p class="text-2xl font-bold text-gray-900">KES {{ monthly_obligations|default:0 }}</p>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-600">
+                    {% if monthly_income > 0 %}
+                        <p>Debt-to-Income: {{ debt_to_income_ratio|floatformat:2 }}%</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -140,6 +306,201 @@
             </div>
         </div>
 
+        <!-- Recent Applications -->
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+            <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Recent Applications</h3>
+                <a href="{% url 'loans:my_applications' %}" class="text-sm text-alba-orange hover:text-alba-orange transition">
+                    View All
+                </a>
+            </div>
+            <div class="px-6 py-4">
+                {% if recent_applications %}
+                <div class="space-y-4">
+                    {% for application in recent_applications %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Loan Application #{{ application.id }}</p>
+                                <p class="text-sm text-gray-500">KES {{ application.amount_requested|default:0 }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full 
+                                {% if application.status == 'PENDING' %}
+                                    bg-yellow-100 text-yellow-800
+                                {% elif application.status == 'APPROVED' %}
+                                    bg-green-100 text-green-800
+                                {% elif application.status == 'REJECTED' %}
+                                    bg-red-100 text-red-800
+                                {% else %}
+                                    bg-gray-100 text-gray-800
+                                {% endif %}">
+                                {{ application.get_status_display|default:application.status }}
+                            </span>
+                            <p class="text-xs text-gray-500 mt-1">{{ application.created_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No applications yet</h3>
+                    <p class="mt-1 text-sm text-gray-500">Get started by applying for your first loan.</p>
+                    <div class="mt-6">
+                        <a href="{% url 'loans:apply_for_loan' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                            Apply for Loan
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Active Loans -->
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+            <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Active Loans</h3>
+                <a href="{% url 'loans:my_loans' %}" class="text-sm text-alba-orange hover:text-alba-orange transition">
+                    View All
+                </a>
+            </div>
+            <div class="px-6 py-4">
+                {% if recent_loans %}
+                <div class="space-y-4">
+                    {% for loan in recent_loans %}
+                    <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Loan #{{ loan.id }}</p>
+                                <p class="text-sm text-gray-500">KES {{ loan.amount|default:0 }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                Active
+                            </span>
+                            <p class="text-xs text-gray-500 mt-1">Next payment: {{ loan.next_payment_date|default:"TBD" }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No active loans</h3>
+                    <p class="mt-1 text-sm text-gray-500">Apply for a loan to get started.</p>
+                    <div class="mt-6">
+                        <a href="{% url 'loans:apply_for_loan' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                            Apply for Loan
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Available Loan Products -->
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+            <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Available Loan Products</h3>
+                <a href="{% url 'loans:apply_for_loan' %}" class="text-sm text-alba-orange hover:text-alba-orange transition">
+                    View All Products
+                </a>
+            </div>
+            <div class="px-6 py-4">
+                {% if available_products %}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {% for product in available_products %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-alba-orange transition">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-medium text-gray-900">{{ product.name }}</h4>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                {{ product.get_product_category_display }}
+                            </span>
+                        </div>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <p>Min: KES {{ product.min_amount|default:0 }}</p>
+                            <p>Max: KES {{ product.max_amount|default:0 }}</p>
+                            <p>Rate: {{ product.interest_rate }}% {% if product.interest_method == 'REDUCING_BALANCE' %}(Reducing){% else %}(Flat){% endif %}</p>
+                            <p>Term: {{ product.min_tenure_months }}-{{ product.max_tenure_months }} months</p>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{% url 'loans:apply_for_loan' %}?product={{ product.id }}" class="inline-flex items-center px-3 py-1 border border-alba-orange text-xs font-medium rounded-md text-alba-orange bg-white hover:bg-alba-orange hover:text-white transition">
+                                Apply Now
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No products available</h3>
+                    <p class="mt-1 text-sm text-gray-500">Check back later for available loan products.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Loan Calculator -->
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+            <div class="px-6 py-5 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Quick Loan Calculator</h3>
+                <p class="mt-1 text-sm text-gray-500">Estimate your monthly payments</p>
+            </div>
+            <div class="px-6 py-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Loan Amount (KES)</label>
+                        <input type="number" id="loanAmount" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-alba-orange" placeholder="100000" value="100000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Loan Term (Months)</label>
+                        <input type="number" id="loanTerm" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-alba-orange" placeholder="12" value="12">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                    <input type="number" id="interestRate" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-alba-orange" placeholder="15" value="15" step="0.1">
+                </div>
+                <div class="mt-4">
+                    <button onclick="calculateLoan()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                        Calculate
+                    </button>
+                </div>
+                <div id="calculationResult" class="mt-4 p-4 bg-gray-50 rounded-lg hidden">
+                    <h4 class="text-sm font-medium text-gray-900 mb-2">Estimated Payment</h4>
+                    <div class="space-y-1 text-sm">
+                        <p>Monthly Installment: <span id="monthlyPayment" class="font-bold text-alba-orange">KES 0</span></p>
+                        <p>Total Interest: <span id="totalInterest" class="font-bold text-gray-900">KES 0</span></p>
+                        <p>Total Repayment: <span id="totalRepayment" class="font-bold text-gray-900">KES 0</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Getting Started Section -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="px-6 py-5 border-b border-gray-200">
@@ -147,34 +508,6 @@
                 <p class="mt-1 text-sm text-gray-500">Complete these steps to apply for your first loan</p>
             </div>
             <div class="px-6 py-4">
-                <div class="space-y-4">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <div class="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center">
-                                <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="ml-3">
-                            <h4 class="text-sm font-medium text-gray-900">Account Created</h4>
-                            <p class="text-sm text-gray-500">You've successfully created your customer account</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <div class="h-6 w-6 rounded-full bg-alba-orange flex items-center justify-center">
-                                <span class="text-xs text-white font-semibold">2</span>
-                            </div>
-                        </div>
-                        <div class="ml-3">
-                            <h4 class="text-sm font-medium text-gray-900">Complete Your Profile</h4>
-                            <p class="text-sm text-gray-500">
-                                <a href="{% url 'loans:customer_profile' %}" class="text-alba-orange hover:underline">Update your profile</a> with employment and financial information
-                            </p>
-                        </div>
-                    </div>
 
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
@@ -209,4 +542,75 @@
         </div>
     </main>
 </div>
+
+<script>
+// Animate KYC progress bar on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBar = document.querySelector('.kyc-progress-bar');
+    if (progressBar) {
+        const progress = progressBar.getAttribute('data-progress');
+        setTimeout(() => {
+            progressBar.style.width = progress + '%';
+        }, 100);
+    }
+    
+    // Auto-refresh KYC status every 30 seconds if pending
+    {% if customer_profile and customer_profile.is_kyc_fully_uploaded and not customer_profile.kyc_verified %}
+    setInterval(function() {
+        fetch(window.location.href)
+            .then(response => response.text())
+            .then(html => {
+                // Check if KYC status has changed
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newStatus = doc.querySelector('[data-kyc-verified]');
+                if (newStatus && newStatus.getAttribute('data-kyc-verified') === 'true') {
+                    // Reload page if KYC is now verified
+                    window.location.reload();
+                }
+            })
+            .catch(error => console.log('Error checking KYC status:', error));
+    }, 30000); // Check every 30 seconds
+    {% endif %}
+});
+
+function calculateLoan() {
+    const amount = parseFloat(document.getElementById('loanAmount').value) || 0;
+    const term = parseInt(document.getElementById('loanTerm').value) || 1;
+    const rate = parseFloat(document.getElementById('interestRate').value) || 0;
+    
+    if (amount <= 0 || term <= 0 || rate <= 0) {
+        alert('Please enter valid values for all fields');
+        return;
+    }
+    
+    // Calculate using flat rate method (simple interest)
+    const monthlyRate = rate / 100 / 12;
+    const totalInterest = amount * (rate / 100) * (term / 12);
+    const totalRepayment = amount + totalInterest;
+    const monthlyPayment = totalRepayment / term;
+    
+    // Display results
+    document.getElementById('monthlyPayment').textContent = `KES ${monthlyPayment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    document.getElementById('totalInterest').textContent = `KES ${totalInterest.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    document.getElementById('totalRepayment').textContent = `KES ${totalRepayment.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+    
+    // Show results section
+    document.getElementById('calculationResult').classList.remove('hidden');
+}
+
+// Auto-calculate when inputs change
+document.getElementById('loanAmount').addEventListener('input', calculateLoan);
+document.getElementById('loanTerm').addEventListener('input', calculateLoan);
+document.getElementById('interestRate').addEventListener('input', calculateLoan);
+
+// Initial calculation
+document.addEventListener('DOMContentLoaded', function() {
+    calculateLoan();
+});
+</script>
+
+{% if customer_profile %}
+<div data-kyc-verified="{{ customer_profile.kyc_verified|yesno:'true,false' }}"></div>
+{% endif %}
 {% endblock %}

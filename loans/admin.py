@@ -66,6 +66,13 @@ class LoanProductAdmin(admin.ModelAdmin):
         }),
     )
 
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
@@ -75,13 +82,14 @@ class CustomerAdmin(admin.ModelAdmin):
         'employment_status',
         'monthly_income',
         'kyc_verified',
+        'get_kyc_completion',
         'is_blacklisted',
         'created_at',
     ]
     list_filter = ['kyc_verified', 'is_blacklisted', 'employment_status']
     search_fields = ['user__first_name', 'user__last_name', 'user__email', 'id_number']
     readonly_fields = ['created_at', 'updated_at', 'kyc_verified_at', 'get_age']
-    
+
     fieldsets = (
         ('User Information', {
             'fields': ('user',)
@@ -102,6 +110,18 @@ class CustomerAdmin(admin.ModelAdmin):
         ('Financial Information', {
             'fields': ('existing_loans', 'bank_name', 'bank_account')
         }),
+        ('KYC Documents', {
+            'fields': (
+                'national_id_file',
+                'national_id_verified',
+                'bank_statement_file',
+                'bank_statement_verified',
+                'face_recognition_photo',
+                'face_recognition_verified',
+                'face_encoding_data',
+                'face_scan_date',
+            )
+        }),
         ('KYC Status', {
             'fields': ('kyc_verified', 'kyc_verified_at', 'kyc_verified_by')
         }),
@@ -113,10 +133,39 @@ class CustomerAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-    
+
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+
     def get_full_name(self, obj):
         return obj.user.get_full_name()
     get_full_name.short_description = 'Customer Name'
+
+    def get_kyc_completion(self, obj):
+        completion = obj.get_kyc_completion_percentage()
+        if completion == 100:
+            color = 'green'
+            status = 'Complete'
+        elif completion >= 66:
+            color = 'yellow'
+            status = 'Good'
+        elif completion >= 33:
+            color = 'orange'
+            status = 'Partial'
+        else:
+            color = 'red'
+            status = 'Low'
+
+        return format_html(
+            '<span style="color: {};">{}%</span>',
+            color,
+            completion
+        )
+    get_kyc_completion.short_description = 'KYC %'
 
 
 @admin.register(CreditScore)
@@ -132,7 +181,7 @@ class CreditScoreAdmin(admin.ModelAdmin):
     list_filter = ['recommendation', 'is_overridden', 'created_at']
     search_fields = ['customer__user__first_name', 'customer__user__last_name']
     readonly_fields = ['created_at', 'calculation_details']
-    
+
     fieldsets = (
         ('Score Details', {
             'fields': (
@@ -223,6 +272,13 @@ class LoanApplicationAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
     
     def customer_name(self, obj):
         return obj.customer.user.get_full_name()
@@ -330,6 +386,13 @@ class LoanAdmin(admin.ModelAdmin):
         }),
     )
     
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+    
     def customer_name(self, obj):
         return obj.customer.user.get_full_name()
     customer_name.short_description = 'Customer'
@@ -412,6 +475,13 @@ class EmployerVerificationAdmin(admin.ModelAdmin):
     search_fields = ['application__application_number', 'employer_name']
     readonly_fields = ['created_at', 'updated_at', 'sent_at', 'verified_at']
     
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+    
     fieldsets = (
         ('Application', {
             'fields': ('application',)
@@ -467,6 +537,13 @@ class GuarantorVerificationAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ['confirmation_code', 'created_at', 'updated_at', 'sent_at', 'confirmed_at']
     
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
+    
     fieldsets = (
         ('Application', {
             'fields': ('application',)
@@ -520,6 +597,13 @@ class LoanDocumentAdmin(admin.ModelAdmin):
     list_filter = ['document_type', 'is_validated', 'created_at']
     search_fields = ['application__application_number', 'description']
     readonly_fields = ['created_at', 'validated_at']
+    
+    def __copy__(self):
+        """Fix Django template context copying issue"""
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.__dict__.update(self.__dict__)
+        return result
     
     fieldsets = (
         ('Document Details', {

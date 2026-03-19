@@ -1,0 +1,30 @@
+{
+  "venvPath": ".",
+  "venv": "venv",
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportMissingModuleSource": "none",
+  "reportMissingImports": "warning",
+  "reportMissingTypeStubs": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownParameterType": "none",
+  "reportUnknownLambdaType": "none",
+  "reportAttributeAccessIssue": "warning",
+  "reportOperatorIssue": "warning",
+  "reportReturnType": "warning",
+  "reportIndexIssue": "warning",
+  "reportArgumentType": "warning",
+  "reportCallIssue": "warning",
+  "reportIncompatibleMethodOverride": "none",
+  "reportPrivateImportUsage": "none",
+  "reportImplicitRelativeImport": "warning",
+  "exclude": [
+    "**/venv/**",
+    "**/__pycache__/**",
+    "**/migrations/**",
+    "**/staticfiles/**"
+  ]
+}

@@ -79,6 +79,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Status fields
     is_active = models.BooleanField('Active', default=True)
     is_staff = models.BooleanField('Staff Status', default=False)
+    is_approved = models.BooleanField('Approved', default=False, help_text='Account approved by administrator')
     
     # Timestamps
     date_joined = models.DateTimeField('Date Joined', default=timezone.now)

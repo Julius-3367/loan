@@ -175,12 +175,23 @@ class LoanProduct(models.Model):
     
     def calculate_total_fees(self, loan_amount):
         """Calculate total fees for a loan amount"""
-        percentage_fee = (loan_amount * self.origination_fee_percentage) / 100
+        from decimal import Decimal
+        
+        # Ensure all values are Decimal
+        loan_amount = Decimal(str(loan_amount))
+        origination_fee_percentage = Decimal(str(self.origination_fee_percentage))
+        
+        percentage_fee = (loan_amount * origination_fee_percentage) / Decimal('100')
         return percentage_fee + self.origination_fee_fixed + self.processing_fee
     
     def calculate_total_interest(self, principal, tenure_months):
         """Calculate total interest based on method"""
-        rate = self.interest_rate / 100
+        from decimal import Decimal
+        
+        # Ensure all values are Decimal
+        principal = Decimal(str(principal))
+        tenure_months = Decimal(str(tenure_months))
+        rate = Decimal(str(self.interest_rate)) / Decimal('100')
         
         if self.interest_method == self.FLAT_RATE:
             # Flat rate: simple interest on principal
@@ -188,8 +199,8 @@ class LoanProduct(models.Model):
         else:
             # Reducing balance: more complex calculation
             # Simplified formula for monthly payments
-            monthly_rate = rate / 12 if tenure_months > 1 else rate
-            total_interest = principal * monthly_rate * tenure_months * 0.5  # Approximate
+            monthly_rate = rate / Decimal('12') if tenure_months > Decimal('1') else rate
+            total_interest = principal * monthly_rate * tenure_months * Decimal('0.5')  # Approximate
         
         return total_interest
 
@@ -270,6 +281,35 @@ class Customer(models.Model):
         related_name='verified_customers'
     )
     
+    # KYC Documents
+    national_id_file = models.FileField(
+        'National ID Document',
+        upload_to='kyc_documents/national_id/%Y/%m/%d/',
+        null=True,
+        blank=True
+    )
+    bank_statement_file = models.FileField(
+        'Bank Statement',
+        upload_to='kyc_documents/bank_statements/%Y/%m/%d/',
+        null=True,
+        blank=True
+    )
+    face_recognition_photo = models.FileField(
+        'Face Recognition Photo',
+        upload_to='kyc_documents/face_photos/%Y/%m/%d/',
+        null=True,
+        blank=True
+    )
+    
+    # Document Verification Status
+    national_id_verified = models.BooleanField('National ID Verified', default=False)
+    bank_statement_verified = models.BooleanField('Bank Statement Verified', default=False)
+    face_recognition_verified = models.BooleanField('Face Recognition Verified', default=False)
+    
+    # Face Recognition Data
+    face_encoding_data = models.TextField('Face Encoding Data', null=True, blank=True)
+    face_scan_date = models.DateTimeField('Face Scan Date', null=True, blank=True)
+    
     # Status
     is_blacklisted = models.BooleanField('Blacklisted', default=False)
     blacklist_reason = models.TextField('Blacklist Reason', blank=True)
@@ -287,10 +327,36 @@ class Customer(models.Model):
             models.Index(fields=['kyc_verified', '-created_at']),
             models.Index(fields=['is_blacklisted']),
             models.Index(fields=['id_number']),
+            models.Index(fields=['national_id_verified', 'bank_statement_verified', 'face_recognition_verified']),
         ]
     
     def __str__(self):
         return f"{self.user.get_full_name()} - {self.id_number or 'No ID'}"
+    
+    @property
+    def total_applications(self):
+        """Calculate total number of loan applications for this customer"""
+        return self.loan_applications.count()
+    
+    @property
+    def last_application_date(self):
+        """Get the date of the last loan application"""
+        last_app = self.loan_applications.order_by('-created_at').first()
+        return last_app.created_at if last_app else None
+    
+    @property
+    def active_loans_count(self):
+        """Get count of active loans"""
+        return self.loans.filter(status='ACTIVE').count()
+    
+    @property
+    def total_loans_borrowed(self):
+        """Get total amount borrowed across all loans"""
+        from django.db.models import Sum
+        total = self.loans.aggregate(
+            total=Sum('principal_amount')
+        )['total']
+        return total or Decimal('0')
     
     def get_age(self):
         """Calculate customer age"""
@@ -308,6 +374,36 @@ class Customer(models.Model):
             total=Sum('outstanding_balance')
         )['total']
         return total or Decimal('0')
+    
+    def get_kyc_completion_percentage(self):
+        """Calculate KYC completion percentage"""
+        completed = 0
+        total = 3
+        
+        if self.national_id_file:
+            completed += 1
+        if self.bank_statement_file:
+            completed += 1
+        if self.face_recognition_photo:
+            completed += 1
+            
+        return (completed / total) * 100 if total > 0 else 0
+    
+    def is_kyc_fully_uploaded(self):
+        """Check if all KYC documents are uploaded"""
+        return all([
+            self.national_id_file,
+            self.bank_statement_file,
+            self.face_recognition_photo
+        ])
+    
+    def is_kyc_fully_verified(self):
+        """Check if all KYC documents are verified"""
+        return all([
+            self.national_id_verified,
+            self.bank_statement_verified,
+            self.face_recognition_verified
+        ])
 
 
 class CreditScore(models.Model):

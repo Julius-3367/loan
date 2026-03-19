@@ -1,0 +1,175 @@
+{% extends 'loans/customer/dashboard.html' %}
+
+{% block title %}Add Guarantor - Alba Capital{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+                    </div>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{% url 'customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Dashboard</a>
+                        <a href="{% url 'loans:customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">My Loans</a>
+                        <a href="{% url 'loans:my_applications' %}" class="text-sm font-medium text-alba-orange">My Applications</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-700">
+                        <span class="font-semibold">{{ user.get_full_name }}</span>
+                    </span>
+                    <a href="{% url 'logout' %}" class="text-sm font-medium text-gray-600 hover:text-alba-orange transition">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Add Guarantor</h1>
+                    <p class="mt-2 text-sm text-gray-600">
+                        Add a guarantor for application {{ application.application_number }}
+                    </p>
+                </div>
+                <a href="{% url 'loans:application_detail' application.pk %}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                    Back to Application
+                </a>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-5 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Guarantor Information</h3>
+                <p class="mt-1 text-sm text-gray-600">
+                    Please provide complete information about your guarantor
+                </p>
+            </div>
+            
+            <form method="POST" class="px-6 py-4">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Personal Information -->
+                    <div class="space-y-4">
+                        <h4 class="text-md font-medium text-gray-900 border-b pb-2">Personal Information</h4>
+                        
+                        <div>
+                            <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name *</label>
+                            <input type="text" name="full_name" id="full_name" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="id_number" class="block text-sm font-medium text-gray-700">ID Number *</label>
+                            <input type="text" name="id_number" id="id_number" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number *</label>
+                            <input type="tel" name="phone" id="phone" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email Address *</label>
+                            <input type="email" name="email" id="email" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                        </div>
+                    </div>
+                    
+                    <!-- Employment Information -->
+                    <div class="space-y-4">
+                        <h4 class="text-md font-medium text-gray-900 border-b pb-2">Employment Information</h4>
+                        
+                        <div>
+                            <label for="employer" class="block text-sm font-medium text-gray-700">Employer *</label>
+                            <input type="text" name="employer" id="employer" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="position" class="block text-sm font-medium text-gray-700">Position/Title *</label>
+                            <input type="text" name="position" id="position" required
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="monthly_income" class="block text-sm font-medium text-gray-700">Monthly Income *</label>
+                            <input type="number" name="monthly_income" id="monthly_income" required min="0" step="0.01"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="employment_duration" class="block text-sm font-medium text-gray-700">Years at Current Job *</label>
+                            <input type="number" name="employment_duration" id="employment_duration" required min="0" step="0.5"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Address Information -->
+                <div class="mt-6 space-y-4">
+                    <h4 class="text-md font-medium text-gray-900 border-b pb-2">Address Information</h4>
+                    
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-gray-700">Physical Address *</label>
+                        <textarea name="address" id="address" rows="3" required
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Relationship -->
+                <div class="mt-6 space-y-4">
+                    <h4 class="text-md font-medium text-gray-900 border-b pb-2">Relationship</h4>
+                    
+                    <div>
+                        <label for="relationship" class="block text-sm font-medium text-gray-700">Relationship to Applicant *</label>
+                        <select name="relationship" id="relationship" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                            <option value="">Select relationship</option>
+                            <option value="SPOUSE">Spouse</option>
+                            <option value="PARENT">Parent</option>
+                            <option value="SIBLING">Sibling</option>
+                            <option value="FRIEND">Friend</option>
+                            <option value="COLLEAGUE">Colleague</option>
+                            <option value="RELATIVE">Relative</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="relationship_description" class="block text-sm font-medium text-gray-700">Relationship Description</label>
+                        <input type="text" name="relationship_description" id="relationship_description"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-alba-orange focus:ring-alba-orange sm:text-sm">
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="mt-8 flex justify-end space-x-4">
+                    <a href="{% url 'loans:application_detail' application.pk %}" 
+                       class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                        Add Guarantor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}
