@@ -1,16 +1,50 @@
-{% extends 'base.html' %}
-
-{% block title %}My Profile - Alba Capital{% endblock %}
-
-{% block extra_head %}
+{% extends 'base.html' %} {% block title %}My Profile - Alba Capital{% endblock %} {% block extra_head %}
 <style>
-.kyc-progress-bar {
-    width: 0%;
-}
-</style>
-{% endblock %}
+    /* KYC progress bar — starts at 0, JS animates to target width */
+    .kyc-progress-bar {
+        width: 0%;
+        transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-{% block body %}
+    /* Shimmer overlay on the bar */
+    .kyc-progress-bar::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -60%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.35) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        animation: shimmer 2.2s infinite;
+        animation-delay: 0.9s; /* start after expand lands */
+    }
+
+    @keyframes shimmer {
+        0% {
+            left: -60%;
+        }
+        100% {
+            left: 115%;
+        }
+    }
+
+    /* Checklist item hover lift */
+    .kyc-checklist-item {
+        transition:
+            background 0.15s ease,
+            transform 0.15s ease;
+    }
+    .kyc-checklist-item:hover {
+        background-color: #fafafa;
+        transform: translateX(2px);
+    }
+</style>
+{% endblock %} {% block body %}
 <div class="min-h-screen bg-gray-50">
     <!-- Navigation -->
     <nav class="bg-white shadow">
@@ -18,19 +52,64 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center space-x-8">
                     <div class="flex items-center">
-                        <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+                        <span class="text-2xl font-bold text-alba-navy"
+                            >Alba Capital</span
+                        >
                     </div>
                     <div class="hidden md:flex space-x-4">
-                        <a href="{% url 'customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Dashboard</a>
-                        <a href="{% url 'loans:customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">My Loans</a>
-                        <a href="{% url 'loans:customer_profile' %}" class="text-sm font-medium text-alba-orange">Profile</a>
+                        <a
+                            href="{% url 'customer_dashboard' %}"
+                            class="text-sm font-medium text-gray-700 hover:text-alba-orange transition"
+                            >Dashboard</a
+                        >
+                        <a
+                            href="{% url 'loans:customer_dashboard' %}"
+                            class="text-sm font-medium text-gray-700 hover:text-alba-orange transition"
+                            >My Loans</a
+                        >
+                        <a
+                            href="{% url 'loans:customer_profile' %}"
+                            class="text-sm font-medium text-alba-orange"
+                            >Profile</a
+                        >
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-700">
-                        <span class="font-semibold">{{ user.get_full_name }}</span>
+                        <span class="font-semibold"
+                            >{{ user.get_full_name }}</span
+                        >
                     </span>
-                    <a href="{% url 'logout' %}" class="text-sm font-medium text-gray-600 hover:text-alba-orange transition">
+                    <a
+                        href="{% url 'loans:notifications' %}"
+                        class="relative inline-flex items-center p-2 text-gray-600 hover:text-alba-orange transition"
+                        title="Notifications"
+                    >
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                            />
+                        </svg>
+                        {% if unread_notification_count > 0 %}
+                        <span
+                            class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full min-w-[1.1rem]"
+                        >
+                            {{ unread_notification_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    <a
+                        href="{% url 'logout' %}"
+                        class="text-sm font-medium text-gray-600 hover:text-alba-orange transition"
+                    >
                         Logout
                     </a>
                 </div>
@@ -43,127 +122,453 @@
         <!-- Page Header -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900">My Profile</h1>
-            <p class="mt-2 text-sm text-gray-600">Complete your profile to apply for loans</p>
+            <p class="mt-2 text-sm text-gray-600">
+                Complete your profile to apply for loans
+            </p>
         </div>
 
-        <!-- Profile Status Card -->
-        <div class="mb-6 bg-white border border-gray-200 rounded-lg p-6">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center">
-                    {% if customer.kyc_verified %}
-                    <div class="flex-shrink-0">
-                        <div class="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
+        <!-- ═══════════════════════════════════════════════════════════
+             KYC COMPLETION CARD  —  polished progress bar + checklist
+             ═══════════════════════════════════════════════════════════ -->
+        <div
+            class="mb-6 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden"
+        >
+            <!-- Card header row: title + status pill -->
+            <div
+                class="px-6 pt-6 pb-4 flex flex-wrap items-center justify-between gap-3 border-b border-gray-100"
+            >
+                <div class="flex items-center gap-3">
+                    <!-- Icon bubble — colour changes with state -->
+                    {% if kyc_verified %}
+                    <div
+                        class="h-11 w-11 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0"
+                    >
+                        <svg
+                            class="h-6 w-6 text-green-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
                     </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">KYC Verified</h3>
-                        <p class="text-sm text-gray-600">Your profile has been verified by {{ customer.kyc_verified_by.get_full_name }}</p>
+                    {% elif kyc_completion >= 80 %}
+                    <div
+                        class="h-11 w-11 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0"
+                    >
+                        <svg
+                            class="h-6 w-6 text-yellow-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
                     </div>
                     {% else %}
-                    <div class="flex-shrink-0">
-                        <div class="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-medium text-gray-900">KYC Pending</h3>
-                        <p class="text-sm text-gray-600">Your profile will be verified by our team within 24 hours</p>
+                    <div
+                        class="h-11 w-11 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0"
+                    >
+                        <svg
+                            class="h-6 w-6 text-red-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
                     </div>
                     {% endif %}
+
+                    <div>
+                        <h3
+                            class="text-base font-semibold text-gray-900 leading-tight"
+                        >
+                            KYC Verification Status
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-0.5">
+                            {% if kyc_verified %} Verified by {{
+                            customer.kyc_verified_by.get_full_name }} {% elif kyc_completion >= 80 %} Under review — our team will
+                            confirm within 24 hours {% else %} Complete the
+                            checklist below to submit for review {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Status pill -->
+                {% if kyc_verified %}
+                <span
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 ring-1 ring-green-200"
+                >
+                    <svg
+                        class="h-3.5 w-3.5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                    >
+                        <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                        />
+                    </svg>
+                    Verified ✅
+                </span>
+                {% elif kyc_completion >= 80 %}
+                <span
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 ring-1 ring-yellow-200"
+                >
+                    <svg
+                        class="h-3.5 w-3.5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                    >
+                        <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                            clip-rule="evenodd"
+                        />
+                    </svg>
+                    Pending Review
+                </span>
+                {% else %}
+                <span
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 ring-1 ring-red-200"
+                >
+                    <svg
+                        class="h-3.5 w-3.5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                    >
+                        <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd"
+                        />
+                    </svg>
+                    Incomplete
+                </span>
+                {% endif %}
+            </div>
+            <!-- /header row -->
+
+            <!-- Progress bar section -->
+            <div class="px-6 py-5">
+                <!-- Large % readout + bar -->
+                <div class="flex items-end justify-between mb-2">
+                    <p
+                        class="text-3xl font-extrabold text-gray-900 leading-none tabular-nums"
+                    >
+                        <span id="kyc-pct-display">0</span>%
+                        <span class="ml-1 text-sm font-medium text-gray-500"
+                            >Complete</span
+                        >
+                    </p>
+                    <p class="text-xs text-gray-400 mb-0.5">
+                        {{ kyc_completion }}% of 100%
+                    </p>
+                </div>
+
+                <!-- Track + animated fill -->
+                <div
+                    class="w-full bg-gray-100 rounded-full h-3 overflow-hidden shadow-inner"
+                >
+                    <div
+                        class="kyc-progress-bar h-3 rounded-full relative overflow-hidden {% if kyc_verified %}bg-green-500 {% elif kyc_completion >= 80 %}bg-yellow-400 {% else %}bg-alba-orange{% endif %}"
+                        data-progress="{{ kyc_completion }}"
+                    ></div>
+                </div>
+
+                <!-- Tick-mark scale -->
+                <div class="flex justify-between mt-1 px-0.5">
+                    <span class="text-xs text-gray-400">0%</span>
+                    <span class="text-xs text-gray-400">25%</span>
+                    <span class="text-xs text-gray-400">50%</span>
+                    <span class="text-xs text-gray-400">75%</span>
+                    <span class="text-xs text-gray-400">100%</span>
                 </div>
             </div>
-            
-            <!-- KYC Progress Bar -->
-            <div class="mt-4">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-medium text-gray-700">KYC Completion</span>
-                    <span class="text-sm text-gray-500">{{ customer.get_kyc_completion_percentage|floatformat:0 }}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-alba-orange h-2 rounded-full transition-all duration-300 kyc-progress-bar" data-progress="{{ customer.get_kyc_completion_percentage|floatformat:0 }}"></div>
-                </div>
-                <div class="mt-2 grid grid-cols-3 gap-4 text-xs">
-                    <div class="flex items-center">
+            <!-- /progress bar section -->
+
+            <!-- ─── KYC Field Checklist ──────────────────────────────── -->
+            <div class="px-6 pb-6">
+                <p
+                    class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3"
+                >
+                    Required fields
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                    <!-- 1. National ID Number -->
+                    <div
+                        class="kyc-checklist-item flex items-center gap-2.5 py-2 px-2 rounded-lg"
+                    >
+                        {% if customer.id_number %}
+                        <span class="text-lg leading-none" title="Complete"
+                            >✅</span
+                        >
+                        <span class="text-sm font-medium text-gray-800"
+                            >National ID Number</span
+                        >
+                        {% else %}
+                        <span class="text-lg leading-none" title="Incomplete"
+                            >⬜</span
+                        >
+                        <span class="text-sm text-gray-400"
+                            >National ID Number</span
+                        >
+                        {% endif %}
+                    </div>
+
+                    <!-- 2. Date of Birth -->
+                    <div
+                        class="kyc-checklist-item flex items-center gap-2.5 py-2 px-2 rounded-lg"
+                    >
+                        {% if customer.date_of_birth %}
+                        <span class="text-lg leading-none" title="Complete"
+                            >✅</span
+                        >
+                        <span class="text-sm font-medium text-gray-800"
+                            >Date of Birth</span
+                        >
+                        {% else %}
+                        <span class="text-lg leading-none" title="Incomplete"
+                            >⬜</span
+                        >
+                        <span class="text-sm text-gray-400">Date of Birth</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- 3. Residential Address -->
+                    <div
+                        class="kyc-checklist-item flex items-center gap-2.5 py-2 px-2 rounded-lg"
+                    >
+                        {% if customer.address %}
+                        <span class="text-lg leading-none" title="Complete"
+                            >✅</span
+                        >
+                        <span class="text-sm font-medium text-gray-800"
+                            >Residential Address</span
+                        >
+                        {% else %}
+                        <span class="text-lg leading-none" title="Incomplete"
+                            >⬜</span
+                        >
+                        <span class="text-sm text-gray-400"
+                            >Residential Address</span
+                        >
+                        {% endif %}
+                    </div>
+
+                    <!-- 4. Monthly Income -->
+                    <div
+                        class="kyc-checklist-item flex items-center gap-2.5 py-2 px-2 rounded-lg"
+                    >
+                        {% if customer.monthly_income %}
+                        <span class="text-lg leading-none" title="Complete"
+                            >✅</span
+                        >
+                        <span class="text-sm font-medium text-gray-800"
+                            >Monthly Income</span
+                        >
+                        {% else %}
+                        <span class="text-lg leading-none" title="Incomplete"
+                            >⬜</span
+                        >
+                        <span class="text-sm text-gray-400"
+                            >Monthly Income</span
+                        >
+                        {% endif %}
+                    </div>
+
+                    <!-- 5. Employer Name -->
+                    <div
+                        class="kyc-checklist-item flex items-center gap-2.5 py-2 px-2 rounded-lg"
+                    >
+                        {% if customer.employer_name %}
+                        <span class="text-lg leading-none" title="Complete"
+                            >✅</span
+                        >
+                        <span class="text-sm font-medium text-gray-800"
+                            >Employer Name</span
+                        >
+                        {% else %}
+                        <span class="text-lg leading-none" title="Incomplete"
+                            >⬜</span
+                        >
+                        <span class="text-sm text-gray-400">Employer Name</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- 6. National ID Document (upload) -->
+                    <div
+                        class="kyc-checklist-item flex items-center gap-2.5 py-2 px-2 rounded-lg"
+                    >
                         {% if customer.national_id_file %}
-                        <svg class="h-3 w-3 text-green-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
+                        <span class="text-lg leading-none" title="Complete"
+                            >✅</span
+                        >
+                        <span class="text-sm font-medium text-gray-800"
+                            >National ID Document</span
+                        >
+                        <span class="ml-auto">
+                            <a
+                                href="{{ customer.national_id_file.url }}"
+                                target="_blank"
+                                class="text-xs text-alba-orange hover:underline font-medium"
+                                >View</a
+                            >
+                        </span>
                         {% else %}
-                        <svg class="h-3 w-3 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <span class="text-lg leading-none" title="Incomplete"
+                            >⬜</span
+                        >
+                        <span class="text-sm text-gray-400"
+                            >National ID Document</span
+                        >
+                        <span class="ml-auto text-xs text-gray-300"
+                            >Not uploaded</span
+                        >
                         {% endif %}
-                        <span class="text-gray-600">National ID</span>
                     </div>
-                    <div class="flex items-center">
+
+                    <!-- 7. Bank Statement (upload) -->
+                    <div
+                        class="kyc-checklist-item flex items-center gap-2.5 py-2 px-2 rounded-lg"
+                    >
                         {% if customer.bank_statement_file %}
-                        <svg class="h-3 w-3 text-green-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
+                        <span class="text-lg leading-none" title="Complete"
+                            >✅</span
+                        >
+                        <span class="text-sm font-medium text-gray-800"
+                            >Bank Statement</span
+                        >
+                        <span class="ml-auto">
+                            <a
+                                href="{{ customer.bank_statement_file.url }}"
+                                target="_blank"
+                                class="text-xs text-alba-orange hover:underline font-medium"
+                                >View</a
+                            >
+                        </span>
                         {% else %}
-                        <svg class="h-3 w-3 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <span class="text-lg leading-none" title="Incomplete"
+                            >⬜</span
+                        >
+                        <span class="text-sm text-gray-400"
+                            >Bank Statement</span
+                        >
+                        <span class="ml-auto text-xs text-gray-300"
+                            >Not uploaded</span
+                        >
                         {% endif %}
-                        <span class="text-gray-600">Bank Statement</span>
                     </div>
-                    <div class="flex items-center">
+
+                    <!-- 8. Face Photo (upload) -->
+                    <div
+                        class="kyc-checklist-item flex items-center gap-2.5 py-2 px-2 rounded-lg"
+                    >
                         {% if customer.face_recognition_photo %}
-                        <svg class="h-3 w-3 text-green-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
+                        <span class="text-lg leading-none" title="Complete"
+                            >✅</span
+                        >
+                        <span class="text-sm font-medium text-gray-800"
+                            >Face Photo</span
+                        >
+                        <span class="ml-auto">
+                            <a
+                                href="{{ customer.face_recognition_photo.url }}"
+                                target="_blank"
+                                class="text-xs text-alba-orange hover:underline font-medium"
+                                >View</a
+                            >
+                        </span>
                         {% else %}
-                        <svg class="h-3 w-3 text-gray-400 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <span class="text-lg leading-none" title="Incomplete"
+                            >⬜</span
+                        >
+                        <span class="text-sm text-gray-400">Face Photo</span>
+                        <span class="ml-auto text-xs text-gray-300"
+                            >Not uploaded</span
+                        >
                         {% endif %}
-                        <span class="text-gray-600">Face Photo</span>
                     </div>
                 </div>
+                <!-- /grid -->
             </div>
+            <!-- /checklist -->
         </div>
+        <!-- /KYC card -->
 
         <!-- Profile Form -->
         <div class="bg-white shadow rounded-lg overflow-hidden">
             <form method="post" class="divide-y divide-gray-200">
                 {% csrf_token %}
-                
+
                 <!-- Personal Information -->
                 <div class="px-6 py-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        Personal Information
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
-                            {{ form.date_of_birth }}
-                            {% if form.date_of_birth.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.date_of_birth.errors.0 }}</p>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Date of Birth</label
+                            >
+                            {{ form.date_of_birth }} {% if form.date_of_birth.errors %}
+                            <p class="mt-1 text-sm text-red-600">
+                                {{ form.date_of_birth.errors.0 }}
+                            </p>
                             {% endif %}
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">ID/Passport Number *</label>
-                            {{ form.id_number }}
-                            {% if form.id_number.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.id_number.errors.0 }}</p>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >ID/Passport Number *</label
+                            >
+                            {{ form.id_number }} {% if form.id_number.errors %}
+                            <p class="mt-1 text-sm text-red-600">
+                                {{ form.id_number.errors.0 }}
+                            </p>
                             {% endif %}
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Physical Address</label>
-                            {{ form.address }}
-                            {% if form.address.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Physical Address</label
+                            >
+                            {{ form.address }} {% if form.address.errors %}
+                            <p class="mt-1 text-sm text-red-600">
+                                {{ form.address.errors.0 }}
+                            </p>
                             {% endif %}
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">County</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >County</label
+                            >
                             {{ form.county }}
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">City/Town</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >City/Town</label
+                            >
                             {{ form.city }}
                         </div>
                     </div>
@@ -171,33 +576,54 @@
 
                 <!-- Employment Information -->
                 <div class="px-6 py-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Employment Information</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        Employment Information
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Employment Status *</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Employment Status *</label
+                            >
                             {{ form.employment_status }}
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Employer Name</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Employer Name</label
+                            >
                             {{ form.employer_name }}
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Employer Contact</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Employer Contact</label
+                            >
                             {{ form.employer_contact }}
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Employer Email</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Employer Email</label
+                            >
                             {{ form.employer_email }}
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Monthly Income (KES) *</label>
-                            {{ form.monthly_income }}
-                            {% if form.monthly_income.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.monthly_income.errors.0 }}</p>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Monthly Income (KES) *</label
+                            >
+                            {{ form.monthly_income }} {% if form.monthly_income.errors %}
+                            <p class="mt-1 text-sm text-red-600">
+                                {{ form.monthly_income.errors.0 }}
+                            </p>
                             {% endif %}
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Date of Employment</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Date of Employment</label
+                            >
                             {{ form.employment_date }}
                         </div>
                     </div>
@@ -205,19 +631,32 @@
 
                 <!-- Financial Information -->
                 <div class="px-6 py-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Financial Information</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        Financial Information
+                    </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Existing Monthly Loan Obligations (KES)</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Existing Monthly Loan Obligations (KES)</label
+                            >
                             {{ form.existing_loans }}
-                            <p class="mt-1 text-xs text-gray-500">Total monthly payments for other loans</p>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Total monthly payments for other loans
+                            </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Bank Name</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Bank Name</label
+                            >
                             {{ form.bank_name }}
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Bank Account Number</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700"
+                                >Bank Account Number</label
+                            >
                             {{ form.bank_account }}
                         </div>
                     </div>
@@ -225,7 +664,9 @@
 
                 <!-- KYC Documents Section -->
                 <div class="px-6 py-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">KYC Documents</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">
+                        KYC Documents
+                    </h3>
                     <div class="space-y-6">
                         <!-- National ID Upload -->
                         <div class="border border-gray-200 rounded-lg p-4">
@@ -233,35 +674,82 @@
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0">
                                         {% if customer.national_id_verified %}
-                                        <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            class="h-5 w-5 text-green-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                         {% elif customer.national_id_file %}
-                                        <svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            class="h-5 w-5 text-yellow-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                         {% else %}
-                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        <svg
+                                            class="h-5 w-5 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            />
                                         </svg>
                                         {% endif %}
                                     </div>
                                     <div class="ml-3">
-                                        <h4 class="text-sm font-medium text-gray-900">National ID Document</h4>
-                                        <p class="text-xs text-gray-500">Upload your ID card or passport</p>
+                                        <h4
+                                            class="text-sm font-medium text-gray-900"
+                                        >
+                                            National ID Document
+                                        </h4>
+                                        <p class="text-xs text-gray-500">
+                                            Upload your ID card or passport
+                                        </p>
                                     </div>
                                 </div>
                                 {% if customer.national_id_file %}
-                                <a href="{{ customer.national_id_file.url }}" target="_blank" class="text-alba-orange hover:text-alba-navy text-sm font-medium">View</a>
+                                <a
+                                    href="{{ customer.national_id_file.url }}"
+                                    target="_blank"
+                                    class="text-alba-orange hover:text-alba-navy text-sm font-medium"
+                                    >View</a
+                                >
                                 {% endif %}
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Upload National ID</label>
-                                {{ form.national_id_file }}
-                                {% if form.national_id_file.errors %}
-                                    <p class="mt-1 text-sm text-red-600">{{ form.national_id_file.errors.0 }}</p>
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                    >Upload National ID</label
+                                >
+                                {{ form.national_id_file }} {% if form.national_id_file.errors %}
+                                <p class="mt-1 text-sm text-red-600">
+                                    {{ form.national_id_file.errors.0 }}
+                                </p>
                                 {% endif %}
-                                <p class="mt-1 text-xs text-gray-500">Accepted formats: JPG, PNG, PDF (Max 5MB)</p>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Accepted formats: JPG, PNG, PDF (Max 5MB)
+                                </p>
                             </div>
                         </div>
 
@@ -271,35 +759,82 @@
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0">
                                         {% if customer.bank_statement_verified %}
-                                        <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            class="h-5 w-5 text-green-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                         {% elif customer.bank_statement_file %}
-                                        <svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            class="h-5 w-5 text-yellow-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                         {% else %}
-                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        <svg
+                                            class="h-5 w-5 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            />
                                         </svg>
                                         {% endif %}
                                     </div>
                                     <div class="ml-3">
-                                        <h4 class="text-sm font-medium text-gray-900">Bank Statement</h4>
-                                        <p class="text-xs text-gray-500">Last 6 months bank statement</p>
+                                        <h4
+                                            class="text-sm font-medium text-gray-900"
+                                        >
+                                            Bank Statement
+                                        </h4>
+                                        <p class="text-xs text-gray-500">
+                                            Last 6 months bank statement
+                                        </p>
                                     </div>
                                 </div>
                                 {% if customer.bank_statement_file %}
-                                <a href="{{ customer.bank_statement_file.url }}" target="_blank" class="text-alba-orange hover:text-alba-navy text-sm font-medium">View</a>
+                                <a
+                                    href="{{ customer.bank_statement_file.url }}"
+                                    target="_blank"
+                                    class="text-alba-orange hover:text-alba-navy text-sm font-medium"
+                                    >View</a
+                                >
                                 {% endif %}
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bank Statement</label>
-                                {{ form.bank_statement_file }}
-                                {% if form.bank_statement_file.errors %}
-                                    <p class="mt-1 text-sm text-red-600">{{ form.bank_statement_file.errors.0 }}</p>
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                    >Upload Bank Statement</label
+                                >
+                                {{ form.bank_statement_file }} {% if form.bank_statement_file.errors %}
+                                <p class="mt-1 text-sm text-red-600">
+                                    {{ form.bank_statement_file.errors.0 }}
+                                </p>
                                 {% endif %}
-                                <p class="mt-1 text-xs text-gray-500">Accepted formats: JPG, PNG, PDF (Max 5MB)</p>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Accepted formats: JPG, PNG, PDF (Max 5MB)
+                                </p>
                             </div>
                         </div>
 
@@ -309,48 +844,104 @@
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0">
                                         {% if customer.face_recognition_verified %}
-                                        <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            class="h-5 w-5 text-green-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                         {% elif customer.face_recognition_photo %}
-                                        <svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <svg
+                                            class="h-5 w-5 text-yellow-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                            />
                                         </svg>
                                         {% else %}
-                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        <svg
+                                            class="h-5 w-5 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            />
                                         </svg>
                                         {% endif %}
                                     </div>
                                     <div class="ml-3">
-                                        <h4 class="text-sm font-medium text-gray-900">Face Recognition Photo</h4>
-                                        <p class="text-xs text-gray-500">Clear photo of your face for verification</p>
+                                        <h4
+                                            class="text-sm font-medium text-gray-900"
+                                        >
+                                            Face Recognition Photo
+                                        </h4>
+                                        <p class="text-xs text-gray-500">
+                                            Clear photo of your face for
+                                            verification
+                                        </p>
                                     </div>
                                 </div>
                                 {% if customer.face_recognition_photo %}
-                                <a href="{{ customer.face_recognition_photo.url }}" target="_blank" class="text-alba-orange hover:text-alba-navy text-sm font-medium">View</a>
+                                <a
+                                    href="{{ customer.face_recognition_photo.url }}"
+                                    target="_blank"
+                                    class="text-alba-orange hover:text-alba-navy text-sm font-medium"
+                                    >View</a
+                                >
                                 {% endif %}
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Upload Face Photo</label>
-                                {{ form.face_recognition_photo }}
-                                {% if form.face_recognition_photo.errors %}
-                                    <p class="mt-1 text-sm text-red-600">{{ form.face_recognition_photo.errors.0 }}</p>
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                    >Upload Face Photo</label
+                                >
+                                {{ form.face_recognition_photo }} {% if form.face_recognition_photo.errors %}
+                                <p class="mt-1 text-sm text-red-600">
+                                    {{ form.face_recognition_photo.errors.0 }}
+                                </p>
                                 {% endif %}
-                                <p class="mt-1 text-xs text-gray-500">Take a clear photo facing camera (Max 5MB)</p>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Take a clear photo facing camera (Max 5MB)
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Form Actions -->
-                <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
+                <div
+                    class="px-6 py-4 bg-gray-50 flex justify-between items-center"
+                >
                     <p class="text-sm text-gray-600">* Required fields</p>
                     <div class="flex space-x-3">
-                        <a href="{% url 'loans:customer_dashboard' %}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                        <a
+                            href="{% url 'loans:customer_dashboard' %}"
+                            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition"
+                        >
                             Cancel
                         </a>
-                        <button type="submit" class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition">
+                        <button
+                            type="submit"
+                            class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-alba-orange transition"
+                        >
                             Save Profile
                         </button>
                     </div>
@@ -361,59 +952,83 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Set progress bar width
-    const progressBar = document.querySelector('.kyc-progress-bar');
-    if (progressBar) {
-        const progress = progressBar.getAttribute('data-progress');
-        setTimeout(() => {
-            progressBar.style.width = progress + '%';
-        }, 100);
-    }
-    
-    // Handle file upload previews
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    fileInputs.forEach(input => {
-        input.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                // Validate file size (5MB max)
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('File size must be less than 5MB');
-                    e.target.value = '';
-                    return;
+    document.addEventListener("DOMContentLoaded", function () {
+        // ── KYC animated progress bar ──────────────────────────────────────
+        const progressBar = document.querySelector(".kyc-progress-bar");
+        if (progressBar) {
+            const target =
+                parseInt(progressBar.getAttribute("data-progress"), 10) || 0;
+
+            // Animate the bar width after a short delay so the CSS transition is visible
+            setTimeout(() => {
+                progressBar.style.width = target + "%";
+            }, 120);
+
+            // Animate the large percentage counter from 0 → target
+            const display = document.getElementById("kyc-pct-display");
+            if (display) {
+                const duration = 1000; // ms — matches the CSS transition duration
+                const startTime = performance.now();
+                function tick(now) {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    // Ease-out: decelerate near the end
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    display.textContent = Math.round(eased * target);
+                    if (progress < 1) requestAnimationFrame(tick);
                 }
-                
-                // Show file name
-                const label = e.target.previousElementSibling;
-                if (label && label.tagName === 'LABEL') {
-                    const fileName = document.createElement('span');
-                    fileName.className = 'ml-2 text-sm text-gray-600';
-                    fileName.textContent = '(Selected: ' + file.name + ')';
-                    
-                    // Remove existing file name if present
-                    const existingFileName = label.querySelector('span');
-                    if (existingFileName) {
-                        existingFileName.remove();
-                    }
-                    
-                    label.appendChild(fileName);
-                }
-            }
-        });
-    });
-    
-    // Face recognition camera capture
-    const faceInput = document.getElementById('id_face_recognition_photo');
-    if (faceInput) {
-        // Add camera capture functionality for mobile devices
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            // For mobile devices, prefer camera
-            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                faceInput.setAttribute('capture', 'camera');
+                // Start the counter slightly after the bar begins to move
+                setTimeout(() => requestAnimationFrame(tick), 120);
             }
         }
-    }
-});
+
+        // Handle file upload previews
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach((input) => {
+            input.addEventListener("change", function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file size (5MB max)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert("File size must be less than 5MB");
+                        e.target.value = "";
+                        return;
+                    }
+
+                    // Show file name
+                    const label = e.target.previousElementSibling;
+                    if (label && label.tagName === "LABEL") {
+                        const fileName = document.createElement("span");
+                        fileName.className = "ml-2 text-sm text-gray-600";
+                        fileName.textContent = "(Selected: " + file.name + ")";
+
+                        // Remove existing file name if present
+                        const existingFileName = label.querySelector("span");
+                        if (existingFileName) {
+                            existingFileName.remove();
+                        }
+
+                        label.appendChild(fileName);
+                    }
+                }
+            });
+        });
+
+        // Face recognition camera capture
+        const faceInput = document.getElementById("id_face_recognition_photo");
+        if (faceInput) {
+            // Add camera capture functionality for mobile devices
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                // For mobile devices, prefer camera
+                if (
+                    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                        navigator.userAgent,
+                    )
+                ) {
+                    faceInput.setAttribute("capture", "camera");
+                }
+            }
+        }
+    });
 </script>
 {% endblock %}

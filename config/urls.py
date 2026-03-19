@@ -21,6 +21,10 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
+# Custom error handlers
+handler404 = "core.views.page_not_found"
+handler500 = "core.views.server_error"
+
 # Customize admin site
 admin.site.site_header = "Alba Capital Administration"
 admin.site.site_title = "Alba Capital"

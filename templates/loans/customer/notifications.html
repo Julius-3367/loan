@@ -32,9 +32,8 @@ endblock %} {% block body %}
                         >
                         <a
                             href="{% url 'loans:notifications' %}"
-                            class="text-sm font-medium text-alba-orange border-b-2 border-alba-orange pb-0.5"
-                            >Notifications</a
-                        >
+                            class="text-sm font-medium text-alba-orange border-b-2 border-alba-orange pb-0.5 relative inline-flex items-center"
+                        >Notifications{% if unread_notification_count > 0 %}<span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full min-w-[1.1rem]">{{ unread_notification_count }}</span>{% endif %}</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">

@@ -102,10 +102,16 @@ def customer_profile(request):
     else:
         form = CustomerProfileForm(instance=customer)
 
+    kyc_completion = int(customer.get_kyc_completion_percentage())
     return render(
         request,
         "loans/customer/profile.html",
-        {"form": form, "customer": customer},
+        {
+            "form": form,
+            "customer": customer,
+            "kyc_completion": kyc_completion,
+            "kyc_verified": customer.kyc_verified,
+        },
     )
 
 

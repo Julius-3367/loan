@@ -66,6 +66,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "core.context_processors.notifications",
             ],
         },
     },
@@ -170,3 +171,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
 }
+
+# Odoo Integration Settings
+ODOO_URL = config("ODOO_URL", default="")
+ODOO_DB = config("ODOO_DB", default="")
+ODOO_USERNAME = config("ODOO_USERNAME", default="")
+ODOO_API_KEY = config("ODOO_API_KEY", default="")
+ODOO_WEBHOOK_SECRET = config("ODOO_WEBHOOK_SECRET", default="")
+ODOO_TIMEOUT = config("ODOO_TIMEOUT", default=30, cast=int)

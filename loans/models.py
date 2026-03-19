@@ -403,18 +403,20 @@ class Customer(models.Model):
         return total or Decimal("0")
 
     def get_kyc_completion_percentage(self):
-        """Calculate KYC completion percentage"""
-        completed = 0
-        total = 3
-
-        if self.national_id_file:
-            completed += 1
-        if self.bank_statement_file:
-            completed += 1
-        if self.face_recognition_photo:
-            completed += 1
-
-        return (completed / total) * 100 if total > 0 else 0
+        """Calculate KYC completion percentage across all 8 required fields."""
+        fields = [
+            bool(self.id_number),
+            bool(self.date_of_birth),
+            bool(self.address),
+            bool(self.monthly_income),
+            bool(self.employer_name),
+            bool(self.national_id_file),
+            bool(self.bank_statement_file),
+            bool(self.face_recognition_photo),
+        ]
+        completed = sum(fields)
+        total = len(fields)
+        return round((completed / total) * 100) if total > 0 else 0
 
     def is_kyc_fully_uploaded(self):
         """Check if all KYC documents are uploaded"""

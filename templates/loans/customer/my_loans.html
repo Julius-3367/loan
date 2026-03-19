@@ -1,7 +1,4 @@
-{% extends 'base.html' %}
-
-{% block title %}My Loans - Alba Capital{% endblock %}
-
+{% extends 'base.html' %} {% block title %}My Loans - Alba Capital{% endblock %}
 {% block body %}
 <div class="min-h-screen bg-gray-50">
     <!-- Navigation -->
@@ -10,19 +7,64 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center space-x-8">
                     <div class="flex items-center">
-                        <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+                        <span class="text-2xl font-bold text-alba-navy"
+                            >Alba Capital</span
+                        >
                     </div>
                     <div class="hidden md:flex space-x-4">
-                        <a href="{% url 'customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Dashboard</a>
-                        <a href="{% url 'loans:customer_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange transition">Loan Dashboard</a>
-                        <a href="{% url 'loans:my_loans' %}" class="text-sm font-medium text-alba-orange">My Loans</a>
+                        <a
+                            href="{% url 'customer_dashboard' %}"
+                            class="text-sm font-medium text-gray-700 hover:text-alba-orange transition"
+                            >Dashboard</a
+                        >
+                        <a
+                            href="{% url 'loans:customer_dashboard' %}"
+                            class="text-sm font-medium text-gray-700 hover:text-alba-orange transition"
+                            >Loan Dashboard</a
+                        >
+                        <a
+                            href="{% url 'loans:my_loans' %}"
+                            class="text-sm font-medium text-alba-orange"
+                            >My Loans</a
+                        >
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-700">
-                        <span class="font-semibold">{{ user.get_full_name }}</span>
+                        <span class="font-semibold"
+                            >{{ user.get_full_name }}</span
+                        >
                     </span>
-                    <a href="{% url 'logout' %}" class="text-sm font-medium text-gray-600 hover:text-alba-orange transition">
+                    <a
+                        href="{% url 'loans:notifications' %}"
+                        class="relative inline-flex items-center p-2 text-gray-600 hover:text-alba-orange transition"
+                        title="Notifications"
+                    >
+                        <svg
+                            class="h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                            />
+                        </svg>
+                        {% if unread_notification_count > 0 %}
+                        <span
+                            class="absolute top-1 right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full min-w-[1.1rem]"
+                        >
+                            {{ unread_notification_count }}
+                        </span>
+                        {% endif %}
+                    </a>
+                    <a
+                        href="{% url 'logout' %}"
+                        class="text-sm font-medium text-gray-600 hover:text-alba-orange transition"
+                    >
                         Logout
                     </a>
                 </div>
@@ -35,107 +77,188 @@
         <!-- Page Header -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900">My Active Loans</h1>
-            <p class="mt-2 text-sm text-gray-600">View and manage your active loans</p>
+            <p class="mt-2 text-sm text-gray-600">
+                View and manage your active loans
+            </p>
         </div>
 
         <!-- Loans List -->
         {% if loans %}
-            <div class="space-y-6">
-                {% for loan in loans %}
-                <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">{{ loan.loan_number }}</h3>
-                                <p class="text-sm text-gray-600">{{ loan.loan_product.name }}</p>
-                            </div>
-                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full
-                                {% if loan.status == 'ACTIVE' %}bg-green-100 text-green-800
-                                {% elif loan.status == 'OVERDUE' %}bg-red-100 text-red-800
-                                {% elif loan.status == 'PAID' %}bg-blue-100 text-blue-800
-                                {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                {{ loan.get_status_display }}
-                            </span>
+        <div class="space-y-6">
+            {% for loan in loans %}
+            <div
+                class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition"
+            >
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                {{ loan.loan_number }}
+                            </h3>
+                            <p class="text-sm text-gray-600">
+                                {{ loan.loan_product.name }}
+                            </p>
                         </div>
+                        <span
+                            class="inline-flex px-3 py-1 text-sm font-semibold rounded-full {% if loan.status == 'ACTIVE' %}bg-green-100 text-green-800 {% elif loan.status == 'OVERDUE' %}bg-red-100 text-red-800 {% elif loan.status == 'PAID' %}bg-blue-100 text-blue-800 {% else %}bg-gray-100 text-gray-800{% endif %}"
+                        >
+                            {{ loan.get_status_display }}
+                        </span>
+                    </div>
 
-                        <!-- Loan Details Grid -->
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div>
-                                <p class="text-xs text-gray-500">Principal Amount</p>
-                                <p class="text-sm font-semibold text-gray-900">KES {{ loan.principal_amount|floatformat:2 }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500">Total Payable</p>
-                                <p class="text-sm font-semibold text-gray-900">KES {{ loan.total_amount|floatformat:2 }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500">Outstanding Balance</p>
-                                <p class="text-sm font-semibold text-alba-orange">KES {{ loan.outstanding_balance|floatformat:2 }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500">Monthly Installment</p>
-                                <p class="text-sm font-semibold text-gray-900">KES {{ loan.installment_amount|floatformat:2 }}</p>
-                            </div>
+                    <!-- Loan Details Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                            <p class="text-xs text-gray-500">
+                                Principal Amount
+                            </p>
+                            <p class="text-sm font-semibold text-gray-900">
+                                KES {{ loan.principal_amount|floatformat:2 }}
+                            </p>
                         </div>
-
-                        <!-- Progress Bar -->
-                        <div class="mb-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-medium text-gray-700">Repayment Progress</span>
-                                <span class="text-sm font-semibold text-alba-orange">{{ loan.get_payment_progress_percentage|floatformat:1 }}%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-3">
-                                <div class="bg-alba-orange h-3 rounded-full transition-all duration-300" style="width: {{ loan.get_payment_progress_percentage }}%"></div>
-                            </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Total Payable</p>
+                            <p class="text-sm font-semibold text-gray-900">
+                                KES {{ loan.total_amount|floatformat:2 }}
+                            </p>
                         </div>
-
-                        <!-- Loan Dates -->
-                        <div class="grid grid-cols-3 gap-4 text-sm border-t border-gray-200 pt-4">
-                            <div>
-                                <p class="text-xs text-gray-500">Disbursement Date</p>
-                                <p class="font-medium text-gray-900">{{ loan.disbursement_date|date:"M d, Y" }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500">Next Payment</p>
-                                <p class="font-medium text-gray-900">{{ loan.next_payment_date|date:"M d, Y" }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-gray-500">Maturity Date</p>
-                                <p class="font-medium text-gray-900">{{ loan.maturity_date|date:"M d, Y" }}</p>
-                            </div>
+                        <div>
+                            <p class="text-xs text-gray-500">
+                                Outstanding Balance
+                            </p>
+                            <p class="text-sm font-semibold text-alba-orange">
+                                KES {{ loan.outstanding_balance|floatformat:2 }}
+                            </p>
                         </div>
-
-                        <!-- Action Button -->
-                        <div class="mt-6 flex justify-end">
-                            <a href="{% url 'loans:loan_detail' loan.pk %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 transition">
-                                View Details & Repayments
-                                <svg class="ml-2 -mr-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </a>
+                        <div>
+                            <p class="text-xs text-gray-500">
+                                Monthly Installment
+                            </p>
+                            <p class="text-sm font-semibold text-gray-900">
+                                KES {{ loan.installment_amount|floatformat:2 }}
+                            </p>
                         </div>
                     </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-                <div class="text-center py-12">
-                    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <h3 class="mt-4 text-lg font-medium text-gray-900">No active loans</h3>
-                    <p class="mt-2 text-sm text-gray-500">You don't have any active loans at the moment</p>
-                    <div class="mt-6">
-                        <a href="{% url 'loans:apply_for_loan' %}" class="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 transition">
-                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700"
+                                >Repayment Progress</span
+                            >
+                            <span class="text-sm font-semibold text-alba-orange"
+                                >{{
+                                loan.get_payment_progress_percentage|floatformat:1
+                                }}%</span
+                            >
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div
+                                class="bg-alba-orange h-3 rounded-full transition-all duration-300"
+                                style="width: {{ loan.get_payment_progress_percentage }}%"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <!-- Loan Dates -->
+                    <div
+                        class="grid grid-cols-3 gap-4 text-sm border-t border-gray-200 pt-4"
+                    >
+                        <div>
+                            <p class="text-xs text-gray-500">
+                                Disbursement Date
+                            </p>
+                            <p class="font-medium text-gray-900">
+                                {{ loan.disbursement_date|date:"M d, Y" }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Next Payment</p>
+                            <p class="font-medium text-gray-900">
+                                {{ loan.next_payment_date|date:"M d, Y" }}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Maturity Date</p>
+                            <p class="font-medium text-gray-900">
+                                {{ loan.maturity_date|date:"M d, Y" }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="mt-6 flex justify-end">
+                        <a
+                            href="{% url 'loans:loan_detail' loan.pk %}"
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 transition"
+                        >
+                            View Details & Repayments
+                            <svg
+                                class="ml-2 -mr-1 w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M9 5l7 7-7 7"
+                                />
                             </svg>
-                            Apply for Loan
                         </a>
                     </div>
                 </div>
             </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div
+            class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden"
+        >
+            <div class="text-center py-12">
+                <svg
+                    class="mx-auto h-16 w-16 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900">
+                    No active loans
+                </h3>
+                <p class="mt-2 text-sm text-gray-500">
+                    You don't have any active loans at the moment
+                </p>
+                <div class="mt-6">
+                    <a
+                        href="{% url 'loans:apply_for_loan' %}"
+                        class="inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-alba-orange hover:bg-opacity-90 transition"
+                    >
+                        <svg
+                            class="-ml-1 mr-2 h-5 w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                            />
+                        </svg>
+                        Apply for Loan
+                    </a>
+                </div>
+            </div>
+        </div>
         {% endif %}
     </main>
 </div>

@@ -451,3 +451,16 @@ def reject_user(request, user_id):
     )
     messages.success(request, f"{user.get_full_name()} has been rejected.")
     return redirect("user_approval_list")
+
+
+# ---------------------------------------------------------------------------
+# Error handlers
+# ---------------------------------------------------------------------------
+
+
+def page_not_found(request, exception=None):
+    return render(request, "404.html", status=404)
+
+
+def server_error(request):
+    return render(request, "500.html", status=500)

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 — Something Went Wrong | Alba Capital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .text-alba-navy  { color: #1e3a5f; }
+        .text-alba-orange { color: #ff6b35; }
+        .bg-alba-navy    { background-color: #1e3a5f; }
+        .bg-alba-orange  { background-color: #ff6b35; }
+        .border-alba-orange { border-color: #ff6b35; }
+        .hover-navy:hover  { background-color: #1e3a5f; color: #ffffff; }
+        .hover-orange:hover { background-color: #ff6b35; color: #ffffff; }
+    </style>
+</head>
+<body class="h-full bg-gray-50 flex flex-col items-center justify-center min-h-screen px-4">
+
+    <!-- Card -->
+    <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden">
+
+        <!-- Top accent bar -->
+        <div class="h-2 bg-alba-orange"></div>
+
+        <div class="px-10 py-12 text-center">
+
+            <!-- Logo -->
+            <div class="flex items-center justify-center gap-2 mb-10">
+                <span class="text-2xl font-extrabold text-alba-navy tracking-tight">Alba</span>
+                <span class="text-2xl font-extrabold text-alba-orange tracking-tight">Capital</span>
+            </div>
+
+            <!-- Error code -->
+            <p class="text-8xl font-black text-alba-navy leading-none select-none mb-4">500</p>
+
+            <!-- Divider -->
+            <div class="w-16 h-1 bg-alba-orange mx-auto rounded-full mb-6"></div>
+
+            <!-- Title -->
+            <h1 class="text-2xl font-bold text-gray-800 mb-3">Something Went Wrong</h1>
+
+            <!-- Message -->
+            <p class="text-gray-500 leading-relaxed mb-10">
+                We're experiencing a technical issue. Our team has been notified
+                and is working to fix it. Please try again in a moment.
+            </p>
+
+            <!-- Action buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+
+                <!-- Go Home -->
+                <a href="/"
+                   class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-alba-navy text-white font-semibold rounded-lg transition-colors duration-200 hover:opacity-90">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    Go Home
+                </a>
+
+                <!-- Refresh Page -->
+                <button onclick="location.reload()"
+                        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-alba-navy font-semibold rounded-lg border-2 border-alba-navy transition-colors duration-200 hover:bg-alba-navy hover:text-white">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Refresh Page
+                </button>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-10 py-4 bg-gray-50 border-t border-gray-100 text-center">
+            <p class="text-xs text-gray-400">
+                &copy; 2024 Alba Capital &mdash; If this problem persists, please
+                <a href="mailto:support@albacapital.co.ke"
+                   class="text-alba-orange hover:underline font-medium">contact support</a>.
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>
