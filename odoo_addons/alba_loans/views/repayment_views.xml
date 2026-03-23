@@ -328,8 +328,8 @@
                     <filter string="Due This Month"
                             name="due_this_month"
                             domain="[
-                                ('due_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d')),
-                                ('due_date','&lt;=',(context_today().replace(day=28)).strftime('%Y-%m-%d'))
+                                ('due_date','&gt;=',(current_date.replace(day=1)).strftime('%Y-%m-%d')),
+                                ('due_date','&lt;=',(current_date.replace(day=28)).strftime('%Y-%m-%d'))
                             ]"/>
                     <group expand="0" string="Group By">
                         <filter string="Loan"

@@ -335,12 +335,12 @@
                 <filter
                     string="Today"
                     name="today"
-                    domain="[('create_date','&gt;=',(context_today()).strftime('%Y-%m-%d'))]"
+                    domain="[('create_date','&gt;=',(current_date).strftime('%Y-%m-%d'))]"
                 />
                 <filter
                     string="This Month"
                     name="this_month"
-                    domain="[('create_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d'))]"
+                    domain="[('create_date','&gt;=',(current_date.replace(day=1)).strftime('%Y-%m-%d'))]"
                 />
                 <group expand="0" string="Group By">
                     <filter

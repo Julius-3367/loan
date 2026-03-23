@@ -348,7 +348,7 @@
                             domain="[('state','not in',['disbursed','rejected','cancelled'])]"/>
                     <filter string="Submitted This Month"
                             name="this_month"
-                            domain="[('submitted_date','&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                            domain="[('submitted_date','&gt;=', (current_date.replace(day=1)).strftime('%Y-%m-%d'))]"/>
                     <group expand="0" string="Group By">
                         <filter string="Status"
                                 name="grp_state"
