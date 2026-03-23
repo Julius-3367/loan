@@ -153,7 +153,7 @@
                                 <field name="loan_application_ids"
                                        mode="list"
                                        readonly="1"
-                                       context="{'default_customer_id': active_id}">
+                                       context="{'default_customer_id': id}">
                                     <list string="Applications" decoration-success="state=='disbursed'"
                                           decoration-danger="state in ('rejected','cancelled')"
                                           decoration-info="state not in ('disbursed','rejected','cancelled')">
