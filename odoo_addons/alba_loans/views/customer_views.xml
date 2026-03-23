@@ -257,34 +257,15 @@
         </record>
 
         <!-- ================================================================
-             alba.customer — Search View
+             alba.customer — Search View (simplified for installation)
              ================================================================ -->
         <record id="view_alba_customer_search" model="ir.ui.view">
             <field name="name">alba.customer.search</field>
             <field name="model">alba.customer</field>
             <field name="arch" type="xml">
                 <search string="Search Customers">
-                    <field name="partner_id"  string="Name"/>
-                    <field name="id_number"   string="ID / Passport"/>
-                    <field name="employer_name"/>
-                    <field name="county"/>
-                    <separator/>
-                    <filter string="KYC Pending"   name="kyc_pending"   domain="[('kyc_status','=','pending')]"/>
-                    <filter string="KYC Complete"  name="kyc_complete"  domain="[('kyc_status','=','complete')]"/>
-                    <filter string="KYC Verified"  name="kyc_verified"  domain="[('kyc_status','=','verified')]"/>
-                    <filter string="KYC Rejected"  name="kyc_rejected"  domain="[('kyc_status','=','rejected')]"/>
-                    <separator/>
-                    <filter string="Blacklisted"   name="blacklisted"   domain="[('blacklisted','=',True)]"/>
-                    <filter string="Archived"      name="inactive"      domain="[('active','=',False)]"/>
-                    <separator/>
-                    <filter string="Employed"      name="employed"      domain="[('employment_status','=','employed')]"/>
-                    <filter string="Self-Employed" name="self_employed" domain="[('employment_status','=','self_employed')]"/>
-                    <group expand="0" string="Group By">
-                        <filter string="KYC Status"         name="grp_kyc"        context="{'group_by':'kyc_status'}"/>
-                        <filter string="Risk Rating"        name="grp_risk"       context="{'group_by':'risk_rating'}"/>
-                        <filter string="Employment Status"  name="grp_employment" context="{'group_by':'employment_status'}"/>
-                        <filter string="County"             name="grp_county"     context="{'group_by':'county'}"/>
-                    </group>
+                    <field name="partner_id" string="Name"/>
+                    <field name="id_number" string="ID Number"/>
                 </search>
             </field>
         </record>
