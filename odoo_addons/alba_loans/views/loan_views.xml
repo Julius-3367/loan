@@ -147,7 +147,7 @@
                                 <field name="repayment_schedule_ids"
                                        mode="list"
                                        readonly="1"
-                                       context="{'default_loan_id': active_id}">
+                                       context="{'default_loan_id': id}">
                                     <list string="Schedule"
                                           decoration-danger="status == 'overdue'"
                                           decoration-success="status == 'paid'"
@@ -178,7 +178,7 @@
                             <page string="Repayment History" name="repayments">
                                 <field name="repayment_ids"
                                        mode="list"
-                                       context="{'default_loan_id': active_id}">
+                                       context="{'default_loan_id': id}">
                                     <list string="Repayments"
                                           decoration-danger="state == 'reversed'"
                                           decoration-success="state == 'posted'"
