@@ -300,13 +300,13 @@
                     <filter string="Current (No Arrears)"
                             name="current"
                             domain="[('par_bucket','=','current')]"/>
-                    <filter string="1–30 Days in Arrears"
+                    <filter string="1-30 Days in Arrears"
                             name="par_1_30"
                             domain="[('par_bucket','=','1_30')]"/>
-                    <filter string="31–60 Days in Arrears"
+                    <filter string="31-60 Days in Arrears"
                             name="par_31_60"
                             domain="[('par_bucket','=','31_60')]"/>
-                    <filter string="61–90 Days in Arrears"
+                    <filter string="61-90 Days in Arrears"
                             name="par_61_90"
                             domain="[('par_bucket','=','61_90')]"/>
                     <filter string="Over 90 Days in Arrears"
