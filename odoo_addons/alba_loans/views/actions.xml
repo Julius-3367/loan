@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Alba Loans — All Actions
+    ========================
+    This file defines all ir.actions.act_window records before any views
+    that reference them. This solves cross-dependency issues where views
+    in one file reference actions defined in another file.
+-->
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             alba.customer — Actions
+             ================================================================ -->
+        <record id="action_alba_customer" model="ir.actions.act_window">
+            <field name="name">Customers</field>
+            <field name="res_model">alba.customer</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No customers registered yet.
+                </p>
+                <p>
+                    Customers are created when they register on the Django portal
+                    or when you create them manually here.
+                </p>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan.product — Actions
+             ================================================================ -->
+        <record id="action_alba_loan_product" model="ir.actions.act_window">
+            <field name="name">Loan Products</field>
+            <field name="res_model">alba.loan.product</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No loan products configured yet.
+                </p>
+                <p>
+                    Create your first loan product to start accepting
+                    loan applications. Configure interest rates, fee
+                    structures, tenure limits and accounting accounts here.
+                </p>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan.application — Actions
+             ================================================================ -->
+        <record id="action_alba_loan_application" model="ir.actions.act_window">
+            <field name="name">Loan Applications</field>
+            <field name="res_model">alba.loan.application</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="context">{'search_default_in_progress': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No loan applications yet.
+                </p>
+                <p>
+                    Loan applications submitted through the customer portal will
+                    appear here for review, credit analysis, approval and
+                    disbursement.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_alba_loan_application_all" model="ir.actions.act_window">
+            <field name="name">All Applications</field>
+            <field name="res_model">alba.loan.application</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan — Actions
+             ================================================================ -->
+        <record id="action_alba_loan_list" model="ir.actions.act_window">
+            <field name="name">Active Loans</field>
+            <field name="res_model">alba.loan</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No loans disbursed yet.
+                </p>
+                <p>
+                    Loans are created automatically when a Loan Application
+                    is disbursed using the Disbursement Wizard.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_alba_loan_all" model="ir.actions.act_window">
+            <field name="name">All Loans</field>
+            <field name="res_model">alba.loan</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan.repayment — Actions
+             ================================================================ -->
+        <record id="action_alba_loan_repayment" model="ir.actions.act_window">
+            <field name="name">Repayments</field>
+            <field name="res_model">alba.loan.repayment</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No repayments posted yet.
+                </p>
+                <p>
+                    Repayments can be posted manually from a loan form or
+                    automatically when an M-Pesa transaction is reconciled.
+                </p>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.repayment.schedule — Actions
+             ================================================================ -->
+        <record id="action_alba_repayment_schedule" model="ir.actions.act_window">
+            <field name="name">Repayment Schedules</field>
+            <field name="res_model">alba.repayment.schedule</field>
+            <field name="view_mode">list</field>
+            <field name="context">{'search_default_overdue': 1}</field>
+        </record>
+
+        <!-- ================================================================
+             alba.mpesa.config — Actions
+             ================================================================ -->
+        <record id="action_alba_mpesa_config" model="ir.actions.act_window">
+            <field name="name">M-Pesa Configurations</field>
+            <field name="res_model">alba.mpesa.config</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No M-Pesa configurations yet.
+                </p>
+                <p>
+                    Configure Daraja API credentials here to enable STK Push,
+                    C2B and B2C M-Pesa integrations.
+                </p>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.mpesa.transaction — Actions
+             ================================================================ -->
+        <record id="action_alba_mpesa_transaction" model="ir.actions.act_window">
+            <field name="name">M-Pesa Transactions</field>
+            <field name="res_model">alba.mpesa.transaction</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No M-Pesa transactions yet.
+                </p>
+                <p>
+                    All STK Push, C2B and B2C transactions will appear here
+                    for monitoring and reconciliation.
+                </p>
+            </field>
+        </record>
+
+        <record id="action_alba_mpesa_transaction_pending" model="ir.actions.act_window">
+            <field name="name">M-Pesa — Pending</field>
+            <field name="res_model">alba.mpesa.transaction</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('status','=','pending')]</field>
+            <field name="context">{'search_default_pending': 1}</field>
+        </record>
+
+        <record id="action_alba_mpesa_transaction_needs_attention" model="ir.actions.act_window">
+            <field name="name">M-Pesa — Needs Attention</field>
+            <field name="res_model">alba.mpesa.transaction</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('needs_attention','=',True)]</field>
+            <field name="context">{'search_default_needs_attention': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No unreconciled transactions — great work!
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

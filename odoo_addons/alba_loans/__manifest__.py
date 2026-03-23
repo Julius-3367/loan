@@ -57,8 +57,10 @@ Accounting
         "data/sequence_data.xml",
         # ── Scheduled actions (crons) ────────────────────────────────────────
         "data/cron_data.xml",
+        # ── Actions — must load before views that reference them ─────────────
+        "views/actions.xml",
         # ── Loan management views ────────────────────────────────────────────
-        "views/loan_views.xml",              # Must be first (defines action_alba_loan_list)
+        "views/loan_views.xml",
         "views/customer_views.xml",
         "views/loan_product_views.xml",
         "views/loan_application_views.xml",
