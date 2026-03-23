@@ -102,8 +102,23 @@ class AlbaLoan(models.Model):
     )
     maturity_date = fields.Date(
         string="Maturity Date",
-        compute="_compute_maturity_date",
-        store=True,
+        # compute="_compute_maturity_date",
+        # store=True,
+    )
+    par_bucket = fields.Selection(
+        selection=[
+            ("current", "Current"),
+            ("1_30", "1-30 Days"),
+            ("31_60", "31-60 Days"),
+            ("61_90", "61-90 Days"),
+            ("91_180", "91-180 Days"),
+            ("over_180", "Over 180 Days"),
+        ],
+        string="PAR Bucket",
+        # compute="_compute_par",
+        # store=True,
+        tracking=True,
+        default="current",
     )
 
     # ── State ─────────────────────────────────────────────────────────────────
@@ -153,20 +168,6 @@ class AlbaLoan(models.Model):
         compute="_compute_par",
         store=True,
         help="Number of days since the oldest overdue unpaid instalment.",
-    )
-    par_bucket = fields.Selection(
-        selection=[
-            ("current", "Current"),
-            ("1_30", "1-30 Days"),
-            ("31_60", "31-60 Days"),
-            ("61_90", "61-90 Days"),
-            ("91_180", "91-180 Days"),
-            ("over_180", "Over 180 Days"),
-        ],
-        string="PAR Bucket",
-        compute="_compute_par",
-        store=True,
-        tracking=True,
     )
 
     # ── Relationships ─────────────────────────────────────────────────────────
