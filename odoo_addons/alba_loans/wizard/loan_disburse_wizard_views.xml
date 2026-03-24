@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             Disbursement Wizard — Form View
+             ================================================================ -->
+        <record id="view_alba_loan_disburse_wizard_form" model="ir.ui.view">
+            <field name="name">alba.loan.disburse.wizard.form</field>
+            <field name="model">alba.loan.disburse.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Disburse Loan">
+
+                    <sheet>
+                        <!-- Application summary banner -->
+                        <div class="oe_title">
+                            <h1>
+                                <field name="application_number" readonly="1"/>
+                            </h1>
+                            <h3>
+                                <field name="customer_id" readonly="1"/>
+                                &amp;nbsp;—&amp;nbsp;
+                                <field name="loan_product_id" readonly="1"/>
+                            </h3>
+                        </div>
+
+                        <group string="Disbursement Terms">
+                            <group>
+                                <field name="approved_amount"/>
+                                <field name="disbursement_date"/>
+                                <field name="tenure_months"/>
+                                <field name="repayment_frequency"/>
+                            </group>
+                            <group>
+                                <field name="interest_rate"/>
+                                <field name="interest_method"/>
+                                <field name="journal_id"/>
+                                <field name="generate_schedule" widget="boolean_toggle"/>
+                            </group>
+                        </group>
+
+                        <group string="Estimated Summary" col="3">
+                            <field name="estimated_monthly_instalment" readonly="1"/>
+                            <field name="estimated_total_interest"     readonly="1"/>
+                            <field name="estimated_total_repayable"    readonly="1"/>
+                        </group>
+
+                        <group string="Notes">
+                            <field name="notes" nolabel="1" placeholder="Optional internal notes recorded on the loan record…"/>
+                        </group>
+
+                        <!-- Hidden relational field needed by wizard -->
+                        <field name="application_id" invisible="1"/>
+                        <field name="currency_id"    invisible="1"/>
+                    </sheet>
+
+                    <footer>
+                        <button name="action_disburse"
+                                string="Disburse Loan"
+                                type="object"
+                                class="btn-primary"
+                                data-hotkey="v"/>
+                        <button string="Cancel"
+                                class="btn-secondary"
+                                special="cancel"
+                                data-hotkey="z"/>
+                    </footer>
+
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

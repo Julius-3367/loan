@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ================================================================
+             Alba Loans — Security Groups
+             ================================================================ -->
+
+        <!-- Category -->
+        <record id="module_alba_loans" model="ir.module.category">
+            <field name="name">Alba Capital / Loans</field>
+            <field name="description">Manage Alba Capital loan products, applications, disbursements and repayments.</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- ── Loan User ─────────────────────────────────────────────────── -->
+        <!-- Read-only access to loan records; can create customers and submit
+             applications on behalf of customers. -->
+        <record id="group_loan_user" model="res.groups">
+            <field name="name">Loan User</field>
+            <field name="category_id" ref="module_alba_loans"/>
+            <field name="comment">
+                Loan Users can view loan products, customers and applications.
+                They may create new customer profiles and draft loan applications,
+                and submit them for review. They cannot approve, reject or disburse.
+            </field>
+        </record>
+
+        <!-- ── Loan Officer ──────────────────────────────────────────────── -->
+        <!-- Can review applications, perform credit analysis and forward to
+             management for approval. Cannot approve or disburse. -->
+        <record id="group_loan_officer" model="res.groups">
+            <field name="name">Loan Officer</field>
+            <field name="category_id" ref="module_alba_loans"/>
+            <field name="implied_ids" eval="[(4, ref('group_loan_user'))]"/>
+            <field name="comment">
+                Loan Officers inherit all Loan User permissions and additionally
+                can move applications through Under Review and Credit Analysis stages,
+                record employer verifications and guarantor confirmations,
+                and post repayments.
+            </field>
+        </record>
+
+        <!-- ── Loan Manager ──────────────────────────────────────────────── -->
+        <!-- Full access: can approve, reject, disburse and write off loans. -->
+        <record id="group_loan_manager" model="res.groups">
+            <field name="name">Loan Manager</field>
+            <field name="category_id" ref="module_alba_loans"/>
+            <field name="implied_ids" eval="[(4, ref('group_loan_officer'))]"/>
+            <field name="comment">
+                Loan Managers inherit all Loan Officer permissions and additionally
+                can approve or reject applications at any stage, disburse loans,
+                mark loans as NPL, write them off, and manage loan product
+                configuration (create / edit / archive products).
+            </field>
+        </record>
+
+    </data>
+</odoo>

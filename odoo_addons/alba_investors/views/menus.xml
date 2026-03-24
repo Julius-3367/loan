@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+    <!-- ================================================================
+         Alba Investors — Top-level Menu
+         ================================================================ -->
+    <menuitem id="menu_alba_investors_root"
+              name="Alba Investors"
+              sequence="20"
+              web_icon="alba_investors,static/description/icon.png"
+              groups="alba_investors.group_investor_user"/>
+
+    <!-- ================================================================
+         Alba Investors — Dashboard (links to Investment list)
+         ================================================================ -->
+    <menuitem id="menu_alba_investors_dashboard"
+              name="Dashboard"
+              parent="menu_alba_investors_root"
+              action="action_alba_investment"
+              sequence="5"
+              groups="alba_investors.group_investor_user"/>
+
+    <!-- ================================================================
+         Investors
+         ================================================================ -->
+    <menuitem id="menu_alba_investors_investors"
+              name="Investors"
+              parent="menu_alba_investors_root"
+              action="action_alba_investor"
+              sequence="10"
+              groups="alba_investors.group_investor_user"/>
+
+    <!-- ================================================================
+         Investments
+         ================================================================ -->
+    <menuitem id="menu_alba_investors_investments_root"
+              name="Investments"
+              parent="menu_alba_investors_root"
+              sequence="20"
+              groups="alba_investors.group_investor_user"/>
+
+    <menuitem id="menu_alba_investors_investments_all"
+              name="All Investments"
+              parent="menu_alba_investors_investments_root"
+              action="action_alba_investment"
+              sequence="10"
+              groups="alba_investors.group_investor_user"/>
+
+    <menuitem id="menu_alba_investors_accruals"
+              name="Interest Accruals"
+              parent="menu_alba_investors_investments_root"
+              action="action_alba_interest_accrual"
+              sequence="20"
+              groups="alba_investors.group_investor_officer"/>
+
+    <!-- ================================================================
+         Statements
+         ================================================================ -->
+    <menuitem id="menu_alba_investors_statements_root"
+              name="Statements"
+              parent="menu_alba_investors_root"
+              sequence="30"
+              groups="alba_investors.group_investor_user"/>
+
+    <menuitem id="menu_alba_investors_statements_all"
+              name="All Statements"
+              parent="menu_alba_investors_statements_root"
+              action="action_alba_investment_statement"
+              sequence="10"
+              groups="alba_investors.group_investor_user"/>
+
+    <menuitem id="menu_alba_investors_statements_generate"
+              name="Generate Statements"
+              parent="menu_alba_investors_statements_root"
+              action="action_alba_generate_statement_wizard"
+              sequence="20"
+              groups="alba_investors.group_investor_manager"/>
+
+    <!-- ================================================================
+         Configuration Sub-menu
+         ================================================================ -->
+    <menuitem id="menu_alba_investors_config"
+              name="Configuration"
+              parent="menu_alba_investors_root"
+              sequence="100"
+              groups="alba_investors.group_investor_manager"/>
+
+</data>
+</odoo>

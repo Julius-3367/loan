@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<data>
+
+    <!-- ================================================================
+         alba.mpesa.stk.push.wizard — Form View
+         ================================================================ -->
+    <record id="view_alba_mpesa_stk_push_wizard_form" model="ir.ui.view">
+        <field name="name">alba.mpesa.stk.push.wizard.form</field>
+        <field name="model">alba.mpesa.stk.push.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Request M-Pesa Payment (STK Push)">
+                <sheet>
+
+                    <!-- Info banner -->
+                    <div class="alert alert-info" role="alert">
+                        <i class="fa fa-mobile me-1" />
+                        <strong>M-Pesa STK Push</strong> — The customer will receive
+                        a payment prompt on their phone.  They must enter their
+                        M-Pesa PIN to complete the payment.  You will be notified
+                        of the outcome automatically via the M-Pesa transaction log.
+                    </div>
+
+                    <group string="Loan Information">
+                        <group>
+                            <field
+                                name="loan_id"
+                                options="{'no_create': True}"
+                                readonly="context.get('default_loan_id')"
+                            />
+                            <field name="loan_number" readonly="1" />
+                        </group>
+                        <group>
+                            <field name="outstanding_balance" readonly="1" />
+                            <field name="currency_id" invisible="1" />
+                        </group>
+                    </group>
+
+                    <group string="M-Pesa Configuration">
+                        <group>
+                            <field
+                                name="config_id"
+                                options="{'no_create': True}"
+                                required="1"
+                            />
+                            <field name="shortcode_display" readonly="1" string="Paybill / Till" />
+                        </group>
+                    </group>
+
+                    <group string="Payment Request Details">
+                        <group>
+                            <field
+                                name="phone_number"
+                                placeholder="e.g. 0712345678 or 254712345678"
+                            />
+                            <field name="amount" />
+                        </group>
+                        <group>
+                            <field
+                                name="account_reference"
+                                placeholder="Loan number (max 12 chars)"
+                            />
+                            <field
+                                name="transaction_desc"
+                                placeholder="e.g. Loan Repayment (max 13 chars)"
+                            />
+                        </group>
+                    </group>
+
+                    <!-- Result section — visible after push is sent -->
+                    <group
+                        string="Push Result"
+                        invisible="not checkout_request_id"
+                        class="mt-2"
+                    >
+                        <div class="alert alert-success" role="alert">
+                            <i class="fa fa-check-circle me-1" />
+                            <strong>STK Push submitted successfully.</strong>
+                            The customer should receive a prompt on their phone shortly.
+                        </div>
+                        <group>
+                            <field name="checkout_request_id" readonly="1" />
+                            <field name="merchant_request_id" readonly="1" />
+                            <field name="transaction_id" readonly="1" />
+                        </group>
+                    </group>
+
+                </sheet>
+
+                <footer>
+                    <button
+                        name="action_send_stk_push"
+                        string="Send STK Push"
+                        type="object"
+                        class="btn-primary"
+                        icon="fa-mobile"
+                        invisible="checkout_request_id"
+                    />
+                    <button
+                        string="Close"
+                        class="btn-secondary"
+                        special="cancel"
+                    />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         STK Push Wizard — Action (opened from loan form button)
+         ================================================================ -->
+    <record id="action_alba_mpesa_stk_push_wizard" model="ir.actions.act_window">
+        <field name="name">Request M-Pesa Payment</field>
+        <field name="res_model">alba.mpesa.stk.push.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_alba_mpesa_stk_push_wizard_form" />
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+</data>
+</odoo>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ================================================================
+             Alba Investors — Scheduled Actions (Cron Jobs)
+             ================================================================ -->
+
+        <!-- ── 1. Monthly Interest Accrual ──────────────────────────────── -->
+        <!-- Runs on the 1st of every month at 02:00 AM server time.
+             Calls action_accrue_all_active_investments() on alba.investment
+             to compound interest on every active investment account. -->
+        <record id="ir_cron_alba_monthly_interest_accrual" model="ir.cron">
+            <field name="name">Alba: Monthly Compound Interest Accrual</field>
+            <field name="model_id" ref="alba_investors.model_alba_investment"/>
+            <field name="state">code</field>
+            <field name="code">model.action_accrue_all_active_investments()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">months</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="priority">5</field>
+            <field name="nextcall" eval="(datetime.datetime.now().replace(day=1, hour=2, minute=0, second=0) + datetime.timedelta(days=32)).replace(day=1)"/>
+        </record>
+
+        <!-- ── 2. Monthly Statement Generation ──────────────────────────── -->
+        <!-- Runs on the 2nd of every month at 03:00 AM server time.
+             Calls action_generate_monthly_statements() on alba.investment.statement
+             to auto-generate and confirm statements for all active investments
+             covering the previous calendar month.
+             Runs one day after the accrual cron to ensure all accruals are
+             posted before statements are generated. -->
+        <record id="ir_cron_alba_monthly_statement_generation" model="ir.cron">
+            <field name="name">Alba: Monthly Investment Statement Generation</field>
+            <field name="model_id" ref="alba_investors.model_alba_investment_statement"/>
+            <field name="state">code</field>
+            <field name="code">model.action_generate_monthly_statements()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">months</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="priority">10</field>
+            <field name="nextcall" eval="(datetime.datetime.now().replace(day=2, hour=3, minute=0, second=0) + datetime.timedelta(days=32)).replace(day=2)"/>
+        </record>
+
+    </data>
+</odoo>

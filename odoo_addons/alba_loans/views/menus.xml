@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<data>
+
+    <!-- ================================================================
+         Alba Loans — Top-level Menu
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_loans_root"
+            name="Alba Loans"
+            sequence="10"
+            web_icon="alba_loans,static/description/icon.png"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <!-- ================================================================
+         Dashboard
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_loans_dashboard"
+            name="Dashboard"
+            parent="menu_alba_loans_root"
+            action="action_alba_loan_application"
+            sequence="5"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <!-- ================================================================
+         Customers
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_customer"
+            name="Customers"
+            parent="menu_alba_loans_root"
+            action="action_alba_customer"
+            sequence="10"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <!-- ================================================================
+         Loan Applications
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_loan_applications_root"
+            name="Loan Applications"
+            parent="menu_alba_loans_root"
+            sequence="20"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <menuitem
+            id="menu_alba_loan_applications_kanban"
+            name="Pipeline (Kanban)"
+            parent="menu_alba_loan_applications_root"
+            action="action_alba_loan_application"
+            sequence="10"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <menuitem
+            id="menu_alba_loan_applications_list"
+            name="All Applications"
+            parent="menu_alba_loan_applications_root"
+            action="action_alba_loan_application_all"
+            sequence="20"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <!-- ================================================================
+         Active Loans
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_loans_root_active"
+            name="Loans"
+            parent="menu_alba_loans_root"
+            sequence="30"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <menuitem
+            id="menu_alba_loans_active"
+            name="Active Loans"
+            parent="menu_alba_loans_root_active"
+            action="action_alba_loan_list"
+            sequence="10"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <menuitem
+            id="menu_alba_loans_all"
+            name="All Loans"
+            parent="menu_alba_loans_root_active"
+            action="action_alba_loan_all"
+            sequence="20"
+            groups="alba_loans.group_loan_officer"
+        />
+
+    <!-- ================================================================
+         Repayments
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_repayments_root"
+            name="Repayments"
+            parent="menu_alba_loans_root"
+            sequence="40"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <menuitem
+            id="menu_alba_loan_repayments"
+            name="All Repayments"
+            parent="menu_alba_repayments_root"
+            action="action_alba_loan_repayment"
+            sequence="10"
+            groups="alba_loans.group_loan_user"
+        />
+
+    <menuitem
+            id="menu_alba_repayment_schedule"
+            name="Repayment Schedules"
+            parent="menu_alba_repayments_root"
+            action="action_alba_repayment_schedule"
+            sequence="20"
+            groups="alba_loans.group_loan_officer"
+        />
+
+    <!-- ================================================================
+         M-Pesa
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_mpesa_root"
+            name="M-Pesa"
+            parent="menu_alba_loans_root"
+            sequence="50"
+            groups="alba_loans.group_loan_officer"
+        />
+
+    <menuitem
+            id="menu_alba_mpesa_transactions"
+            name="Transactions"
+            parent="menu_alba_mpesa_root"
+            action="action_alba_mpesa_transaction"
+            sequence="10"
+            groups="alba_loans.group_loan_officer"
+        />
+
+    <menuitem
+            id="menu_alba_mpesa_needs_attention"
+            name="Needs Attention"
+            parent="menu_alba_mpesa_root"
+            action="action_alba_mpesa_transaction_needs_attention"
+            sequence="20"
+            groups="alba_loans.group_loan_officer"
+        />
+
+    <menuitem
+            id="menu_alba_mpesa_config"
+            name="M-Pesa Configuration"
+            parent="menu_alba_mpesa_root"
+            action="action_alba_mpesa_config"
+            sequence="30"
+            groups="alba_loans.group_loan_manager"
+        />
+
+    <!-- ================================================================
+         Configuration
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_loans_config"
+            name="Configuration"
+            parent="menu_alba_loans_root"
+            sequence="100"
+            groups="alba_loans.group_loan_manager"
+        />
+
+    <menuitem
+            id="menu_alba_loan_products"
+            name="Loan Products"
+            parent="menu_alba_loans_config"
+            action="action_alba_loan_product"
+            sequence="10"
+            groups="alba_loans.group_loan_manager"
+        />
+
+</data>
+</odoo>

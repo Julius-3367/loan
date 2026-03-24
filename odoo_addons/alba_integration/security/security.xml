@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ================================================================
+             Security Groups — Alba Capital Django Integration Bridge
+             ================================================================
+
+             Two groups are defined:
+
+             1. Integration User  (read-only)
+                Can browse and read Webhook Logs.  Suitable for support
+                staff who need to diagnose delivery failures without being
+                able to modify API keys or secrets.
+
+             2. Integration Admin  (full access)
+                Can create, modify, and delete API Keys; can read, archive,
+                and delete Webhook Logs.  Implies Integration User (all
+                Integration User rights are automatically granted).
+
+             Both groups live in the "Technical" module category so they
+             appear under Settings > Users > Technical in the Odoo UI.
+        ================================================================ -->
+
+        <!-- ================================================================
+             Group 1: Integration User — read-only access to webhook logs
+        ================================================================ -->
+        <record id="group_integration_user" model="res.groups">
+            <field name="name">Integration User</field>
+            <field name="category_id" ref="base.module_category_technical" />
+            <field name="comment">
+                Read-only access to Alba Integration webhook logs.
+                Members can inspect inbound and outbound webhook activity
+                but cannot create or modify API keys or secrets.
+            </field>
+        </record>
+
+        <!-- ================================================================
+             Group 2: Integration Admin — manage API keys + full log access
+             Implies Integration User via implied_ids so every admin also
+             receives all read-only rights automatically.
+        ================================================================ -->
+        <record id="group_integration_admin" model="res.groups">
+            <field name="name">Integration Admin</field>
+            <field name="category_id" ref="base.module_category_technical" />
+            <field
+                name="implied_ids"
+                eval="[
+                (4, ref('alba_integration.group_integration_user'))
+            ]"
+            />
+            <field
+                name="users"
+                eval="[
+                (4, ref('base.user_root')),
+                (4, ref('base.user_admin'))
+            ]"
+            />
+            <field name="comment">
+                Full administration rights for the Alba Capital Django
+                Integration Bridge.  Members can create, regenerate, and
+                archive API keys; rotate webhook secrets; and read or
+                delete all webhook log entries.  Automatically grants all
+                Integration User rights via group implication.
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Loan Application Sequence: LA-20250001 -->
+        <record id="seq_alba_loan_application" model="ir.sequence">
+            <field name="name">Alba Loan Application</field>
+            <field name="code">alba.loan.application.seq</field>
+            <field name="prefix">LA-</field>
+            <field name="suffix"></field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+            <field name="use_date_range">False</field>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+        <!-- Loan Number Sequence: LN-20250001 -->
+        <record id="seq_alba_loan" model="ir.sequence">
+            <field name="name">Alba Loan Number</field>
+            <field name="code">alba.loan.seq</field>
+            <field name="prefix">LN-</field>
+            <field name="suffix"></field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+            <field name="use_date_range">False</field>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+        <!-- Loan Repayment Reference Sequence: RPMT-0001 -->
+        <record id="seq_alba_loan_repayment" model="ir.sequence">
+            <field name="name">Alba Loan Repayment Reference</field>
+            <field name="code">alba.loan.repayment.seq</field>
+            <field name="prefix">RPMT-</field>
+            <field name="suffix"></field>
+            <field name="padding">4</field>
+            <field name="number_increment">1</field>
+            <field name="number_next">1</field>
+            <field name="use_date_range">False</field>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<data noupdate="1">
+
+    <!-- ================================================================
+         Cron 1: Process Webhook Retry Queue (every 15 minutes)
+         Picks up all pending alba.webhook.retry records whose
+         next_retry_at has passed and attempts re-delivery using
+         exponential back-off.  Records that exceed max_attempts are
+         moved to status='dead' for operator review.
+         ================================================================ -->
+    <record id="cron_alba_process_webhook_retry" model="ir.cron">
+        <field name="name">Alba Integration — Process Webhook Retry Queue (Every 15 min)</field>
+        <field name="model_id" ref="alba_integration.model_alba_webhook_retry" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.webhook.retry'].cron_process_retry_queue()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">15</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">3</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 2: Purge Old Sync Logs (weekly)
+         Deletes alba.sync.log records older than the retention period
+         configured in system parameter
+         alba.integration.sync_log_retention_days (default: 90 days).
+         Runs in batches of 1 000 to avoid table locks.
+         ================================================================ -->
+    <record id="cron_alba_purge_sync_logs" model="ir.cron">
+        <field name="name">Alba Integration — Purge Old Sync Logs (Weekly)</field>
+        <field name="model_id" ref="alba_integration.model_alba_sync_log" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.sync.log'].cron_purge_old_logs()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">7</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">50</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 3: Integration Health Check (every 6 hours)
+         Computes a sync health summary (success / failure counts over
+         the last 24 hours) and fires a health.check webhook to the
+         Django portal so its dashboard can display integration status
+         without the portal needing to poll Odoo.
+         ================================================================ -->
+    <record id="cron_alba_integration_health_check" model="ir.cron">
+        <field name="name">Alba Integration — Health Check Webhook (Every 6 hours)</field>
+        <field name="model_id" ref="alba_integration.model_alba_sync_log" />
+        <field name="state">code</field>
+        <field name="code">
+summary = env['alba.sync.log'].get_sync_health_summary(hours=24)
+api_key = env['alba.api.key'].sudo().search([('is_active', '=', True)], limit=1)
+if api_key:
+    api_key.send_webhook('integration.health_check', summary)
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">6</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">30</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 4: Purge Old Webhook Logs (weekly)
+         Deletes alba.webhook.log records older than the retention period
+         set in system parameter
+         alba.integration.webhook_log_retention_days (default: 60 days).
+         ================================================================ -->
+    <record id="cron_alba_purge_webhook_logs" model="ir.cron">
+        <field name="name">Alba Integration — Purge Old Webhook Logs (Weekly)</field>
+        <field name="model_id" ref="alba_integration.model_alba_webhook_log" />
+        <field name="state">code</field>
+        <field name="code">
+import logging
+_logger = logging.getLogger('alba.integration.cron')
+retention_days = int(
+    env['ir.config_parameter'].sudo().get_param(
+        'alba.integration.webhook_log_retention_days', '60'
+    )
+)
+from datetime import timedelta
+cutoff = fields.Datetime.now() - timedelta(days=retention_days)
+old_logs = env['alba.webhook.log'].sudo().search(
+    [('create_date', '&lt;', cutoff)], order='id asc', limit=2000
+)
+count = len(old_logs)
+old_logs.unlink()
+_logger.info('Purged %d webhook log records older than %s days.', count, retention_days)
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">7</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">50</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 5: Dead Retry Alert (daily)
+         Counts 'dead' webhook retry records and fires a
+         integration.dead_webhooks_alert webhook to Django if any exist,
+         so the operations team is notified to investigate.
+         ================================================================ -->
+    <record id="cron_alba_dead_retry_alert" model="ir.cron">
+        <field name="name">Alba Integration — Dead Retry Alert (Daily)</field>
+        <field name="model_id" ref="alba_integration.model_alba_webhook_retry" />
+        <field name="state">code</field>
+        <field name="code">
+dead_count = env['alba.webhook.retry'].sudo().search_count([('status', '=', 'dead')])
+if dead_count > 0:
+    api_key = env['alba.api.key'].sudo().search([('is_active', '=', True)], limit=1)
+    if api_key:
+        api_key.send_webhook('integration.dead_webhooks_alert', {
+            'dead_count': dead_count,
+            'action_required': 'Please review dead webhook retry records in Odoo.',
+        })
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">20</field>
+    </record>
+
+</data>
+</odoo>

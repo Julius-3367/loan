@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<data>
+
+    <!-- ================================================================
+         alba.investment.statement — Form View
+         ================================================================ -->
+    <record id="view_alba_investment_statement_form" model="ir.ui.view">
+        <field name="name">alba.investment.statement.form</field>
+        <field name="model">alba.investment.statement</field>
+        <field name="arch" type="xml">
+            <form string="Investment Statement">
+                <header>
+                    <button
+                            name="action_confirm"
+                            string="Confirm Statement"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"
+                            groups="alba_investors.group_investor_officer"
+                        />
+                    <button
+                            name="action_send"
+                            string="Send to Investor"
+                            type="object"
+                            class="btn-success"
+                            invisible="state == 'sent'"
+                            groups="alba_investors.group_investor_officer"
+                        />
+                    <button
+                            name="action_reset_to_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'confirmed'"
+                            groups="alba_investors.group_investor_manager"
+                        />
+                    <field
+                            name="state"
+                            widget="statusbar"
+                            statusbar_visible="draft,confirmed,sent"
+                        />
+                </header>
+
+                <sheet>
+                    <!-- Sent banner -->
+                    <div
+                            class="alert alert-success"
+                            role="alert"
+                            invisible="state != 'sent'"
+                        >
+                        <i class="fa fa-check-circle me-1" />
+                        <strong>Statement sent to investor.</strong>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="reference" string="Statement Reference" />
+                        <h1>
+                            <field name="reference" readonly="1" />
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Statement Details">
+                            <field
+                                    name="investment_id"
+                                    options="{'no_create': True}"
+                                    readonly="state != 'draft'"
+                                />
+                            <field name="investor_id" readonly="1" />
+                            <field name="partner_id" readonly="1" />
+                            <field name="currency_id" invisible="1" />
+                            <field
+                                    name="statement_date"
+                                    readonly="state != 'draft'"
+                                />
+                        </group>
+                        <group string="Statement Period">
+                            <field
+                                    name="period_start"
+                                    readonly="state != 'draft'"
+                                />
+                            <field
+                                    name="period_end"
+                                    readonly="state != 'draft'"
+                                />
+                        </group>
+                    </group>
+
+                    <group string="Financial Summary" col="4">
+                        <field
+                                name="opening_balance"
+                                readonly="state != 'draft'"
+                            />
+                        <field name="deposits" readonly="state != 'draft'" />
+                        <field name="withdrawals" readonly="state != 'draft'" />
+                        <field
+                                name="interest_accrued"
+                                readonly="state != 'draft'"
+                            />
+                        <field name="closing_balance" readonly="1" />
+                    </group>
+
+                    <notebook>
+
+                        <!-- ── Accruals Included ──────────────────────────── -->
+                        <page
+                                string="Interest Accruals Included"
+                                name="accruals"
+                            >
+                            <field
+                                    name="accrual_ids"
+                                    mode="list"
+                                    readonly="state != 'draft'"
+                                    domain="[('investment_id','=',investment_id),('state','=','posted')]"
+                                >
+                                <list string="Accruals">
+                                    <field name="accrual_date" />
+                                    <field name="period_start" />
+                                    <field name="period_end" />
+                                    <field name="opening_balance" />
+                                    <field name="interest_amount" />
+                                    <field name="closing_balance" />
+                                    <field
+                                            name="state"
+                                            widget="badge"
+                                            decoration-success="state == 'posted'"
+                                        />
+                                    <field
+                                            name="currency_id"
+                                            column_invisible="1"
+                                        />
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── Notes ─────────────────────────────────────── -->
+                        <page string="Notes" name="notes">
+                            <field
+                                    name="notes"
+                                    nolabel="1"
+                                    readonly="state == 'sent'"
+                                    placeholder="Optional remarks for this statement period…"
+                                />
+                        </page>
+
+                    </notebook>
+                </sheet>
+
+                <chatter />
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.investment.statement — List View
+         ================================================================ -->
+    <record id="view_alba_investment_statement_list" model="ir.ui.view">
+        <field name="name">alba.investment.statement.list</field>
+        <field name="model">alba.investment.statement</field>
+        <field name="arch" type="xml">
+            <list
+                    string="Investment Statements"
+                    decoration-success="state == 'sent'"
+                    decoration-info="state == 'confirmed'"
+                    decoration-muted="state == 'draft'"
+                >
+                <field name="reference" />
+                <field name="investor_id" />
+                <field name="investment_id" />
+                <field name="statement_date" />
+                <field name="period_start" />
+                <field name="period_end" />
+                <field name="opening_balance" />
+                <field name="interest_accrued" />
+                <field name="deposits" optional="hide" />
+                <field name="withdrawals" optional="hide" />
+                <field name="closing_balance" />
+                <field
+                        name="state"
+                        widget="badge"
+                        decoration-success="state == 'sent'"
+                        decoration-info="state == 'confirmed'"
+                        decoration-muted="state == 'draft'"
+                    />
+                <field name="currency_id" column_invisible="1" />
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.investment.statement — Search View
+         ================================================================ -->
+    <record id="view_alba_investment_statement_search" model="ir.ui.view">
+        <field name="name">alba.investment.statement.search</field>
+        <field name="model">alba.investment.statement</field>
+        <field name="arch" type="xml">
+            <search string="Search Statements">
+                <field name="reference" string="Reference" />
+                <field name="investor_id" string="Investor" />
+                <field name="investment_id" string="Investment #" />
+                <separator />
+                <filter
+                        string="Draft"
+                        name="draft"
+                        domain="[('state','=','draft')]"
+                    />
+                <filter
+                        string="Confirmed"
+                        name="confirmed"
+                        domain="[('state','=','confirmed')]"
+                    />
+                <filter
+                        string="Sent"
+                        name="sent"
+                        domain="[('state','=','sent')]"
+                    />
+                <separator />
+                <filter
+                        string="This Month"
+                        name="this_month"
+                        domain="[('statement_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d'))]"
+                    />
+                <filter
+                        string="Last Month"
+                        name="last_month"
+                        domain="[
+                            ('period_start','&gt;=',(context_today() + relativedelta(months=-1, day=1)).strftime('%Y-%m-%d')),
+                            ('period_end','&lt;=',(context_today().replace(day=1) - datetime.timedelta(days=1)).strftime('%Y-%m-%d'))
+                        ]"
+                    />
+                <group expand="0" string="Group By">
+                    <filter
+                            string="Investor"
+                            name="grp_investor"
+                            context="{'group_by':'investor_id'}"
+                        />
+                    <filter
+                            string="Investment"
+                            name="grp_investment"
+                            context="{'group_by':'investment_id'}"
+                        />
+                    <filter
+                            string="Status"
+                            name="grp_state"
+                            context="{'group_by':'state'}"
+                        />
+                    <filter
+                            string="Statement Date"
+                            name="grp_date"
+                            context="{'group_by':'statement_date:month'}"
+                        />
+                    <filter
+                            string="Period"
+                            name="grp_period"
+                            context="{'group_by':'period_start:month'}"
+                        />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.investment.statement — Action Window
+         ================================================================ -->
+    <record id="action_alba_investment_statement" model="ir.actions.act_window">
+        <field name="name">Investment Statements</field>
+        <field name="res_model">alba.investment.statement</field>
+        <field name="view_mode">list,form</field>
+        <field
+                name="search_view_id"
+                ref="view_alba_investment_statement_search"
+            />
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No investment statements yet.
+            </p>
+            <p>
+                Monthly statements are auto-generated on the 2nd of each month
+                by the scheduled cron job, covering the previous calendar month.
+                You can also generate statements manually using the wizard in
+                the <b>Investors</b> menu.
+            </p>
+        </field>
+    </record>
+
+</data>
+</odoo>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+    <!-- ================================================================
+         alba.generate.statement.wizard — Form View
+         ================================================================ -->
+    <record id="view_alba_generate_statement_wizard_form" model="ir.ui.view">
+        <field name="name">alba.generate.statement.wizard.form</field>
+        <field name="model">alba.generate.statement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate Investment Statements">
+
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fa fa-info-circle me-1"/>
+                        This wizard generates monthly investment statements for the
+                        selected period.  The monthly cron runs automatically on the
+                        2nd of each month, but you can use this wizard to generate
+                        statements manually for any period.
+                    </div>
+
+                    <group string="Statement Period">
+                        <group>
+                            <field name="period_start"/>
+                            <field name="period_end"/>
+                            <field name="statement_date"/>
+                        </group>
+                        <group string="Preview">
+                            <field name="preview_count" readonly="1"
+                                   string="Investments to Process"/>
+                        </group>
+                    </group>
+
+                    <group string="Scope">
+                        <field name="generate_for" widget="radio"/>
+                        <field name="investor_ids"
+                               widget="many2many_tags"
+                               invisible="generate_for != 'selected_investors'"
+                               required="generate_for == 'selected_investors'"
+                               options="{'no_create': True}"/>
+                        <field name="investment_ids"
+                               widget="many2many_tags"
+                               invisible="generate_for != 'selected_investments'"
+                               required="generate_for == 'selected_investments'"
+                               options="{'no_create': True}"/>
+                    </group>
+
+                    <group string="Options">
+                        <field name="skip_existing"  widget="boolean_toggle"/>
+                        <field name="auto_confirm"   widget="boolean_toggle"/>
+                        <field name="auto_send"      widget="boolean_toggle"/>
+                    </group>
+
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not auto_send">
+                        <i class="fa fa-envelope me-1"/>
+                        <strong>Auto-Send is enabled.</strong>
+                        Each statement will be emailed to the investor immediately
+                        after generation.  Ensure the email template
+                        <em>alba_investors.email_template_investment_statement</em>
+                        is configured before proceeding.
+                    </div>
+
+                </sheet>
+
+                <footer>
+                    <button name="action_generate"
+                            string="Generate Statements"
+                            type="object"
+                            class="btn-primary"
+                            data-hotkey="v"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"
+                            data-hotkey="z"/>
+                </footer>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.generate.statement.wizard — Action Window
+         (used by the Statements > Generate Statements menu item)
+         ================================================================ -->
+    <record id="action_alba_generate_statement_wizard" model="ir.actions.act_window">
+        <field name="name">Generate Investment Statements</field>
+        <field name="res_model">alba.generate.statement.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="alba_investors.model_alba_investment"/>
+        <field name="binding_type">action</field>
+    </record>
+
+</data>
+</odoo>

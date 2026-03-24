@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             Alba Loans — Loan Statement Report Action
+             ================================================================ -->
+        <record id="action_report_alba_loan_statement" model="ir.actions.report">
+            <field name="name">Loan Statement</field>
+            <field name="model">alba.loan</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">alba_loans.report_loan_statement</field>
+            <field name="report_file">alba_loans.report_loan_statement</field>
+            <field name="print_report_name">
+                'Loan Statement - %s' % (object.loan_number)
+            </field>
+            <field name="binding_model_id" ref="model_alba_loan"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="base.paperformat_a4"/>
+        </record>
+
+        <!-- ================================================================
+             Alba Loans — Loan Application Summary Report Action
+             ================================================================ -->
+        <record id="action_report_alba_loan_application_summary" model="ir.actions.report">
+            <field name="name">Application Summary</field>
+            <field name="model">alba.loan.application</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">alba_loans.report_loan_application_summary</field>
+            <field name="report_file">alba_loans.report_loan_application_summary</field>
+            <field name="print_report_name">
+                'Application Summary - %s' % (object.application_number)
+            </field>
+            <field name="binding_model_id" ref="model_alba_loan_application"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="base.paperformat_a4"/>
+        </record>
+
+    </data>
+</odoo>

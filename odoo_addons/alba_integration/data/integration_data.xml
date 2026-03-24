@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Alba Capital — Django Integration Bridge
+        Seed system parameters installed once at module setup.
+
+        noupdate="1" ensures these values are written only on the very first
+        installation and are NOT reset if the module is upgraded later.
+        Administrators can freely change the values via
+        Settings > Technical > Parameters > System Parameters without fear
+        of them being reverted on the next `odoo -u alba_integration`.
+    -->
+    <data noupdate="1">
+
+        <!-- ================================================================
+             alba.integration.enabled
+             Master on/off switch read by the controller before processing
+             any inbound API request.  Set to "False" to put the integration
+             into maintenance mode without uninstalling the module.
+        ================================================================ -->
+        <record id="param_alba_integration_enabled" model="ir.config_parameter">
+            <field name="key">alba.integration.enabled</field>
+            <field name="value">True</field>
+        </record>
+
+        <!-- ================================================================
+             alba.integration.version
+             Semantic version of the integration API contract.  The /health
+             endpoint returns this value so the Django portal can assert
+             compatibility on startup.
+        ================================================================ -->
+        <record id="param_alba_integration_version" model="ir.config_parameter">
+            <field name="key">alba.integration.version</field>
+            <field name="value">1.0</field>
+        </record>
+
+        <!-- ================================================================
+             alba.integration.webhook_timeout
+             Maximum number of seconds Odoo will wait for a Django webhook
+             POST to complete before treating it as a timeout failure.
+             Corresponds to the `timeout` argument passed to requests.post().
+        ================================================================ -->
+        <record id="param_alba_integration_webhook_timeout" model="ir.config_parameter">
+            <field name="key">alba.integration.webhook_timeout</field>
+            <field name="value">30</field>
+        </record>
+
+        <!-- ================================================================
+             alba.integration.webhook_retry_enabled
+             When "True", failed outbound webhooks will be scheduled for
+             retry by a cron job (to be implemented in a future iteration).
+             Set to "False" to disable automatic retries.
+        ================================================================ -->
+        <record id="param_alba_integration_webhook_retry_enabled" model="ir.config_parameter">
+            <field name="key">alba.integration.webhook_retry_enabled</field>
+            <field name="value">False</field>
+        </record>
+
+        <!-- ================================================================
+             alba.integration.log_retention_days
+             Number of days to retain webhook log entries before they are
+             eligible for automated archival or deletion by a scheduled
+             cleanup cron (to be implemented in a future iteration).
+             Default: 90 days.
+        ================================================================ -->
+        <record id="param_alba_integration_log_retention_days" model="ir.config_parameter">
+            <field name="key">alba.integration.log_retention_days</field>
+            <field name="value">90</field>
+        </record>
+
+        <!-- ================================================================
+             alba.integration.api_base_path
+             The URL prefix under which all REST endpoints are registered.
+             Stored here for reference / documentation; changing this value
+             does NOT automatically re-register the routes — that requires
+             a code change in api_controller.py.
+        ================================================================ -->
+        <record id="param_alba_integration_api_base_path" model="ir.config_parameter">
+            <field name="key">alba.integration.api_base_path</field>
+            <field name="value">/alba/api/v1</field>
+        </record>
+
+    </data>
+</odoo>

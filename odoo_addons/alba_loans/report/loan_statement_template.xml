@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+<!-- ================================================================
+     Loan Statement — QWeb PDF Template
+     ================================================================ -->
+<template id="report_loan_statement">
+    <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="loan">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                    <!-- ── Header ──────────────────────────────────────── -->
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <h2 class="text-primary">
+                                <strong>LOAN STATEMENT</strong>
+                            </h2>
+                            <h4><t t-esc="loan.loan_number"/></h4>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong>Alba Capital Limited</strong><br/>
+                            Nairobi, Kenya<br/>
+                            info@albacapital.co.ke<br/>
+                            <em>Statement Generated: <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d %B %Y %H:%M')"/></em>
+                        </div>
+                    </div>
+
+                    <hr/>
+
+                    <!-- ── Loan Summary ──────────────────────────────── -->
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <h5>Customer Information</h5>
+                            <table class="table table-sm table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Name</strong></td>
+                                        <td><t t-esc="loan.customer_id.partner_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>ID Number</strong></td>
+                                        <td><t t-esc="loan.customer_id.id_number or '—'"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Phone</strong></td>
+                                        <td><t t-esc="loan.customer_id.partner_id.phone or '—'"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Email</strong></td>
+                                        <td><t t-esc="loan.customer_id.partner_id.email or '—'"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-6">
+                            <h5>Loan Details</h5>
+                            <table class="table table-sm table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Loan Number</strong></td>
+                                        <td><t t-esc="loan.loan_number"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Product</strong></td>
+                                        <td><t t-esc="loan.loan_product_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Principal</strong></td>
+                                        <td>
+                                            <t t-esc="loan.currency_id.symbol"/>
+                                            <t t-esc="'{:,.2f}'.format(loan.principal_amount)"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Interest Rate</strong></td>
+                                        <td><t t-esc="'{:.2f}'.format(loan.interest_rate)"/>% p.m.</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Interest Method</strong></td>
+                                        <td><t t-esc="dict(loan._fields['interest_method'].selection).get(loan.interest_method, loan.interest_method)"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tenure</strong></td>
+                                        <td><t t-esc="loan.tenure_months"/> months</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Disbursement Date</strong></td>
+                                        <td><t t-esc="loan.disbursement_date.strftime('%d %B %Y') if loan.disbursement_date else '—'"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Maturity Date</strong></td>
+                                        <td><t t-esc="loan.maturity_date.strftime('%d %B %Y') if loan.maturity_date else '—'"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status</strong></td>
+                                        <td><t t-esc="dict(loan._fields['state'].selection).get(loan.state, loan.state)"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ── Financial Summary ──────────────────────────── -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5>Account Summary</h5>
+                            <table class="table table-sm table-bordered">
+                                <tbody>
+                                    <tr class="table-light">
+                                        <td><strong>Total Repayable</strong></td>
+                                        <td class="text-end">
+                                            <t t-esc="loan.currency_id.symbol"/>
+                                            <t t-esc="'{:,.2f}'.format(loan.total_repayable)"/>
+                                        </td>
+                                        <td><strong>Total Paid to Date</strong></td>
+                                        <td class="text-end">
+                                            <t t-esc="loan.currency_id.symbol"/>
+                                            <t t-esc="'{:,.2f}'.format(loan.total_paid)"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="table-light">
+                                        <td><strong>Outstanding Balance</strong></td>
+                                        <td class="text-end">
+                                            <strong>
+                                                <t t-esc="loan.currency_id.symbol"/>
+                                                <t t-esc="'{:,.2f}'.format(loan.outstanding_balance)"/>
+                                            </strong>
+                                        </td>
+                                        <td><strong>Arrears Amount</strong></td>
+                                        <td class="text-end"
+                                            t-attf-style="color: {{ 'red' if loan.arrears_amount > 0 else 'inherit' }};">
+                                            <t t-esc="loan.currency_id.symbol"/>
+                                            <t t-esc="'{:,.2f}'.format(loan.arrears_amount)"/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="loan.days_in_arrears > 0" class="table-danger">
+                                        <td colspan="2"><strong>Days in Arrears</strong></td>
+                                        <td colspan="2" class="text-end">
+                                            <strong><t t-esc="loan.days_in_arrears"/> days</strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ── Repayment Schedule ──────────────────────────── -->
+                    <t t-if="loan.repayment_schedule_ids">
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5>Repayment Schedule</h5>
+                                <table class="table table-sm table-bordered table-striped">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th class="text-center">#</th>
+                                            <th>Due Date</th>
+                                            <th class="text-end">Opening Bal.</th>
+                                            <th class="text-end">Principal</th>
+                                            <th class="text-end">Interest</th>
+                                            <th class="text-end">Total Due</th>
+                                            <th class="text-end">Total Paid</th>
+                                            <th class="text-end">Balance Due</th>
+                                            <th class="text-end">Closing Bal.</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="loan.repayment_schedule_ids.sorted(key=lambda r: r.installment_number)" t-as="inst">
+                                            <tr t-attf-style="background-color: {{ '#ffe6e6' if inst.status == 'overdue' else ('#e6ffe6' if inst.status == 'paid' else '#fffbe6' if inst.status == 'partial' else 'inherit') }};">
+                                                <td class="text-center"><t t-esc="inst.installment_number"/></td>
+                                                <td><t t-esc="inst.due_date.strftime('%d/%m/%Y') if inst.due_date else '—'"/></td>
+                                                <td class="text-end"><t t-esc="'{:,.2f}'.format(inst.opening_balance)"/></td>
+                                                <td class="text-end"><t t-esc="'{:,.2f}'.format(inst.principal_due)"/></td>
+                                                <td class="text-end"><t t-esc="'{:,.2f}'.format(inst.interest_due)"/></td>
+                                                <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(inst.total_due)"/></strong></td>
+                                                <td class="text-end"><t t-esc="'{:,.2f}'.format(inst.total_paid)"/></td>
+                                                <td class="text-end"
+                                                    t-attf-style="color: {{ 'red' if inst.balance_due > 0 and inst.status == 'overdue' else 'inherit' }};">
+                                                    <t t-esc="'{:,.2f}'.format(inst.balance_due)"/>
+                                                </td>
+                                                <td class="text-end"><t t-esc="'{:,.2f}'.format(inst.closing_balance)"/></td>
+                                                <td class="text-center">
+                                                    <span t-attf-style="font-size:10px; padding:2px 6px; border-radius:4px; background-color:{{ '#28a745' if inst.status=='paid' else '#dc3545' if inst.status=='overdue' else '#ffc107' if inst.status=='partial' else '#17a2b8' }}; color:white;">
+                                                        <t t-esc="dict(inst._fields['status'].selection).get(inst.status, inst.status).upper()"/>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td colspan="3"><strong>Totals</strong></td>
+                                            <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(sum(loan.repayment_schedule_ids.mapped('principal_due')))"/></strong></td>
+                                            <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(sum(loan.repayment_schedule_ids.mapped('interest_due')))"/></strong></td>
+                                            <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(sum(loan.repayment_schedule_ids.mapped('total_due')))"/></strong></td>
+                                            <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(sum(loan.repayment_schedule_ids.mapped('total_paid')))"/></strong></td>
+                                            <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(sum(loan.repayment_schedule_ids.mapped('balance_due')))"/></strong></td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- ── Payment History ─────────────────────────────── -->
+                    <t t-if="loan.repayment_ids.filtered(lambda r: r.state == 'posted')">
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5>Payment History</h5>
+                                <table class="table table-sm table-bordered table-striped">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th>Reference</th>
+                                            <th>Date</th>
+                                            <th>Method</th>
+                                            <th class="text-end">Amount Paid</th>
+                                            <th class="text-end">Principal</th>
+                                            <th class="text-end">Interest</th>
+                                            <th class="text-end">Fees</th>
+                                            <th>TXN ID</th>
+                                            <th class="text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="loan.repayment_ids.filtered(lambda r: r.state == 'posted').sorted(key=lambda r: r.payment_date)" t-as="pmt">
+                                            <tr>
+                                                <td><t t-esc="pmt.payment_reference or '—'"/></td>
+                                                <td><t t-esc="pmt.payment_date.strftime('%d/%m/%Y') if pmt.payment_date else '—'"/></td>
+                                                <td><t t-esc="dict(pmt._fields['payment_method'].selection).get(pmt.payment_method, pmt.payment_method)"/></td>
+                                                <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(pmt.amount_paid)"/></strong></td>
+                                                <td class="text-end"><t t-esc="'{:,.2f}'.format(pmt.principal_component)"/></td>
+                                                <td class="text-end"><t t-esc="'{:,.2f}'.format(pmt.interest_component)"/></td>
+                                                <td class="text-end"><t t-esc="'{:,.2f}'.format(pmt.fees_component)"/></td>
+                                                <td><t t-esc="pmt.mpesa_transaction_id or pmt.bank_transaction_id or '—'"/></td>
+                                                <td class="text-center">
+                                                    <span style="font-size:10px; padding:2px 6px; border-radius:4px; background-color:#28a745; color:white;">POSTED</span>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td colspan="3"><strong>Total Paid</strong></td>
+                                            <td class="text-end">
+                                                <strong>
+                                                    <t t-esc="loan.currency_id.symbol"/>
+                                                    <t t-esc="'{:,.2f}'.format(sum(loan.repayment_ids.filtered(lambda r: r.state == 'posted').mapped('amount_paid')))"/>
+                                                </strong>
+                                            </td>
+                                            <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(sum(loan.repayment_ids.filtered(lambda r: r.state == 'posted').mapped('principal_component')))"/></strong></td>
+                                            <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(sum(loan.repayment_ids.filtered(lambda r: r.state == 'posted').mapped('interest_component')))"/></strong></td>
+                                            <td class="text-end"><strong><t t-esc="'{:,.2f}'.format(sum(loan.repayment_ids.filtered(lambda r: r.state == 'posted').mapped('fees_component')))"/></strong></td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- ── Footer Disclaimer ──────────────────────────── -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <hr/>
+                            <p class="text-muted" style="font-size:10px;">
+                                This statement is generated automatically by Alba Capital's loan management system
+                                and is valid as of the date of generation.  For queries, contact your loan officer
+                                or email <em>info@albacapital.co.ke</em>.
+                                Alba Capital Limited is regulated by the Central Bank of Kenya.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </t>
+</template>
+
+<!-- ================================================================
+     Loan Application Summary — QWeb PDF Template
+     ================================================================ -->
+<template id="report_loan_application_summary">
+    <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="app">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <h2 class="text-primary"><strong>LOAN APPLICATION SUMMARY</strong></h2>
+                            <h4><t t-esc="app.application_number"/></h4>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong>Alba Capital Limited</strong><br/>
+                            Nairobi, Kenya<br/>
+                            info@albacapital.co.ke<br/>
+                            <em>Printed: <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d %B %Y %H:%M')"/></em>
+                        </div>
+                    </div>
+
+                    <hr/>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <h5>Customer Details</h5>
+                            <table class="table table-sm table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Name</strong></td>
+                                        <td><t t-esc="app.customer_id.partner_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>ID Number</strong></td>
+                                        <td><t t-esc="app.customer_id.id_number or '—'"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Employment</strong></td>
+                                        <td><t t-esc="dict(app.customer_id._fields['employment_status'].selection).get(app.customer_id.employment_status, '—')"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Monthly Income</strong></td>
+                                        <td>
+                                            <t t-esc="app.currency_id.symbol"/>
+                                            <t t-esc="'{:,.2f}'.format(app.customer_id.monthly_income)"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>KYC Status</strong></td>
+                                        <td><t t-esc="dict(app.customer_id._fields['kyc_status'].selection).get(app.customer_id.kyc_status, '—')"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-6">
+                            <h5>Application Details</h5>
+                            <table class="table table-sm table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Application #</strong></td>
+                                        <td><t t-esc="app.application_number"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Product</strong></td>
+                                        <td><t t-esc="app.loan_product_id.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Requested Amount</strong></td>
+                                        <td>
+                                            <t t-esc="app.currency_id.symbol"/>
+                                            <t t-esc="'{:,.2f}'.format(app.requested_amount)"/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="app.approved_amount">
+                                        <td><strong>Approved Amount</strong></td>
+                                        <td>
+                                            <t t-esc="app.currency_id.symbol"/>
+                                            <t t-esc="'{:,.2f}'.format(app.approved_amount)"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tenure</strong></td>
+                                        <td><t t-esc="app.tenure_months"/> months</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Repayment Frequency</strong></td>
+                                        <td><t t-esc="dict(app._fields['repayment_frequency'].selection).get(app.repayment_frequency, '—')"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Status</strong></td>
+                                        <td><strong><t t-esc="dict(app._fields['state'].selection).get(app.state, app.state).upper()"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Submitted On</strong></td>
+                                        <td><t t-esc="app.submitted_date.strftime('%d %B %Y') if app.submitted_date else '—'"/></td>
+                                    </tr>
+                                    <tr t-if="app.approved_by">
+                                        <td><strong>Approved By</strong></td>
+                                        <td><t t-esc="app.approved_by.name"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3" t-if="app.purpose">
+                        <div class="col-12">
+                            <h5>Loan Purpose</h5>
+                            <p><t t-esc="app.purpose"/></p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3" t-if="app.conditions_of_approval">
+                        <div class="col-12">
+                            <h5>Conditions of Approval</h5>
+                            <p><t t-esc="app.conditions_of_approval"/></p>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <hr/>
+                            <p class="text-muted" style="font-size:10px;">
+                                This document is an official Alba Capital loan application summary.
+                                Confidential — for internal use only.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </t>
+</template>
+
+</data>
+</odoo>

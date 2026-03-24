@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<data>
+
+    <!-- ================================================================
+         alba.mpesa.config — Form View
+         ================================================================ -->
+    <record id="view_alba_mpesa_config_form" model="ir.ui.view">
+        <field name="name">alba.mpesa.config.form</field>
+        <field name="model">alba.mpesa.config</field>
+        <field name="arch" type="xml">
+            <form string="M-Pesa Configuration">
+                <header>
+                    <button
+                        name="action_test_connection"
+                        string="Test Connection"
+                        type="object"
+                        class="btn-primary"
+                        icon="fa-wifi"
+                        help="Verify Daraja credentials by fetching an OAuth token."
+                    />
+                    <button
+                        name="action_register_c2b_urls"
+                        string="Register C2B URLs"
+                        type="object"
+                        class="btn-secondary"
+                        icon="fa-link"
+                        help="Register validation and confirmation URLs with Safaricom."
+                    />
+                    <button
+                        name="action_clear_token_cache"
+                        string="Clear Token Cache"
+                        type="object"
+                        class="btn-secondary"
+                        icon="fa-refresh"
+                        help="Force a fresh OAuth token on the next API call."
+                    />
+                    <field
+                        name="is_active"
+                        widget="boolean_toggle"
+                        options="{'terminology': 'active'}"
+                    />
+                </header>
+
+                <sheet>
+                    <!-- Environment banner -->
+                    <div
+                        class="alert alert-warning"
+                        role="alert"
+                        invisible="environment != 'production'"
+                    >
+                        <i class="fa fa-exclamation-triangle me-1" />
+                        <strong>PRODUCTION environment — real money transactions.</strong>
+                        Ensure all credentials are correct before initiating any M-Pesa requests.
+                    </div>
+                    <div
+                        class="alert alert-info"
+                        role="alert"
+                        invisible="environment != 'sandbox'"
+                    >
+                        <i class="fa fa-flask me-1" />
+                        <strong>Sandbox environment</strong> — test transactions only.
+                        No real money will be moved.
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" />
+                        <h1>
+                            <field name="name" placeholder="e.g. Alba Capital — Production Paybill" />
+                        </h1>
+                        <div class="o_row">
+                            <field name="environment" widget="badge"
+                                decoration-warning="environment == 'production'"
+                                decoration-info="environment == 'sandbox'"
+                            />
+                            <field name="sequence" string="Priority" />
+                        </div>
+                    </div>
+
+                    <group>
+                        <group string="Company &amp; Environment">
+                            <field name="company_id" options="{'no_create': True}" />
+                            <field name="environment" />
+                            <field name="account_type" />
+                        </group>
+                        <group string="HTTP Settings">
+                            <field name="request_timeout" />
+                            <field name="max_stk_retries" />
+                            <field
+                                name="transaction_count"
+                                string="Transactions Logged"
+                            />
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <!-- ── Daraja Credentials ────────────────────────────── -->
+                        <page string="Daraja Credentials" name="credentials">
+                            <group>
+                                <group string="OAuth">
+                                    <field name="consumer_key" />
+                                    <field
+                                        name="consumer_secret"
+                                        password="True"
+                                        groups="alba_loans.group_loan_manager"
+                                    />
+                                </group>
+                                <group string="Business Codes">
+                                    <field name="shortcode" />
+                                    <field name="till_number" />
+                                    <field name="stk_transaction_type" />
+                                    <field
+                                        name="passkey"
+                                        password="True"
+                                        groups="alba_loans.group_loan_manager"
+                                    />
+                                </group>
+                            </group>
+                            <group string="B2C Credentials"
+                                groups="alba_loans.group_loan_manager">
+                                <group>
+                                    <field name="initiator_name" />
+                                    <field
+                                        name="initiator_security_credential"
+                                        password="True"
+                                    />
+                                    <field name="b2c_default_command" />
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ── Callback URLs ─────────────────────────────────── -->
+                        <page string="Callback URLs" name="callbacks">
+                            <group string="Base URL">
+                                <field
+                                    name="callback_base_url"
+                                    placeholder="https://odoo.albacapital.co.ke"
+                                />
+                            </group>
+                            <group string="Computed Endpoints (read-only — register these with Safaricom)">
+                                <field name="stk_callback_url" readonly="1" />
+                                <field name="c2b_validation_url" readonly="1" />
+                                <field name="c2b_confirmation_url" readonly="1" />
+                                <field name="b2c_result_url" readonly="1" />
+                                <field name="b2c_queue_timeout_url" readonly="1" />
+                            </group>
+                            <div class="alert alert-secondary mt-2" role="alert">
+                                <i class="fa fa-info-circle me-1" />
+                                After updating the Callback Base URL, click
+                                <b>Register C2B URLs</b> in the header to push the
+                                new confirmation and validation URLs to Safaricom.
+                                STK Push and B2C callback URLs are configured in
+                                the Daraja developer portal.
+                            </div>
+                        </page>
+
+                        <!-- ── Notes ────────────────────────────────────────── -->
+                        <page string="Notes" name="notes">
+                            <field
+                                name="notes"
+                                nolabel="1"
+                                placeholder="Internal notes about this configuration…"
+                            />
+                        </page>
+
+                    </notebook>
+                </sheet>
+
+                <chatter />
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.mpesa.config — List View
+         ================================================================ -->
+    <record id="view_alba_mpesa_config_list" model="ir.ui.view">
+        <field name="name">alba.mpesa.config.list</field>
+        <field name="model">alba.mpesa.config</field>
+        <field name="arch" type="xml">
+            <list
+                string="M-Pesa Configurations"
+                decoration-muted="not is_active"
+            >
+                <field name="sequence" widget="handle" />
+                <field name="name" />
+                <field name="environment"
+                    widget="badge"
+                    decoration-warning="environment == 'production'"
+                    decoration-info="environment == 'sandbox'"
+                />
+                <field name="account_type" />
+                <field name="shortcode" />
+                <field name="till_number" optional="show" />
+                <field name="callback_base_url" />
+                <field name="transaction_count" string="Transactions" />
+                <field name="company_id" optional="show" />
+                <field name="is_active" widget="boolean_toggle" />
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.mpesa.config — Search View
+         ================================================================ -->
+    <record id="view_alba_mpesa_config_search" model="ir.ui.view">
+        <field name="name">alba.mpesa.config.search</field>
+        <field name="model">alba.mpesa.config</field>
+        <field name="arch" type="xml">
+            <search string="Search M-Pesa Configurations">
+                <field name="name" string="Name" />
+                <field name="shortcode" string="Short Code" />
+                <separator />
+                <filter
+                    string="Active"
+                    name="active"
+                    domain="[('is_active','=',True)]"
+                />
+                <filter
+                    string="Inactive"
+                    name="inactive"
+                    domain="[('is_active','=',False)]"
+                />
+                <separator />
+                <filter
+                    string="Sandbox"
+                    name="sandbox"
+                    domain="[('environment','=','sandbox')]"
+                />
+                <filter
+                    string="Production"
+                    name="production"
+                    domain="[('environment','=','production')]"
+                />
+                <group expand="0" string="Group By">
+                    <filter
+                        string="Environment"
+                        name="grp_environment"
+                        context="{'group_by':'environment'}"
+                    />
+                    <filter
+                        string="Company"
+                        name="grp_company"
+                        context="{'group_by':'company_id'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.mpesa.config — Action Window
+         ================================================================ -->
+    <record id="action_alba_mpesa_config" model="ir.actions.act_window">
+        <field name="name">M-Pesa Configurations</field>
+        <field name="res_model">alba.mpesa.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_alba_mpesa_config_search" />
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No M-Pesa configurations yet.
+            </p>
+            <p>
+                Create a configuration record with your Daraja API credentials
+                (Consumer Key, Consumer Secret, Business Short Code / Till Number,
+                and Passkey for STK Push).  After saving, click
+                <b>Test Connection</b> to verify your credentials, then
+                <b>Register C2B URLs</b> to activate inbound payment callbacks.
+            </p>
+        </field>
+    </record>
+
+</data>
+</odoo>

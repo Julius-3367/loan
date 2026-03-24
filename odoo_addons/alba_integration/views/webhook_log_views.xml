@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================== -->
+    <!--  Form view — read-only, shows every field including raw payloads   -->
+    <!-- ================================================================== -->
+    <record id="view_alba_webhook_log_form" model="ir.ui.view">
+        <field name="name">alba.webhook.log.form</field>
+        <field name="model">alba.webhook.log</field>
+        <field name="arch" type="xml">
+            <form string="Webhook Log" create="false" edit="false" delete="false">
+                <sheet>
+
+                    <!-- Status banner at the top -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="event_type" readonly="1"/>
+                        </h1>
+                        <h2>
+                            <field name="direction" readonly="1"/>
+                            &amp;nbsp;·&amp;nbsp;
+                            <field name="status" readonly="1"/>
+                        </h2>
+                    </div>
+
+                    <group>
+                        <group string="Request Details">
+                            <field name="api_key_id" readonly="1"/>
+                            <field name="direction" readonly="1"/>
+                            <field name="event_type" readonly="1"/>
+                            <field name="timestamp" readonly="1"/>
+                            <field name="duration_ms" readonly="1"
+                                   widget="integer"
+                                   string="Duration (ms)"/>
+                        </group>
+                        <group string="Response &amp; Status">
+                            <field name="status" readonly="1"/>
+                            <field name="response_code_display"
+                                   readonly="1"
+                                   string="HTTP Status"/>
+                            <field name="response_code" readonly="1" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Related Odoo record (optional) -->
+                    <group string="Related Record"
+                           attrs="{'invisible': [('related_model', '=', False)]}">
+                        <group>
+                            <field name="related_model" readonly="1"
+                                   string="Odoo Model"/>
+                            <field name="related_record_id" readonly="1"
+                                   string="Record ID"/>
+                        </group>
+                    </group>
+
+                    <!-- Error message — only shown when present -->
+                    <group string="Error Details"
+                           attrs="{'invisible': [('error_message', '=', False)]}">
+                        <field name="error_message"
+                               readonly="1"
+                               nolabel="1"
+                               widget="text"
+                               class="text-danger"/>
+                    </group>
+
+                    <notebook>
+                        <!-- Tab 1: request payload sent/received -->
+                        <page string="Request Payload" name="page_payload">
+                            <field name="payload"
+                                   readonly="1"
+                                   nolabel="1"
+                                   widget="ace"
+                                   options="{'mode': 'json'}"
+                                   placeholder="(no payload recorded)"
+                                   style="min-height: 300px; font-family: monospace;"/>
+                        </page>
+
+                        <!-- Tab 2: response body from the remote server -->
+                        <page string="Response Body" name="page_response">
+                            <field name="response_body"
+                                   readonly="1"
+                                   nolabel="1"
+                                   widget="text"
+                                   placeholder="(no response body recorded)"
+                                   style="min-height: 200px; font-family: monospace;"/>
+                        </page>
+                    </notebook>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  Tree / list view — colour-coded by delivery status                -->
+    <!-- ================================================================== -->
+    <record id="view_alba_webhook_log_tree" model="ir.ui.view">
+        <field name="name">alba.webhook.log.tree</field>
+        <field name="model">alba.webhook.log</field>
+        <field name="arch" type="xml">
+            <!--
+                decoration-danger  → red row   for failed deliveries
+                decoration-success → green row  for successful deliveries
+                decoration-warning → amber row  for pending / in-flight
+                decoration-muted   → grey text  for inbound log entries
+            -->
+            <tree string="Webhook Logs"
+                  create="false"
+                  edit="false"
+                  decoration-danger="status == 'failed'"
+                  decoration-success="status == 'success'"
+                  decoration-warning="status == 'pending'"
+                  default_order="timestamp desc">
+
+                <field name="timestamp" string="Timestamp" optional="show"/>
+                <field name="direction"
+                       string="Dir."
+                       optional="show"
+                       decoration-info="direction == 'inbound'"
+                       decoration-primary="direction == 'outbound'"/>
+                <field name="event_type" string="Event" optional="show"/>
+                <field name="api_key_id" string="API Key" optional="show"/>
+                <field name="response_code_display"
+                       string="HTTP Status"
+                       optional="show"/>
+                <field name="status"
+                       string="Status"
+                       optional="show"
+                       decoration-danger="status == 'failed'"
+                       decoration-success="status == 'success'"
+                       decoration-warning="status == 'pending'"/>
+                <field name="duration_ms" string="ms" optional="show"/>
+                <field name="payload_preview"
+                       string="Payload Preview"
+                       optional="show"/>
+                <field name="related_model"
+                       string="Model"
+                       optional="hide"/>
+                <field name="related_record_id"
+                       string="Rec. ID"
+                       optional="hide"/>
+
+                <!-- Hidden fields required for decorations -->
+                <field name="response_code" column_invisible="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  Search view — filters, group-by, and full-text search             -->
+    <!-- ================================================================== -->
+    <record id="view_alba_webhook_log_search" model="ir.ui.view">
+        <field name="name">alba.webhook.log.search</field>
+        <field name="model">alba.webhook.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Webhook Logs">
+
+                <!-- Full-text search fields -->
+                <field name="event_type"
+                       string="Event Type"
+                       filter_domain="[('event_type', 'ilike', self)]"/>
+                <field name="api_key_id"
+                       string="API Key"
+                       filter_domain="[('api_key_id.name', 'ilike', self)]"/>
+                <field name="error_message"
+                       string="Error Message"
+                       filter_domain="[('error_message', 'ilike', self)]"/>
+                <field name="related_model"
+                       string="Related Model"
+                       filter_domain="[('related_model', 'ilike', self)]"/>
+
+                <!-- ── Direction filters ──────────────────────────────── -->
+                <separator/>
+                <filter string="Outbound  (Odoo → Django)"
+                        name="filter_outbound"
+                        domain="[('direction', '=', 'outbound')]"/>
+                <filter string="Inbound  (Django → Odoo)"
+                        name="filter_inbound"
+                        domain="[('direction', '=', 'inbound')]"/>
+
+                <!-- ── Status filters ────────────────────────────────── -->
+                <separator/>
+                <filter string="Successful"
+                        name="filter_success"
+                        domain="[('status', '=', 'success')]"/>
+                <filter string="Failed"
+                        name="filter_failed"
+                        domain="[('status', '=', 'failed')]"/>
+                <filter string="Pending"
+                        name="filter_pending"
+                        domain="[('status', '=', 'pending')]"/>
+
+                <!-- ── Event type shortcut filters ───────────────────── -->
+                <separator/>
+                <filter string="Application Status Changed"
+                        name="filter_evt_app_status"
+                        domain="[('event_type', '=', 'application.status_changed')]"/>
+                <filter string="Loan Disbursed"
+                        name="filter_evt_disbursed"
+                        domain="[('event_type', '=', 'loan.disbursed')]"/>
+                <filter string="Payment Matched"
+                        name="filter_evt_payment"
+                        domain="[('event_type', '=', 'payment.matched')]"/>
+                <filter string="KYC Verified"
+                        name="filter_evt_kyc"
+                        domain="[('event_type', '=', 'customer.kyc_verified')]"/>
+
+                <!-- ── Time range filters ────────────────────────────── -->
+                <separator/>
+                <filter string="Today"
+                        name="filter_today"
+                        domain="[('timestamp', '>=', datetime.datetime.combine(
+                                    context_today(), datetime.time(0,0,0)))]"/>
+                <filter string="Last 7 Days"
+                        name="filter_last_7_days"
+                        domain="[('timestamp', '>=',
+                                  (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d 00:00:00'))]"/>
+
+                <!-- ── Group By ──────────────────────────────────────── -->
+                <group expand="0" string="Group By">
+                    <filter string="Event Type"
+                            name="group_event_type"
+                            context="{'group_by': 'event_type'}"/>
+                    <filter string="Status"
+                            name="group_status"
+                            context="{'group_by': 'status'}"/>
+                    <filter string="Direction"
+                            name="group_direction"
+                            context="{'group_by': 'direction'}"/>
+                    <filter string="API Key"
+                            name="group_api_key"
+                            context="{'group_by': 'api_key_id'}"/>
+                    <filter string="Date (Day)"
+                            name="group_day"
+                            context="{'group_by': 'timestamp:day'}"/>
+                    <filter string="Date (Week)"
+                            name="group_week"
+                            context="{'group_by': 'timestamp:week'}"/>
+                    <filter string="Date (Month)"
+                            name="group_month"
+                            context="{'group_by': 'timestamp:month'}"/>
+                </group>
+
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================== -->
+    <!--  Action window                                                      -->
+    <!-- ================================================================== -->
+    <record id="action_alba_webhook_log" model="ir.actions.act_window">
+        <field name="name">Webhook Logs</field>
+        <field name="res_model">alba.webhook.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_alba_webhook_log_tree"/>
+        <field name="search_view_id" ref="view_alba_webhook_log_search"/>
+        <field name="domain">[]</field>
+        <field name="context">{
+            'search_default_filter_outbound': 0
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No webhook log entries yet.
+            </p>
+            <p>
+                Log entries are created automatically when Odoo sends a webhook
+                to the Django portal, or when the controller records an inbound
+                API call from Django.
+            </p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<data noupdate="1">
+
+    <!-- ================================================================
+         Cron 1: Update PAR Buckets (daily)
+         Recomputes days_in_arrears, arrears_amount, and par_bucket for
+         every active loan.  Runs daily at 06:00 EAT so dashboards are
+         fresh at the start of each business day.
+         ================================================================ -->
+    <record id="cron_alba_update_par" model="ir.cron">
+        <field name="name">Alba Loans — Update PAR Buckets (Daily)</field>
+        <field name="model_id" ref="alba_loans.model_alba_loan" />
+        <field name="state">code</field>
+        <field name="code">
+model.search([('state', 'in', ['active', 'npl'])]).mapped('_compute_par')
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">5</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 2: NPL Monitor — flag Non-Performing Loans (daily)
+         Moves any active loan with days_in_arrears >= 90 to state='npl'
+         and fires a webhook notification to the Django portal.
+         ================================================================ -->
+    <record id="cron_alba_npl_monitor" model="ir.cron">
+        <field name="name">Alba Loans — NPL Monitor (Daily)</field>
+        <field name="model_id" ref="alba_loans.model_alba_loan" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.loan'].cron_flag_npl_loans()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">5</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 3: Overdue Payment Alerts (daily)
+         Emails and/or queues in-app notifications for customers with
+         repayment instalments that became overdue today or 3/7/14 days
+         ago, so officers can follow up proactively.
+         ================================================================ -->
+    <record id="cron_alba_overdue_alerts" model="ir.cron">
+        <field name="name">Alba Loans — Overdue Payment Alerts (Daily)</field>
+        <field name="model_id" ref="alba_loans.model_alba_loan" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.loan'].cron_send_overdue_alerts()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">10</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 4: Maturity Date Reminders (weekly)
+         Sends reminder notifications to customers whose loans are
+         maturing within the next 30 days, encouraging final repayment
+         or renewal.
+         ================================================================ -->
+    <record id="cron_alba_maturity_reminders" model="ir.cron">
+        <field name="name">Alba Loans — Maturity Date Reminders (Weekly)</field>
+        <field name="model_id" ref="alba_loans.model_alba_loan" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.loan'].cron_send_maturity_reminders()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">7</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">20</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 5: Auto-close Fully-Repaid Loans (daily)
+         Checks for active loans where outstanding_balance <= 0 and
+         transitions them to state='closed', then fires a webhook to
+         Django so the portal is updated immediately.
+         ================================================================ -->
+    <record id="cron_alba_close_repaid_loans" model="ir.cron">
+        <field name="name">Alba Loans — Auto-close Fully-Repaid Loans (Daily)</field>
+        <field name="model_id" ref="alba_loans.model_alba_loan" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.loan'].cron_close_repaid_loans()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">5</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 6: Query Pending STK Transactions (every 30 minutes)
+         Re-queries Safaricom for the status of any STK Push transactions
+         that are still in 'pending' state, so they are resolved quickly
+         even when the callback is delayed or dropped.
+         ================================================================ -->
+    <record id="cron_alba_query_pending_stk" model="ir.cron">
+        <field name="name">Alba Loans — Query Pending STK Transactions (Every 30 min)</field>
+        <field name="model_id" ref="alba_loans.model_alba_mpesa_transaction" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.mpesa.transaction'].cron_query_pending_stk_transactions()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">30</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">5</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 7: Auto-reconcile Completed M-Pesa Transactions (hourly)
+         Attempts to auto-match completed, unreconciled M-Pesa transactions
+         to loans and create draft repayments where a clean match is found.
+         ================================================================ -->
+    <record id="cron_alba_auto_reconcile_mpesa" model="ir.cron">
+        <field name="name">Alba Loans — Auto-reconcile M-Pesa Transactions (Hourly)</field>
+        <field name="model_id" ref="alba_loans.model_alba_mpesa_transaction" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.mpesa.transaction'].cron_auto_reconcile()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">10</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 8: Sync Loan Portfolio Stats to Django (every 6 hours)
+         Pushes aggregate portfolio metrics (total disbursed, total
+         collected, PAR %, active loan count) to the Django portal via
+         a webhook so dashboards stay current without a full sync.
+         ================================================================ -->
+    <record id="cron_alba_sync_portfolio_stats" model="ir.cron">
+        <field name="name">Alba Loans — Sync Portfolio Stats to Django (Every 6 hours)</field>
+        <field name="model_id" ref="alba_loans.model_alba_loan" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.loan'].cron_push_portfolio_stats()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">6</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="priority">20</field>
+    </record>
+
+</data>
+</odoo>

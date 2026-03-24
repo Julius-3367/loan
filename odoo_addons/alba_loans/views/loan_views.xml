@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             alba.loan — Form View
+             ================================================================ -->
+        <record id="view_alba_loan_form" model="ir.ui.view">
+            <field name="name">alba.loan.form</field>
+            <field name="model">alba.loan</field>
+            <field name="arch" type="xml">
+                <form string="Loan">
+                    <header>
+                        <button name="action_generate_schedule"
+                                string="Generate Schedule"
+                                type="object"
+                                class="btn-primary"
+                                invisible="schedule_generated == True"
+                                groups="alba_loans.group_loan_officer"/>
+                        <button name="action_post_disbursement_entry"
+                                string="Post Disbursement Entry"
+                                type="object"
+                                class="btn-primary"
+                                invisible="disbursement_move_id != False"
+                                groups="account.group_account_manager"/>
+                        <button name="action_mark_npl"
+                                string="Mark as NPL"
+                                type="object"
+                                class="btn-warning"
+                                invisible="state != 'active'"
+                                groups="alba_loans.group_loan_manager"/>
+                        <button name="action_close"
+                                string="Close Loan"
+                                type="object"
+                                class="btn-success"
+                                invisible="state != 'active'"
+                                groups="alba_loans.group_loan_manager"/>
+                        <button name="action_write_off"
+                                string="Write Off"
+                                type="object"
+                                class="btn-danger"
+                                invisible="state not in ('active','npl')"
+                                groups="alba_loans.group_loan_manager"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="active,npl,closed,written_off"/>
+                    </header>
+
+                    <sheet>
+                        <!-- Smart Buttons -->
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_schedule"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    icon="fa-calendar">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_value">
+                                        <field name="tenure_months"/>
+                                    </span>
+                                    <span class="o_stat_text">Instalments</span>
+                                </div>
+                            </button>
+                            <button name="action_view_repayments"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    icon="fa-credit-card">
+                                <field name="repayment_count"
+                                       widget="statinfo"
+                                       string="Payments"/>
+                            </button>
+                            <button type="object"
+                                    name="action_view_repayments"
+                                    class="oe_stat_button"
+                                    icon="fa-balance-scale">
+                                <div class="o_stat_info">
+                                    <field name="outstanding_balance" widget="monetary"/>
+                                    <span class="o_stat_text">Outstanding</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- NPL / Written-Off warning banners -->
+                        <div class="alert alert-danger" role="alert"
+                             invisible="state != 'written_off'">
+                            <strong>This loan has been written off.</strong>
+                        </div>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="state != 'npl'">
+                            <strong>Non-Performing Loan (NPL)</strong> —
+                            <field name="days_in_arrears" readonly="1"/> days in arrears.
+                        </div>
+
+                        <div class="oe_title">
+                            <label for="loan_number" string="Loan Number"/>
+                            <h1>
+                                <field name="loan_number" readonly="1"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group string="Loan Parties">
+                                <field name="application_id" readonly="1"/>
+                                <field name="customer_id"    readonly="1"/>
+                                <field name="loan_product_id" readonly="1"/>
+                                <field name="company_id"
+                                       groups="base.group_multi_company"
+                                       readonly="1"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                            <group string="Loan Terms">
+                                <field name="principal_amount"/>
+                                <field name="interest_rate"/>
+                                <field name="interest_method"/>
+                                <field name="tenure_months"/>
+                                <field name="repayment_frequency"/>
+                                <field name="disbursement_date"/>
+                                <field name="maturity_date" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group string="Financial Summary" col="4">
+                            <field name="total_repayable"    readonly="1"/>
+                            <field name="total_paid"         readonly="1"/>
+                            <field name="outstanding_balance" readonly="1"/>
+                            <field name="arrears_amount"     readonly="1"/>
+                        </group>
+
+                        <group string="Portfolio at Risk" col="4"
+                               invisible="state == 'closed'">
+                            <field name="days_in_arrears" readonly="1"/>
+                            <field name="par_bucket" widget="badge" readonly="1"
+                                   decoration-success="par_bucket == 'current'"
+                                   decoration-warning="par_bucket in ('1_30','31_60')"
+                                   decoration-danger="par_bucket in ('61_90','91_180','over_180')"/>
+                        </group>
+
+                        <notebook>
+
+                            <!-- ── Repayment Schedule ────────────────────── -->
+                            <page string="Repayment Schedule" name="schedule">
+                                <div class="alert alert-info" role="alert"
+                                     invisible="schedule_generated == True">
+                                    <i class="fa fa-info-circle me-1"/>
+                                    Click <strong>Generate Schedule</strong> in the
+                                    header to auto-create the amortisation schedule
+                                    for this loan.
+                                </div>
+                                <field name="repayment_schedule_ids"
+                                       mode="list"
+                                       readonly="1"
+                                       context="{'default_loan_id': active_id}">
+                                    <list string="Schedule"
+                                          decoration-danger="status == 'overdue'"
+                                          decoration-success="status == 'paid'"
+                                          decoration-warning="status == 'partial'">
+                                        <field name="installment_number" string="#"/>
+                                        <field name="due_date"/>
+                                        <field name="opening_balance"/>
+                                        <field name="principal_due"/>
+                                        <field name="interest_due"/>
+                                        <field name="total_due"/>
+                                        <field name="principal_paid"/>
+                                        <field name="interest_paid"/>
+                                        <field name="total_paid"/>
+                                        <field name="balance_due"/>
+                                        <field name="closing_balance"/>
+                                        <field name="days_overdue"/>
+                                        <field name="status" widget="badge"
+                                               decoration-success="status == 'paid'"
+                                               decoration-danger="status == 'overdue'"
+                                               decoration-warning="status == 'partial'"
+                                               decoration-info="status == 'pending'"/>
+                                        <field name="currency_id" column_invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <!-- ── Repayment History ─────────────────────── -->
+                            <page string="Repayment History" name="repayments">
+                                <field name="repayment_ids"
+                                       mode="list"
+                                       context="{'default_loan_id': active_id}">
+                                    <list string="Repayments"
+                                          decoration-danger="state == 'reversed'"
+                                          decoration-success="state == 'posted'"
+                                          decoration-muted="state == 'draft'">
+                                        <field name="payment_reference"/>
+                                        <field name="payment_date"/>
+                                        <field name="amount_paid"/>
+                                        <field name="principal_component"/>
+                                        <field name="interest_component"/>
+                                        <field name="fees_component"/>
+                                        <field name="penalty_component"/>
+                                        <field name="payment_method"/>
+                                        <field name="mpesa_transaction_id"/>
+                                        <field name="state" widget="badge"
+                                               decoration-success="state == 'posted'"
+                                               decoration-danger="state == 'reversed'"
+                                               decoration-muted="state == 'draft'"/>
+                                        <field name="currency_id" column_invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <!-- ── Accounting ────────────────────────────── -->
+                            <page string="Accounting" name="accounting"
+                                  groups="account.group_account_user">
+                                <group>
+                                    <group string="Disbursement">
+                                        <field name="journal_id"/>
+                                        <field name="disbursement_move_id" readonly="1"/>
+                                    </group>
+                                    <group string="Integration">
+                                        <field name="django_loan_id"
+                                               string="Django Loan ID"
+                                               groups="base.group_system"
+                                               readonly="1"/>
+                                        <field name="schedule_generated" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- ── Notes ─────────────────────────────────── -->
+                            <page string="Notes" name="notes">
+                                <field name="notes"
+                                       nolabel="1"
+                                       placeholder="Internal notes about this loan…"/>
+                            </page>
+
+                        </notebook>
+                    </sheet>
+
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan — List View
+             ================================================================ -->
+        <record id="view_alba_loan_list" model="ir.ui.view">
+            <field name="name">alba.loan.list</field>
+            <field name="model">alba.loan</field>
+            <field name="arch" type="xml">
+                <list string="Loans"
+                      decoration-danger="state in ('npl','written_off')"
+                      decoration-success="state == 'closed'"
+                      decoration-muted="state == 'written_off'">
+                    <field name="loan_number"/>
+                    <field name="customer_id"/>
+                    <field name="loan_product_id"/>
+                    <field name="principal_amount"/>
+                    <field name="interest_rate" string="Rate (%)"/>
+                    <field name="interest_method"/>
+                    <field name="tenure_months" string="Tenure (M)"/>
+                    <field name="disbursement_date"/>
+                    <field name="maturity_date"/>
+                    <field name="total_repayable"/>
+                    <field name="total_paid"/>
+                    <field name="outstanding_balance"/>
+                    <field name="arrears_amount"/>
+                    <field name="days_in_arrears"/>
+                    <field name="par_bucket" widget="badge"
+                           decoration-success="par_bucket == 'current'"
+                           decoration-warning="par_bucket in ('1_30','31_60')"
+                           decoration-danger="par_bucket in ('61_90','91_180','over_180')"/>
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'closed'"
+                           decoration-danger="state in ('npl','written_off')"
+                           decoration-info="state == 'active'"/>
+                    <field name="currency_id" column_invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan — Search View
+             ================================================================ -->
+        <record id="view_alba_loan_search" model="ir.ui.view">
+            <field name="name">alba.loan.search</field>
+            <field name="model">alba.loan</field>
+            <field name="arch" type="xml">
+                <search string="Search Loans">
+                    <field name="loan_number"    string="Loan #"/>
+                    <field name="customer_id"    string="Customer"/>
+                    <field name="loan_product_id" string="Product"/>
+                    <separator/>
+                    <filter string="Active"
+                            name="active"
+                            domain="[('state','=','active')]"/>
+                    <filter string="Closed"
+                            name="closed"
+                            domain="[('state','=','closed')]"/>
+                    <filter string="NPL"
+                            name="npl"
+                            domain="[('state','=','npl')]"/>
+                    <filter string="Written Off"
+                            name="written_off"
+                            domain="[('state','=','written_off')]"/>
+                    <separator/>
+                    <filter string="Current (No Arrears)"
+                            name="current"
+                            domain="[('par_bucket','=','current')]"/>
+                    <filter string="1–30 Days in Arrears"
+                            name="par_1_30"
+                            domain="[('par_bucket','=','1_30')]"/>
+                    <filter string="31–60 Days in Arrears"
+                            name="par_31_60"
+                            domain="[('par_bucket','=','31_60')]"/>
+                    <filter string="61–90 Days in Arrears"
+                            name="par_61_90"
+                            domain="[('par_bucket','=','61_90')]"/>
+                    <filter string="Over 90 Days in Arrears"
+                            name="par_over_90"
+                            domain="[('par_bucket','in',['91_180','over_180'])]"/>
+                    <separator/>
+                    <filter string="Disbursed This Month"
+                            name="this_month"
+                            domain="[('disbursement_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Maturing This Month"
+                            name="maturing"
+                            domain="[
+                                ('maturity_date','&gt;=',context_today().strftime('%Y-%m-%d')),
+                                ('maturity_date','&lt;=',(context_today().replace(day=28)).strftime('%Y-%m-%d'))
+                            ]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Status"
+                                name="grp_state"
+                                context="{'group_by':'state'}"/>
+                        <filter string="PAR Bucket"
+                                name="grp_par"
+                                context="{'group_by':'par_bucket'}"/>
+                        <filter string="Loan Product"
+                                name="grp_product"
+                                context="{'group_by':'loan_product_id'}"/>
+                        <filter string="Interest Method"
+                                name="grp_method"
+                                context="{'group_by':'interest_method'}"/>
+                        <filter string="Disbursement Month"
+                                name="grp_disb_month"
+                                context="{'group_by':'disbursement_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan — Action Window
+             ================================================================ -->
+        <record id="action_alba_loan_list" model="ir.actions.act_window">
+            <field name="name">Active Loans</field>
+            <field name="res_model">alba.loan</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_alba_loan_search"/>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No loans disbursed yet.
+                </p>
+                <p>
+                    Loans are created automatically when a Loan Application
+                    is disbursed using the Disbursement Wizard.
+                </p>
+            </field>
+        </record>
+
+        <!-- All Loans action (no default filter) -->
+        <record id="action_alba_loan_all" model="ir.actions.act_window">
+            <field name="name">All Loans</field>
+            <field name="res_model">alba.loan</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_alba_loan_search"/>
+            <field name="context">{}</field>
+        </record>
+
+    </data>
+</odoo>

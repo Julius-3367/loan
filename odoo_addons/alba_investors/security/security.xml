@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ================================================================
+             Alba Investors — Security Groups
+             ================================================================ -->
+
+        <!-- Category -->
+        <record id="module_alba_investors" model="ir.module.category">
+            <field name="name">Alba Capital / Investors</field>
+            <field name="description">Manage Alba Capital investor profiles, investment accounts, compound interest accrual and monthly statements.</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- ── Investor User ─────────────────────────────────────────────── -->
+        <!-- Read-only access to investor and investment records.
+             Useful for back-office staff who need visibility but not edit rights. -->
+        <record id="group_investor_user" model="res.groups">
+            <field name="name">Investor User</field>
+            <field name="category_id" ref="module_alba_investors"/>
+            <field name="comment">
+                Investor Users can view investor profiles, investment accounts,
+                interest accrual records and statements.  They cannot create,
+                edit or delete any records, and cannot trigger accruals or
+                generate statements.
+            </field>
+        </record>
+
+        <!-- ── Investor Officer ──────────────────────────────────────────── -->
+        <!-- Can create and manage investor records, post accruals and
+             generate/send statements. Cannot change accounting configuration. -->
+        <record id="group_investor_officer" model="res.groups">
+            <field name="name">Investor Officer</field>
+            <field name="category_id" ref="module_alba_investors"/>
+            <field name="implied_ids" eval="[(4, ref('group_investor_user'))]"/>
+            <field name="comment">
+                Investor Officers inherit all Investor User permissions and
+                additionally can create and update investor profiles and
+                investment accounts, post interest accruals, confirm and send
+                monthly statements, and run the statement generation wizard.
+            </field>
+        </record>
+
+        <!-- ── Investor Manager ──────────────────────────────────────────── -->
+        <!-- Full access: configure accounting accounts on investments,
+             reverse accruals, delete records, manage all investor data. -->
+        <record id="group_investor_manager" model="res.groups">
+            <field name="name">Investor Manager</field>
+            <field name="category_id" ref="module_alba_investors"/>
+            <field name="implied_ids" eval="[(4, ref('group_investor_officer'))]"/>
+            <field name="comment">
+                Investor Managers inherit all Investor Officer permissions and
+                additionally can configure accounting accounts on investments,
+                reverse interest accruals, reset statements to draft,
+                suspend/blacklist investors, and delete records.
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===================================================================
+         Form view — alba.api.key
+         =================================================================== -->
+    <record id="view_alba_api_key_form" model="ir.ui.view">
+        <field name="name">alba.api.key.form</field>
+        <field name="model">alba.api.key</field>
+        <field name="arch" type="xml">
+            <form string="API Key">
+
+                <header>
+                    <!-- Regenerate the inbound API key -->
+                    <button
+                        name="action_regenerate_key"
+                        string="Regenerate API Key"
+                        type="object"
+                        class="btn-warning"
+                        icon="fa-refresh"
+                        confirm="Regenerating the API key will immediately invalidate the current key. The Django portal will return 403 errors until its ODOO_API_KEY setting is updated. Continue?"
+                        groups="alba_integration.group_integration_admin"
+                    />
+                    <!-- Rotate the outbound HMAC webhook secret -->
+                    <button
+                        name="action_rotate_secret"
+                        string="Rotate Webhook Secret"
+                        type="object"
+                        class="btn-warning"
+                        icon="fa-key"
+                        confirm="Rotating the webhook secret means Django will reject all outbound webhooks until its ODOO_WEBHOOK_SECRET setting is updated. Continue?"
+                        groups="alba_integration.group_integration_admin"
+                    />
+                    <!-- Active / Archive toggle rendered as a status pill -->
+                    <field
+                        name="is_active"
+                        widget="boolean_button"
+                        options='{"terminology": "active"}'
+                        groups="alba_integration.group_integration_admin"
+                    />
+                </header>
+
+                <sheet>
+
+                    <!-- ── Stat buttons ──────────────────────────────── -->
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_logs"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-list-alt"
+                        >
+                            <field
+                                name="log_count"
+                                widget="statinfo"
+                                string="Webhook Logs"
+                            />
+                        </button>
+                    </div>
+
+                    <!-- ── Title ─────────────────────────────────────── -->
+                    <div class="oe_title">
+                        <label for="name" string="Integration Label" class="oe_edit_only"/>
+                        <h1>
+                            <field
+                                name="name"
+                                placeholder='e.g. "Django Portal – Production"'
+                                class="o_field_widget"
+                            />
+                        </h1>
+                        <div class="o_field_widget oe_read_only">
+                            <span class="badge badge-pill"
+                                  attrs="{'invisible': [('is_active', '=', True)]}">
+                                Archived
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- ── Credentials + Configuration columns ───────── -->
+                    <group>
+
+                        <!-- Left column — credentials (readonly, copyable) -->
+                        <group string="API Credentials" name="credentials">
+
+                            <field
+                                name="key"
+                                readonly="1"
+                                widget="CopyClipboardChar"
+                                help="Send this value in the X-Alba-API-Key request header."
+                            />
+
+                            <field
+                                name="webhook_secret"
+                                readonly="1"
+                                widget="CopyClipboardChar"
+                                help="HMAC-SHA256 secret used to sign outbound webhook payloads (X-Alba-Signature: sha256=...)."
+                            />
+
+                            <field
+                                name="full_webhook_url"
+                                readonly="1"
+                                widget="CopyClipboardChar"
+                                string="Outbound Webhook URL"
+                                help="Computed full URL where Odoo will POST webhook events to Django."
+                            />
+
+                        </group>
+
+                        <!-- Right column — configuration -->
+                        <group string="Configuration" name="configuration">
+
+                            <field
+                                name="django_base_url"
+                                placeholder="https://portal.albacapital.co.ke"
+                                widget="url"
+                            />
+
+                            <field
+                                name="webhook_path"
+                                placeholder="/api/v1/webhooks/odoo/"
+                            />
+
+                            <field
+                                name="company_id"
+                                groups="base.group_multi_company"
+                                options="{'no_create': True}"
+                            />
+
+                            <field name="last_used" readonly="1"/>
+
+                        </group>
+
+                    </group>
+
+                    <!-- ── Security / IP restriction ─────────────────── -->
+                    <group string="Access Restrictions" name="access_restrictions"
+                           groups="alba_integration.group_integration_admin">
+                        <field
+                            name="allowed_ips"
+                            placeholder="Leave empty to allow all IPs&#10;e.g. 41.57.100.10, 41.57.100.11"
+                            widget="text"
+                            nolabel="1"
+                            colspan="2"
+                        />
+                        <div class="alert alert-info" role="alert"
+                             attrs="{'invisible': [('allowed_ips', '!=', False)]}">
+                            <i class="fa fa-info-circle"/> No IP restrictions are configured.
+                            Requests from any IP address will be accepted.
+                        </div>
+                    </group>
+
+                    <!-- ── Notebook ──────────────────────────────────── -->
+                    <notebook>
+
+                        <page string="Recent Webhook Logs" name="webhook_logs">
+                            <field
+                                name="log_ids"
+                                readonly="1"
+                                context="{'default_api_key_id': active_id}"
+                            >
+                                <tree
+                                    string="Webhook Logs"
+                                    decoration-success="status == 'success'"
+                                    decoration-danger="status == 'failed'"
+                                    decoration-warning="status == 'pending'"
+                                    limit="50"
+                                >
+                                    <field name="timestamp"/>
+                                    <field name="direction"/>
+                                    <field name="event_type"/>
+                                    <field name="response_code_display" string="Response"/>
+                                    <field name="status"/>
+                                    <field name="duration_ms" string="ms"/>
+                                    <field name="related_model" optional="show"/>
+                                    <field name="related_record_id" optional="hide"/>
+                                    <!-- Hidden fields for decoration expressions -->
+                                    <field name="status" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Notes" name="notes">
+                            <p class="text-muted o_form_empty" style="padding:16px;">
+                                Use the chatter below to record any configuration notes
+                                or change history for this API key.
+                            </p>
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <!-- ── Chatter (mail.thread) ─────────────────────────── -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+
+            </form>
+        </field>
+    </record>
+
+
+    <!-- ===================================================================
+         Tree (list) view — alba.api.key
+         =================================================================== -->
+    <record id="view_alba_api_key_tree" model="ir.ui.view">
+        <field name="name">alba.api.key.tree</field>
+        <field name="model">alba.api.key</field>
+        <field name="arch" type="xml">
+            <tree
+                string="API Keys"
+                decoration-muted="is_active == False"
+            >
+                <field name="name"/>
+                <field name="django_base_url" string="Django Portal URL"/>
+                <field name="full_webhook_url" string="Webhook URL" optional="show"/>
+                <field name="is_active" string="Active" widget="boolean_toggle"/>
+                <field name="last_used" optional="show"/>
+                <field name="log_count" string="Logs" optional="show"/>
+                <field name="company_id"
+                       groups="base.group_multi_company"
+                       optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <!-- ===================================================================
+         Search view — alba.api.key
+         =================================================================== -->
+    <record id="view_alba_api_key_search" model="ir.ui.view">
+        <field name="name">alba.api.key.search</field>
+        <field name="model">alba.api.key</field>
+        <field name="arch" type="xml">
+            <search string="Search API Keys">
+
+                <field name="name" string="Label"/>
+                <field name="django_base_url" string="Django Portal URL"/>
+
+                <filter
+                    string="Active"
+                    name="filter_active"
+                    domain="[('is_active', '=', True)]"
+                />
+                <filter
+                    string="Inactive"
+                    name="filter_inactive"
+                    domain="[('is_active', '=', False)]"
+                />
+
+                <separator/>
+
+                <filter
+                    string="Used Today"
+                    name="filter_used_today"
+                    domain="[('last_used', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0)))]"
+                />
+                <filter
+                    string="Never Used"
+                    name="filter_never_used"
+                    domain="[('last_used', '=', False)]"
+                />
+
+                <group expand="0" string="Group By">
+                    <filter
+                        string="Company"
+                        name="group_company"
+                        context="{'group_by': 'company_id'}"
+                        groups="base.group_multi_company"
+                    />
+                    <filter
+                        string="Active Status"
+                        name="group_active"
+                        context="{'group_by': 'is_active'}"
+                    />
+                </group>
+
+            </search>
+        </field>
+    </record>
+
+
+    <!-- ===================================================================
+         Action window — alba.api.key
+         =================================================================== -->
+    <record id="action_alba_api_key" model="ir.actions.act_window">
+        <field name="name">API Keys</field>
+        <field name="res_model">alba.api.key</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_alba_api_key_search"/>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Integration API Key
+            </p>
+            <p>
+                API keys allow the Django customer portal to authenticate with
+                Odoo. Each key also carries a webhook secret used to sign
+                outbound event notifications sent back to Django.
+            </p>
+        </field>
+    </record>
+
+</odoo>

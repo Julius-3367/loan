@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<data>
+
+    <!-- ================================================================
+         alba.webhook.retry — Form View
+         ================================================================ -->
+    <record id="view_alba_webhook_retry_form" model="ir.ui.view">
+        <field name="name">alba.webhook.retry.form</field>
+        <field name="model">alba.webhook.retry</field>
+        <field name="arch" type="xml">
+            <form string="Webhook Retry Entry">
+                <header>
+                    <button
+                        name="action_retry_now"
+                        string="Retry Now"
+                        type="object"
+                        class="btn-primary"
+                        icon="fa-send"
+                        invisible="status == 'delivered'"
+                        help="Attempt immediate re-delivery of this webhook payload."
+                    />
+                    <button
+                        name="action_requeue"
+                        string="Re-queue"
+                        type="object"
+                        class="btn-secondary"
+                        icon="fa-refresh"
+                        invisible="status != 'dead'"
+                        help="Reset this dead record back to pending for another retry cycle."
+                    />
+                    <button
+                        name="action_mark_dead"
+                        string="Mark Dead"
+                        type="object"
+                        class="btn-danger"
+                        icon="fa-times"
+                        invisible="status != 'pending'"
+                        help="Permanently abandon retries for this record."
+                    />
+                    <field
+                        name="status"
+                        widget="statusbar"
+                        statusbar_visible="pending,delivered,dead"
+                    />
+                </header>
+
+                <sheet>
+                    <!-- Dead banner -->
+                    <div
+                        class="alert alert-danger"
+                        role="alert"
+                        invisible="status != 'dead'"
+                    >
+                        <i class="fa fa-times-circle me-1" />
+                        <strong>Dead — max retries exceeded.</strong>
+                        This webhook payload could not be delivered after
+                        <field name="attempt_count" readonly="1" nolabel="1" />
+                        attempt(s).  Click <b>Re-queue</b> to try again or
+                        investigate the target URL and API key.
+                    </div>
+
+                    <!-- Delivered banner -->
+                    <div
+                        class="alert alert-success"
+                        role="alert"
+                        invisible="status != 'delivered'"
+                    >
+                        <i class="fa fa-check-circle me-1" />
+                        <strong>Delivered successfully</strong> at
+                        <field name="delivered_at" readonly="1" nolabel="1" />.
+                    </div>
+
+                    <group>
+                        <group string="Event">
+                            <field name="event_type" />
+                            <field name="delivery_id" />
+                            <field name="api_key_id" options="{'no_create': True}" />
+                            <field name="target_url" />
+                            <field name="company_id" options="{'no_create': True}" />
+                        </group>
+                        <group string="Retry Tracking">
+                            <field name="status"
+                                widget="badge"
+                                decoration-success="status == 'delivered'"
+                                decoration-warning="status == 'pending'"
+                                decoration-danger="status == 'dead'"
+                                decoration-info="status == 'processing'"
+                            />
+                            <field name="attempt_count" />
+                            <field name="max_attempts" />
+                            <field name="next_retry_at" />
+                            <field name="last_attempt_at" />
+                            <field name="delivered_at" />
+                            <field name="last_http_status" />
+                        </group>
+                    </group>
+
+                    <group string="Failure Detail" invisible="status == 'delivered'">
+                        <field name="last_error" nolabel="1" widget="text" readonly="1" />
+                    </group>
+
+                    <group string="Original Failure" invisible="not original_error">
+                        <field name="original_error" nolabel="1" widget="text" readonly="1" />
+                    </group>
+
+                    <notebook>
+                        <page string="Payload" name="payload">
+                            <field
+                                name="payload_json"
+                                nolabel="1"
+                                widget="text"
+                                readonly="1"
+                                placeholder="JSON payload to be delivered to Django…"
+                            />
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter />
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.webhook.retry — List View
+         ================================================================ -->
+    <record id="view_alba_webhook_retry_list" model="ir.ui.view">
+        <field name="name">alba.webhook.retry.list</field>
+        <field name="model">alba.webhook.retry</field>
+        <field name="arch" type="xml">
+            <list
+                string="Webhook Retry Queue"
+                decoration-success="status == 'delivered'"
+                decoration-warning="status == 'pending'"
+                decoration-danger="status == 'dead'"
+                decoration-info="status == 'processing'"
+            >
+                <field name="create_date" string="Created" />
+                <field name="event_type" />
+                <field name="api_key_id" string="Destination" />
+                <field name="status"
+                    widget="badge"
+                    decoration-success="status == 'delivered'"
+                    decoration-warning="status == 'pending'"
+                    decoration-danger="status == 'dead'"
+                    decoration-info="status == 'processing'"
+                />
+                <field name="attempt_count" />
+                <field name="max_attempts" />
+                <field name="next_retry_at" />
+                <field name="last_attempt_at" optional="show" />
+                <field name="last_http_status" optional="show" />
+                <field name="delivered_at" optional="hide" />
+                <field name="company_id" optional="hide" />
+                <button
+                    name="action_retry_now"
+                    type="object"
+                    string="Retry"
+                    icon="fa-send"
+                    invisible="status == 'delivered'"
+                    class="btn-sm btn-primary"
+                />
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.webhook.retry — Search View
+         ================================================================ -->
+    <record id="view_alba_webhook_retry_search" model="ir.ui.view">
+        <field name="name">alba.webhook.retry.search</field>
+        <field name="model">alba.webhook.retry</field>
+        <field name="arch" type="xml">
+            <search string="Search Retry Queue">
+                <field name="event_type" string="Event Type" />
+                <field name="delivery_id" string="Delivery ID" />
+                <field name="api_key_id" string="API Key" />
+                <separator />
+                <filter
+                    string="Pending"
+                    name="pending"
+                    domain="[('status','=','pending')]"
+                />
+                <filter
+                    string="Dead"
+                    name="dead"
+                    domain="[('status','=','dead')]"
+                />
+                <filter
+                    string="Delivered"
+                    name="delivered"
+                    domain="[('status','=','delivered')]"
+                />
+                <separator />
+                <filter
+                    string="Due Now"
+                    name="due_now"
+                    domain="[('status','=','pending'),('next_retry_at','&lt;=',datetime.datetime.now())]"
+                />
+                <filter
+                    string="Today"
+                    name="today"
+                    domain="[('create_date','&gt;=',(context_today()).strftime('%Y-%m-%d'))]"
+                />
+                <group expand="0" string="Group By">
+                    <filter
+                        string="Status"
+                        name="grp_status"
+                        context="{'group_by':'status'}"
+                    />
+                    <filter
+                        string="Event Type"
+                        name="grp_event"
+                        context="{'group_by':'event_type'}"
+                    />
+                    <filter
+                        string="API Key"
+                        name="grp_api_key"
+                        context="{'group_by':'api_key_id'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.webhook.retry — Action Window
+         ================================================================ -->
+    <record id="action_alba_webhook_retry" model="ir.actions.act_window">
+        <field name="name">Webhook Retry Queue</field>
+        <field name="res_model">alba.webhook.retry</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_alba_webhook_retry_search" />
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Retry queue is empty — all webhooks delivered successfully.
+            </p>
+            <p>
+                When an outbound webhook to the Django portal fails, a retry
+                record is created here automatically.  The system retries
+                delivery on an exponential back-off schedule (2 min, 5 min,
+                15 min, 1 hour, 4 hours).  After 5 attempts the record is
+                marked <b>Dead</b> and requires operator review.
+                Use <b>Retry Now</b> for immediate re-delivery or
+                <b>Re-queue</b> to restart the back-off cycle.
+            </p>
+        </field>
+    </record>
+
+    <!-- Dead-only shortcut -->
+    <record id="action_alba_webhook_retry_dead" model="ir.actions.act_window">
+        <field name="name">Dead Webhooks</field>
+        <field name="res_model">alba.webhook.retry</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('status','=','dead')]</field>
+        <field name="search_view_id" ref="view_alba_webhook_retry_search" />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No dead webhooks — great!
+            </p>
+        </field>
+    </record>
+
+</data>
+</odoo>

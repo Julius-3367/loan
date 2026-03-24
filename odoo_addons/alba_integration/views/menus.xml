@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+<data>
+
+    <!-- ================================================================
+         Root menu — Alba Integration
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_integration_root"
+            name="Alba Integration"
+            sequence="30"
+            web_icon="alba_integration,static/description/icon.png"
+            groups="alba_integration.group_integration_user"
+        />
+
+    <!-- ================================================================
+         API Keys
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_integration_api_keys"
+            name="API Keys"
+            parent="menu_alba_integration_root"
+            action="action_alba_api_key"
+            sequence="10"
+            groups="alba_integration.group_integration_admin"
+        />
+
+    <!-- ================================================================
+         Webhook Logs
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_integration_webhook_logs"
+            name="Webhook Logs"
+            parent="menu_alba_integration_root"
+            action="action_alba_webhook_log"
+            sequence="20"
+            groups="alba_integration.group_integration_user"
+        />
+
+    <!-- ================================================================
+         Retry Queue
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_integration_retry_queue"
+            name="Retry Queue"
+            parent="menu_alba_integration_root"
+            action="action_alba_webhook_retry"
+            sequence="30"
+            groups="alba_integration.group_integration_user"
+        />
+
+    <menuitem
+            id="menu_alba_integration_dead_webhooks"
+            name="Dead Webhooks"
+            parent="menu_alba_integration_root"
+            action="action_alba_webhook_retry_dead"
+            sequence="40"
+            groups="alba_integration.group_integration_admin"
+        />
+
+    <!-- ================================================================
+         Sync Logs
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_integration_sync_logs_root"
+            name="Sync Logs"
+            parent="menu_alba_integration_root"
+            sequence="50"
+            groups="alba_integration.group_integration_user"
+        />
+
+    <menuitem
+            id="menu_alba_integration_sync_logs_all"
+            name="All Sync Events"
+            parent="menu_alba_integration_sync_logs_root"
+            action="action_alba_sync_log"
+            sequence="10"
+            groups="alba_integration.group_integration_user"
+        />
+
+    <menuitem
+            id="menu_alba_integration_sync_failures"
+            name="Failures"
+            parent="menu_alba_integration_sync_logs_root"
+            action="action_alba_sync_log_failures"
+            sequence="20"
+            groups="alba_integration.group_integration_user"
+        />
+
+    <!-- ================================================================
+         Configuration
+         ================================================================ -->
+    <menuitem
+            id="menu_alba_integration_configuration"
+            name="Configuration"
+            parent="menu_alba_integration_root"
+            sequence="100"
+            groups="alba_integration.group_integration_admin"
+        />
+
+    <menuitem
+            id="menu_alba_integration_system_params"
+            name="System Parameters"
+            parent="menu_alba_integration_configuration"
+            sequence="10"
+            action="base.action_ir_config_parameter_form"
+            groups="alba_integration.group_integration_admin"
+        />
+
+    <menuitem
+            id="menu_alba_integration_config_api_keys"
+            name="Manage API Keys"
+            parent="menu_alba_integration_configuration"
+            action="action_alba_api_key"
+            sequence="20"
+            groups="alba_integration.group_integration_admin"
+        />
+
+</data>
+</odoo>

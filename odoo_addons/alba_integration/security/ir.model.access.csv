@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_alba_api_key_admin,alba.api.key (Admin),model_alba_api_key,alba_integration.group_integration_admin,1,1,1,1
+access_alba_api_key_user,alba.api.key (User),model_alba_api_key,alba_integration.group_integration_user,1,0,0,0
+access_alba_webhook_log_admin,alba.webhook.log (Admin),model_alba_webhook_log,alba_integration.group_integration_admin,1,1,1,1
+access_alba_webhook_log_user,alba.webhook.log (User),model_alba_webhook_log,alba_integration.group_integration_user,1,0,0,0
+access_alba_webhook_retry_admin,alba.webhook.retry (Admin),model_alba_webhook_retry,alba_integration.group_integration_admin,1,1,1,1
+access_alba_webhook_retry_user,alba.webhook.retry (User),model_alba_webhook_retry,alba_integration.group_integration_user,1,1,1,0
+access_alba_sync_log_admin,alba.sync.log (Admin),model_alba_sync_log,alba_integration.group_integration_admin,1,1,1,1
+access_alba_sync_log_user,alba.sync.log (User),model_alba_sync_log,alba_integration.group_integration_user,1,0,0,0

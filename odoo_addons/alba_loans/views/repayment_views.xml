@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             alba.loan.repayment — Form View
+             ================================================================ -->
+        <record id="view_alba_loan_repayment_form" model="ir.ui.view">
+            <field name="name">alba.loan.repayment.form</field>
+            <field name="model">alba.loan.repayment</field>
+            <field name="arch" type="xml">
+                <form string="Loan Repayment">
+                    <header>
+                        <button name="action_post"
+                                string="Post Payment"
+                                type="object"
+                                class="btn-primary"
+                                invisible="state != 'draft'"
+                                groups="alba_loans.group_loan_officer"/>
+                        <button name="action_reverse"
+                                string="Reverse Payment"
+                                type="object"
+                                class="btn-danger"
+                                invisible="state != 'posted'"
+                                groups="alba_loans.group_loan_manager"/>
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,posted,reversed"/>
+                    </header>
+
+                    <sheet>
+                        <!-- Alert banners -->
+                        <div class="alert alert-danger" role="alert"
+                             invisible="state != 'reversed'">
+                            <strong>This repayment has been reversed.</strong>
+                            <span invisible="not reversal_reason">
+                                Reason: <field name="reversal_reason" readonly="1" nolabel="1"/>
+                            </span>
+                        </div>
+
+                        <div class="oe_title">
+                            <label for="payment_reference" string="Payment Reference"/>
+                            <h1>
+                                <field name="payment_reference" readonly="1"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group string="Payment Details">
+                                <field name="loan_id"
+                                       options="{'no_create': True}"
+                                       readonly="state != 'draft'"/>
+                                <field name="customer_id" readonly="1"/>
+                                <field name="loan_product_id" readonly="1"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="payment_date"
+                                       readonly="state != 'draft'"/>
+                                <field name="amount_paid"
+                                       readonly="state != 'draft'"/>
+                            </group>
+                            <group string="Payment Method">
+                                <field name="payment_method"
+                                       readonly="state != 'draft'"/>
+                                <field name="mpesa_transaction_id"
+                                       readonly="state != 'draft'"
+                                       invisible="payment_method != 'mpesa'"/>
+                                <field name="bank_transaction_id"
+                                       readonly="state != 'draft'"
+                                       invisible="payment_method not in ('bank_transfer','rtgs','cheque')"/>
+                                <field name="journal_id"
+                                       readonly="state != 'draft'"
+                                       required="state == 'draft'"/>
+                                <field name="received_by"
+                                       readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+
+                            <!-- ── Allocation ─────────────────────────────── -->
+                            <page string="Payment Allocation" name="allocation">
+                                <div class="alert alert-info" role="alert"
+                                     invisible="state != 'draft'">
+                                    <i class="fa fa-info-circle me-1"/>
+                                    Allocation will be computed automatically on posting
+                                    if left at zero.  You may override individual
+                                    components manually.
+                                </div>
+                                <group>
+                                    <group string="Components">
+                                        <field name="principal_component"
+                                               readonly="state != 'draft'"/>
+                                        <field name="interest_component"
+                                               readonly="state != 'draft'"/>
+                                        <field name="fees_component"
+                                               readonly="state != 'draft'"/>
+                                        <field name="penalty_component"
+                                               readonly="state != 'draft'"/>
+                                    </group>
+                                    <group string="Summary">
+                                        <field name="total_allocated"   readonly="1"/>
+                                        <field name="unallocated_amount" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- ── Accounting ─────────────────────────────── -->
+                            <page string="Accounting" name="accounting"
+                                  groups="account.group_account_user">
+                                <group>
+                                    <group string="Journal Entry">
+                                        <field name="move_id"          readonly="1"/>
+                                        <field name="reversal_move_id" readonly="1"
+                                               invisible="not reversal_move_id"/>
+                                    </group>
+                                    <group string="Integration">
+                                        <field name="django_payment_id"
+                                               groups="base.group_system"
+                                               readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- ── Reversal ───────────────────────────────── -->
+                            <page string="Reversal" name="reversal"
+                                  invisible="state != 'reversed'">
+                                <group>
+                                    <field name="reversal_reason" readonly="1" nolabel="1"/>
+                                    <field name="reversal_move_id" readonly="1"/>
+                                </group>
+                            </page>
+
+                            <!-- ── Notes ─────────────────────────────────── -->
+                            <page string="Notes" name="notes">
+                                <field name="notes"
+                                       nolabel="1"
+                                       readonly="state != 'draft'"
+                                       placeholder="Optional remarks about this payment…"/>
+                                <field name="reversal_reason"
+                                       invisible="state != 'posted'"
+                                       placeholder="Required if reversing this payment…"/>
+                            </page>
+
+                        </notebook>
+                    </sheet>
+
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan.repayment — List View
+             ================================================================ -->
+        <record id="view_alba_loan_repayment_list" model="ir.ui.view">
+            <field name="name">alba.loan.repayment.list</field>
+            <field name="model">alba.loan.repayment</field>
+            <field name="arch" type="xml">
+                <list string="Repayments"
+                      decoration-success="state == 'posted'"
+                      decoration-danger="state == 'reversed'"
+                      decoration-muted="state == 'draft'">
+                    <field name="payment_reference"/>
+                    <field name="loan_id"/>
+                    <field name="customer_id"/>
+                    <field name="loan_product_id"/>
+                    <field name="payment_date"/>
+                    <field name="amount_paid"/>
+                    <field name="principal_component"/>
+                    <field name="interest_component"/>
+                    <field name="fees_component"/>
+                    <field name="penalty_component"/>
+                    <field name="payment_method" widget="badge"
+                           decoration-success="payment_method == 'mpesa'"
+                           decoration-info="payment_method == 'bank_transfer'"
+                           decoration-warning="payment_method == 'cash'"/>
+                    <field name="mpesa_transaction_id" optional="hide"/>
+                    <field name="journal_id" optional="hide"/>
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'posted'"
+                           decoration-danger="state == 'reversed'"
+                           decoration-muted="state == 'draft'"/>
+                    <field name="move_id" optional="hide"
+                           groups="account.group_account_user"/>
+                    <field name="currency_id" column_invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan.repayment — Search View
+             ================================================================ -->
+        <record id="view_alba_loan_repayment_search" model="ir.ui.view">
+            <field name="name">alba.loan.repayment.search</field>
+            <field name="model">alba.loan.repayment</field>
+            <field name="arch" type="xml">
+                <search string="Search Repayments">
+                    <field name="payment_reference"     string="Reference"/>
+                    <field name="loan_id"               string="Loan #"/>
+                    <field name="customer_id"           string="Customer"/>
+                    <field name="mpesa_transaction_id"  string="M-Pesa TXN ID"/>
+                    <separator/>
+                    <filter string="Draft"
+                            name="draft"
+                            domain="[('state','=','draft')]"/>
+                    <filter string="Posted"
+                            name="posted"
+                            domain="[('state','=','posted')]"/>
+                    <filter string="Reversed"
+                            name="reversed"
+                            domain="[('state','=','reversed')]"/>
+                    <separator/>
+                    <filter string="M-Pesa"
+                            name="mpesa"
+                            domain="[('payment_method','=','mpesa')]"/>
+                    <filter string="Bank Transfer"
+                            name="bank"
+                            domain="[('payment_method','=','bank_transfer')]"/>
+                    <filter string="Cash"
+                            name="cash"
+                            domain="[('payment_method','=','cash')]"/>
+                    <separator/>
+                    <filter string="Today"
+                            name="today"
+                            domain="[('payment_date','=',context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="This Month"
+                            name="this_month"
+                            domain="[('payment_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Status"
+                                name="grp_state"
+                                context="{'group_by':'state'}"/>
+                        <filter string="Payment Method"
+                                name="grp_method"
+                                context="{'group_by':'payment_method'}"/>
+                        <filter string="Loan"
+                                name="grp_loan"
+                                context="{'group_by':'loan_id'}"/>
+                        <filter string="Customer"
+                                name="grp_customer"
+                                context="{'group_by':'customer_id'}"/>
+                        <filter string="Payment Date"
+                                name="grp_date"
+                                context="{'group_by':'payment_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan.repayment — Action Window
+             ================================================================ -->
+        <record id="action_alba_loan_repayment" model="ir.actions.act_window">
+            <field name="name">Repayments</field>
+            <field name="res_model">alba.loan.repayment</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_alba_loan_repayment_search"/>
+            <field name="context">{'search_default_posted': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No repayments recorded yet.
+                </p>
+                <p>
+                    Repayments received via M-Pesa, bank transfer or cash
+                    are recorded here.  Post a repayment to automatically
+                    split it across principal, interest and fees and create
+                    the corresponding accounting journal entry.
+                </p>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.repayment.schedule — List View (standalone)
+             ================================================================ -->
+        <record id="view_alba_repayment_schedule_list" model="ir.ui.view">
+            <field name="name">alba.repayment.schedule.list</field>
+            <field name="model">alba.repayment.schedule</field>
+            <field name="arch" type="xml">
+                <list string="Repayment Schedule"
+                      decoration-danger="status == 'overdue'"
+                      decoration-success="status == 'paid'"
+                      decoration-warning="status == 'partial'">
+                    <field name="loan_id"/>
+                    <field name="customer_id"/>
+                    <field name="installment_number" string="#"/>
+                    <field name="due_date"/>
+                    <field name="opening_balance"/>
+                    <field name="principal_due"/>
+                    <field name="interest_due"/>
+                    <field name="total_due"/>
+                    <field name="principal_paid"/>
+                    <field name="interest_paid"/>
+                    <field name="total_paid"/>
+                    <field name="balance_due"/>
+                    <field name="closing_balance"/>
+                    <field name="days_overdue"/>
+                    <field name="status" widget="badge"
+                           decoration-success="status == 'paid'"
+                           decoration-danger="status == 'overdue'"
+                           decoration-warning="status == 'partial'"
+                           decoration-info="status == 'pending'"/>
+                    <field name="currency_id" column_invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Search view for repayment schedule -->
+        <record id="view_alba_repayment_schedule_search" model="ir.ui.view">
+            <field name="name">alba.repayment.schedule.search</field>
+            <field name="model">alba.repayment.schedule</field>
+            <field name="arch" type="xml">
+                <search string="Search Schedule">
+                    <field name="loan_id"     string="Loan #"/>
+                    <field name="customer_id" string="Customer"/>
+                    <separator/>
+                    <filter string="Pending"
+                            name="pending"
+                            domain="[('status','=','pending')]"/>
+                    <filter string="Partial"
+                            name="partial"
+                            domain="[('status','=','partial')]"/>
+                    <filter string="Overdue"
+                            name="overdue"
+                            domain="[('status','=','overdue')]"/>
+                    <filter string="Paid"
+                            name="paid"
+                            domain="[('status','=','paid')]"/>
+                    <separator/>
+                    <filter string="Due This Month"
+                            name="due_this_month"
+                            domain="[
+                                ('due_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d')),
+                                ('due_date','&lt;=',(context_today().replace(day=28)).strftime('%Y-%m-%d'))
+                            ]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Loan"
+                                name="grp_loan"
+                                context="{'group_by':'loan_id'}"/>
+                        <filter string="Status"
+                                name="grp_status"
+                                context="{'group_by':'status'}"/>
+                        <filter string="Due Date"
+                                name="grp_due_date"
+                                context="{'group_by':'due_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Repayment schedule standalone action -->
+        <record id="action_alba_repayment_schedule" model="ir.actions.act_window">
+            <field name="name">Repayment Schedules</field>
+            <field name="res_model">alba.repayment.schedule</field>
+            <field name="view_mode">list</field>
+            <field name="search_view_id" ref="view_alba_repayment_schedule_search"/>
+            <field name="context">{'search_default_overdue': 1}</field>
+        </record>
+
+    </data>
+</odoo>

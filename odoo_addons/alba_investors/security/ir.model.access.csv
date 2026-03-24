@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_alba_investor_user,alba.investor user,model_alba_investor,alba_investors.group_investor_user,1,0,0,0
+access_alba_investor_manager,alba.investor manager,model_alba_investor,alba_investors.group_investor_manager,1,1,1,1
+access_alba_investment_user,alba.investment user,model_alba_investment,alba_investors.group_investor_user,1,0,0,0
+access_alba_investment_manager,alba.investment manager,model_alba_investment,alba_investors.group_investor_manager,1,1,1,1
+access_alba_interest_accrual_user,alba.interest.accrual user,model_alba_interest_accrual,alba_investors.group_investor_user,1,0,0,0
+access_alba_interest_accrual_manager,alba.interest.accrual manager,model_alba_interest_accrual,alba_investors.group_investor_manager,1,1,1,1
+access_alba_investment_statement_user,alba.investment.statement user,model_alba_investment_statement,alba_investors.group_investor_user,1,0,0,0
+access_alba_investment_statement_manager,alba.investment.statement manager,model_alba_investment_statement,alba_investors.group_investor_manager,1,1,1,1
+access_alba_generate_statement_wizard_manager,alba.generate.statement.wizard manager,model_alba_generate_statement_wizard,alba_investors.group_investor_manager,1,1,1,1

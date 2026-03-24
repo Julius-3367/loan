@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+    <!-- ================================================================
+         alba.investor — Form View
+         ================================================================ -->
+    <record id="view_alba_investor_form" model="ir.ui.view">
+        <field name="name">alba.investor.form</field>
+        <field name="model">alba.investor</field>
+        <field name="arch" type="xml">
+            <form string="Investor">
+                <header>
+                    <button name="action_verify_kyc"
+                            string="Verify KYC"
+                            type="object"
+                            class="btn-success"
+                            invisible="kyc_status == 'verified'"
+                            groups="alba_investors.group_investor_officer"/>
+                    <button name="action_reject_kyc"
+                            string="Reject KYC"
+                            type="object"
+                            class="btn-danger"
+                            invisible="kyc_status in ('rejected','pending')"
+                            groups="alba_investors.group_investor_officer"/>
+                    <button name="action_suspend"
+                            string="Suspend"
+                            type="object"
+                            class="btn-warning"
+                            invisible="state != 'active'"
+                            groups="alba_investors.group_investor_manager"/>
+                    <button name="action_activate"
+                            string="Reactivate"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'suspended'"
+                            groups="alba_investors.group_investor_manager"/>
+                    <button name="action_blacklist"
+                            string="Blacklist"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state == 'blacklisted'"
+                            groups="alba_investors.group_investor_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="active,suspended,blacklisted"/>
+                </header>
+
+                <sheet>
+                    <!-- Smart Buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_investments"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-line-chart">
+                            <field name="active_investment_count"
+                                   widget="statinfo"
+                                   string="Active Investments"/>
+                        </button>
+                        <button name="action_view_statements"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o">
+                            <div class="o_stat_info">
+                                <field name="current_portfolio_value" widget="monetary"/>
+                                <span class="o_stat_text">Portfolio Value</span>
+                            </div>
+                        </button>
+                        <button name="action_view_investments"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-money">
+                            <div class="o_stat_info">
+                                <field name="total_interest_earned" widget="monetary"/>
+                                <span class="o_stat_text">Interest Earned</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Blacklist / suspended warning banners -->
+                    <div class="alert alert-danger" role="alert"
+                         invisible="state != 'blacklisted'">
+                        <strong>This investor has been blacklisted.</strong>
+                        No new investments should be accepted.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="state != 'suspended'">
+                        <strong>This investor account is suspended.</strong>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="partner_id" string="Investor"/>
+                        <h1>
+                            <field name="partner_id"
+                                   options="{'no_create': False}"
+                                   placeholder="Select or create a contact…"/>
+                        </h1>
+                        <div class="o_row">
+                            <field name="investor_number" readonly="1"
+                                   class="text-muted"/>
+                        </div>
+                    </div>
+
+                    <group>
+                        <group string="Identity">
+                            <field name="id_type"/>
+                            <field name="id_number"/>
+                            <field name="date_of_birth"/>
+                            <field name="age" readonly="1"/>
+                            <field name="gender"/>
+                            <field name="nationality"/>
+                        </group>
+                        <group string="KYC &amp; Status">
+                            <field name="kyc_status" widget="badge"
+                                   decoration-success="kyc_status == 'verified'"
+                                   decoration-warning="kyc_status in ('partial','complete')"
+                                   decoration-danger="kyc_status == 'rejected'"
+                                   decoration-info="kyc_status == 'pending'"/>
+                            <field name="kyc_verified_by" readonly="1"/>
+                            <field name="kyc_verified_date" readonly="1"/>
+                            <field name="django_investor_id"
+                                   groups="base.group_system"
+                                   readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <!-- ── Payout Details ─────────────────────────────── -->
+                        <page string="Payout Details" name="payout">
+                            <group>
+                                <group string="Bank Account">
+                                    <field name="bank_name"/>
+                                    <field name="bank_account_number"/>
+                                    <field name="bank_branch"/>
+                                </group>
+                                <group string="Mobile Money &amp; Preference">
+                                    <field name="mpesa_number"/>
+                                    <field name="preferred_payment_method"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ── Investments ────────────────────────────────── -->
+                        <page string="Investments" name="investments">
+                            <field name="investment_ids"
+                                   mode="list"
+                                   context="{'default_investor_id': active_id}">
+                                <list string="Investments"
+                                      decoration-success="state == 'active'"
+                                      decoration-muted="state in ('matured','withdrawn')"
+                                      decoration-warning="state == 'suspended'">
+                                    <field name="investment_number"/>
+                                    <field name="investment_type"/>
+                                    <field name="principal_amount"/>
+                                    <field name="interest_rate" string="Rate (% p.a.)"/>
+                                    <field name="compounding_frequency"/>
+                                    <field name="start_date"/>
+                                    <field name="maturity_date"/>
+                                    <field name="current_value"/>
+                                    <field name="total_interest_accrued"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'active'"
+                                           decoration-muted="state in ('matured','withdrawn')"
+                                           decoration-warning="state == 'suspended'"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- ── Portfolio Summary ──────────────────────────── -->
+                        <page string="Portfolio Summary" name="portfolio">
+                            <group>
+                                <group string="Portfolio Totals">
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="total_invested"          readonly="1"/>
+                                    <field name="total_interest_earned"   readonly="1"/>
+                                    <field name="total_interest_paid_out" readonly="1"/>
+                                    <field name="current_portfolio_value" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ── Notes ─────────────────────────────────────── -->
+                        <page string="Notes" name="notes">
+                            <field name="notes"
+                                   nolabel="1"
+                                   placeholder="Internal notes about this investor…"/>
+                        </page>
+
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.investor — List View
+         ================================================================ -->
+    <record id="view_alba_investor_list" model="ir.ui.view">
+        <field name="name">alba.investor.list</field>
+        <field name="model">alba.investor</field>
+        <field name="arch" type="xml">
+            <list string="Investors"
+                  decoration-danger="state == 'blacklisted'"
+                  decoration-warning="state == 'suspended'"
+                  decoration-muted="active == False">
+                <field name="investor_number"/>
+                <field name="partner_id" string="Name"/>
+                <field name="id_number"/>
+                <field name="id_type"/>
+                <field name="nationality"/>
+                <field name="kyc_status" widget="badge"
+                       decoration-success="kyc_status == 'verified'"
+                       decoration-warning="kyc_status in ('partial','complete')"
+                       decoration-danger="kyc_status == 'rejected'"
+                       decoration-info="kyc_status == 'pending'"/>
+                <field name="active_investment_count" string="Investments"/>
+                <field name="total_invested"/>
+                <field name="current_portfolio_value"/>
+                <field name="total_interest_earned"/>
+                <field name="preferred_payment_method"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'active'"
+                       decoration-warning="state == 'suspended'"
+                       decoration-danger="state == 'blacklisted'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.investor — Kanban View
+         ================================================================ -->
+    <record id="view_alba_investor_kanban" model="ir.ui.view">
+        <field name="name">alba.investor.kanban</field>
+        <field name="model">alba.investor</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="kyc_status" class="o_kanban_small_column">
+                <field name="investor_number"/>
+                <field name="partner_id"/>
+                <field name="kyc_status"/>
+                <field name="state"/>
+                <field name="active_investment_count"/>
+                <field name="current_portfolio_value"/>
+                <field name="total_interest_earned"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click
+                             #{record.state.raw_value == 'blacklisted' ? 'border-danger' :
+                               record.state.raw_value == 'suspended'   ? 'border-warning' : ''}">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="partner_id"/>
+                                    </strong>
+                                    <small class="o_kanban_record_subtitle text-muted">
+                                        <field name="investor_number"/>
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div>
+                                    Active Investments:
+                                    <strong><field name="active_investment_count"/></strong>
+                                </div>
+                                <div>
+                                    Portfolio Value:
+                                    <strong>
+                                        <field name="current_portfolio_value" widget="monetary"/>
+                                    </strong>
+                                </div>
+                                <div>
+                                    Interest Earned:
+                                    <field name="total_interest_earned" widget="monetary"/>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <span t-if="record.state.raw_value == 'blacklisted'"
+                                      class="badge text-bg-danger">Blacklisted</span>
+                                <span t-elif="record.state.raw_value == 'suspended'"
+                                      class="badge text-bg-warning">Suspended</span>
+                                <span t-else="" class="badge text-bg-success">Active</span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.investor — Search View
+         ================================================================ -->
+    <record id="view_alba_investor_search" model="ir.ui.view">
+        <field name="name">alba.investor.search</field>
+        <field name="model">alba.investor</field>
+        <field name="arch" type="xml">
+            <search string="Search Investors">
+                <field name="partner_id"     string="Name"/>
+                <field name="investor_number" string="Investor #"/>
+                <field name="id_number"       string="ID / Passport"/>
+                <separator/>
+                <filter string="KYC Pending"
+                        name="kyc_pending"
+                        domain="[('kyc_status','=','pending')]"/>
+                <filter string="KYC Complete"
+                        name="kyc_complete"
+                        domain="[('kyc_status','=','complete')]"/>
+                <filter string="KYC Verified"
+                        name="kyc_verified"
+                        domain="[('kyc_status','=','verified')]"/>
+                <filter string="KYC Rejected"
+                        name="kyc_rejected"
+                        domain="[('kyc_status','=','rejected')]"/>
+                <separator/>
+                <filter string="Active"
+                        name="active"
+                        domain="[('state','=','active')]"/>
+                <filter string="Suspended"
+                        name="suspended"
+                        domain="[('state','=','suspended')]"/>
+                <filter string="Blacklisted"
+                        name="blacklisted"
+                        domain="[('state','=','blacklisted')]"/>
+                <separator/>
+                <filter string="Archived"
+                        name="archived"
+                        domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="KYC Status"
+                            name="grp_kyc"
+                            context="{'group_by':'kyc_status'}"/>
+                    <filter string="Account Status"
+                            name="grp_state"
+                            context="{'group_by':'state'}"/>
+                    <filter string="Preferred Payout"
+                            name="grp_payout"
+                            context="{'group_by':'preferred_payment_method'}"/>
+                    <filter string="Nationality"
+                            name="grp_nationality"
+                            context="{'group_by':'nationality'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         alba.investor — Action Window
+         ================================================================ -->
+    <record id="action_alba_investor" model="ir.actions.act_window">
+        <field name="name">Investors</field>
+        <field name="res_model">alba.investor</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_alba_investor_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No investors yet — add your first one!
+            </p>
+            <p>
+                Each investor profile links to an Odoo contact and stores
+                KYC information, banking/M-Pesa payout details and tracks
+                their full investment portfolio with compound interest.
+            </p>
+        </field>
+    </record>
+
+</data>
+</odoo>

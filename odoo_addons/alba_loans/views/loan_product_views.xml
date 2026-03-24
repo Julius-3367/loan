@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             alba.loan.product — Form View
+             ================================================================ -->
+        <record id="view_alba_loan_product_form" model="ir.ui.view">
+            <field name="name">alba.loan.product.form</field>
+            <field name="model">alba.loan.product</field>
+            <field name="arch" type="xml">
+                <form string="Loan Product">
+                    <header>
+                        <button name="action_view_applications"
+                                string="View Applications"
+                                type="object"
+                                class="btn-secondary"/>
+                        <field name="is_active" widget="boolean_toggle"
+                               options="{'terminology': {'string_true': 'Active', 'string_false': 'Archived'}}"/>
+                    </header>
+
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_applications"
+                                    type="object"
+                                    class="oe_stat_button"
+                                    icon="fa-file-text-o">
+                                <field name="application_count"
+                                       widget="statinfo"
+                                       string="Applications"/>
+                            </button>
+                        </div>
+
+                        <div class="oe_title">
+                            <label for="name" string="Product Name"/>
+                            <h1>
+                                <field name="name"
+                                       placeholder="e.g. Business Loan — Standard"/>
+                            </h1>
+                            <div class="o_row">
+                                <field name="code"
+                                       placeholder="Product Code e.g. BL-STD"/>
+                                <field name="category" widget="badge"
+                                       decoration-info="category == 'salary_advance'"
+                                       decoration-success="category == 'business_loan'"
+                                       decoration-warning="category == 'asset_financing'"/>
+                            </div>
+                        </div>
+
+                        <group>
+                            <group string="Loan Amount Limits">
+                                <field name="currency_id" invisible="1"/>
+                                <field name="min_amount"/>
+                                <field name="max_amount"/>
+                                <field name="min_tenure_months"/>
+                                <field name="max_tenure_months"/>
+                                <field name="repayment_frequency"/>
+                            </group>
+                            <group string="Interest Configuration">
+                                <field name="interest_method"/>
+                                <field name="interest_rate"
+                                       widget="percentage"
+                                       options="{'type': 'number', 'step': 0.01}"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+
+                            <!-- ── Fees ──────────────────────────────────── -->
+                            <page string="Fees" name="fees">
+                                <group>
+                                    <group string="Fee Percentages (% of Principal)">
+                                        <field name="origination_fee_percentage"/>
+                                        <field name="processing_fee_percentage"/>
+                                        <field name="insurance_fee_percentage"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- ── Accounting ─────────────────────────────── -->
+                            <page string="Accounting" name="accounting"
+                                  groups="account.group_account_manager">
+                                <group>
+                                    <group string="Income Accounts">
+                                        <field name="account_loan_receivable_id"
+                                               options="{'no_create': True}"/>
+                                        <field name="account_interest_income_id"
+                                               options="{'no_create': True}"/>
+                                        <field name="account_fees_income_id"
+                                               options="{'no_create': True}"/>
+                                    </group>
+                                    <group string="Company">
+                                        <field name="company_id"
+                                               groups="base.group_multi_company"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- ── Description ────────────────────────────── -->
+                            <page string="Description" name="description">
+                                <field name="description"
+                                       nolabel="1"
+                                       placeholder="Describe the loan product, eligibility criteria, and any special conditions…"/>
+                            </page>
+
+                        </notebook>
+                    </sheet>
+
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan.product — List View
+             ================================================================ -->
+        <record id="view_alba_loan_product_list" model="ir.ui.view">
+            <field name="name">alba.loan.product.list</field>
+            <field name="model">alba.loan.product</field>
+            <field name="arch" type="xml">
+                <list string="Loan Products"
+                      decoration-muted="is_active == False">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="category" widget="badge"
+                           decoration-info="category == 'salary_advance'"
+                           decoration-success="category == 'business_loan'"
+                           decoration-warning="category == 'asset_financing'"/>
+                    <field name="min_amount"/>
+                    <field name="max_amount"/>
+                    <field name="interest_rate" string="Rate (% p.m.)"/>
+                    <field name="interest_method"/>
+                    <field name="min_tenure_months" string="Min Tenure"/>
+                    <field name="max_tenure_months" string="Max Tenure"/>
+                    <field name="repayment_frequency"/>
+                    <field name="application_count" string="Applications"/>
+                    <field name="is_active" widget="boolean_toggle"/>
+                    <field name="currency_id" column_invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan.product — Search View
+             ================================================================ -->
+        <record id="view_alba_loan_product_search" model="ir.ui.view">
+            <field name="name">alba.loan.product.search</field>
+            <field name="model">alba.loan.product</field>
+            <field name="arch" type="xml">
+                <search string="Search Loan Products">
+                    <field name="name"  string="Name"/>
+                    <field name="code"  string="Code"/>
+                    <separator/>
+                    <filter string="Active"
+                            name="active"
+                            domain="[('is_active','=',True)]"/>
+                    <filter string="Archived"
+                            name="archived"
+                            domain="[('is_active','=',False)]"/>
+                    <separator/>
+                    <filter string="Salary Advance"
+                            name="salary_advance"
+                            domain="[('category','=','salary_advance')]"/>
+                    <filter string="Business Loan"
+                            name="business_loan"
+                            domain="[('category','=','business_loan')]"/>
+                    <filter string="Asset Financing"
+                            name="asset_financing"
+                            domain="[('category','=','asset_financing')]"/>
+                    <separator/>
+                    <filter string="Flat Rate"
+                            name="flat_rate"
+                            domain="[('interest_method','=','flat_rate')]"/>
+                    <filter string="Reducing Balance"
+                            name="reducing_balance"
+                            domain="[('interest_method','=','reducing_balance')]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Category"
+                                name="grp_category"
+                                context="{'group_by':'category'}"/>
+                        <filter string="Interest Method"
+                                name="grp_method"
+                                context="{'group_by':'interest_method'}"/>
+                        <filter string="Repayment Frequency"
+                                name="grp_frequency"
+                                context="{'group_by':'repayment_frequency'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             alba.loan.product — Action Window
+             ================================================================ -->
+        <record id="action_alba_loan_product" model="ir.actions.act_window">
+            <field name="name">Loan Products</field>
+            <field name="res_model">alba.loan.product</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_alba_loan_product_search"/>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No loan products configured yet.
+                </p>
+                <p>
+                    Create your first loan product to start accepting
+                    loan applications.  Configure interest rates, fee
+                    structures, tenure limits and accounting accounts here.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>
