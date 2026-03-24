@@ -189,5 +189,29 @@
             </field>
         </record>
 
+<<<<<<< HEAD
+        <!-- ================================================================
+             alba.loan.product — Action Window
+             ================================================================ -->
+        <record id="action_alba_loan_product" model="ir.actions.act_window">
+            <field name="name">Loan Products</field>
+            <field name="res_model">alba.loan.product</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_alba_loan_product_search"/>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No loan products configured yet.
+                </p>
+                <p>
+                    Create your first loan product to start accepting
+                    loan applications.  Configure interest rates, fee
+                    structures, tenure limits and accounting accounts here.
+                </p>
+            </field>
+        </record>
+
+=======
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
     </data>
 </odoo>

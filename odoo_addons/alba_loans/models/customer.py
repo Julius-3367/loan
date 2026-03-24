@@ -149,7 +149,6 @@ class AlbaCustomer(models.Model):
         default=True,
         tracking=True,
     )
-
     # ── Banking ───────────────────────────────────────────────────────────────
     bank_name = fields.Char(string="Bank Name")
     bank_account_number = fields.Char(string="Bank Account Number")
@@ -211,6 +210,7 @@ class AlbaCustomer(models.Model):
     )
 
     # ── Audit ─────────────────────────────────────────────────────────────────
+    # ...existing code...
     notes = fields.Text(string="Internal Notes")
 
     # ── SQL constraints ───────────────────────────────────────────────────────

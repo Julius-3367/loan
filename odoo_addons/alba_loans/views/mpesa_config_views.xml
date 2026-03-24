@@ -249,5 +249,31 @@
         </field>
     </record>
 
+<<<<<<< HEAD
+    <!-- ================================================================
+         alba.mpesa.config — Action Window
+         ================================================================ -->
+    <record id="action_alba_mpesa_config" model="ir.actions.act_window">
+        <field name="name">M-Pesa Configurations</field>
+        <field name="res_model">alba.mpesa.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_alba_mpesa_config_search" />
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No M-Pesa configurations yet.
+            </p>
+            <p>
+                Create a configuration record with your Daraja API credentials
+                (Consumer Key, Consumer Secret, Business Short Code / Till Number,
+                and Passkey for STK Push).  After saving, click
+                <b>Test Connection</b> to verify your credentials, then
+                <b>Register C2B URLs</b> to activate inbound payment callbacks.
+            </p>
+        </field>
+    </record>
+
+=======
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
 </data>
 </odoo>

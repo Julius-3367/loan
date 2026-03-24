@@ -147,7 +147,11 @@
                                 <field name="repayment_schedule_ids"
                                        mode="list"
                                        readonly="1"
+<<<<<<< HEAD
+                                       context="{'default_loan_id': active_id}">
+=======
                                        context="{'default_loan_id': id}">
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
                                     <list string="Schedule"
                                           decoration-danger="status == 'overdue'"
                                           decoration-success="status == 'paid'"
@@ -178,7 +182,11 @@
                             <page string="Repayment History" name="repayments">
                                 <field name="repayment_ids"
                                        mode="list"
+<<<<<<< HEAD
+                                       context="{'default_loan_id': active_id}">
+=======
                                        context="{'default_loan_id': id}">
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
                                     <list string="Repayments"
                                           decoration-danger="state == 'reversed'"
                                           decoration-success="state == 'posted'"
@@ -300,6 +308,15 @@
                     <filter string="Current (No Arrears)"
                             name="current"
                             domain="[('par_bucket','=','current')]"/>
+<<<<<<< HEAD
+                    <filter string="1–30 Days in Arrears"
+                            name="par_1_30"
+                            domain="[('par_bucket','=','1_30')]"/>
+                    <filter string="31–60 Days in Arrears"
+                            name="par_31_60"
+                            domain="[('par_bucket','=','31_60')]"/>
+                    <filter string="61–90 Days in Arrears"
+=======
                     <filter string="1-30 Days in Arrears"
                             name="par_1_30"
                             domain="[('par_bucket','=','1_30')]"/>
@@ -307,6 +324,7 @@
                             name="par_31_60"
                             domain="[('par_bucket','=','31_60')]"/>
                     <filter string="61-90 Days in Arrears"
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
                             name="par_61_90"
                             domain="[('par_bucket','=','61_90')]"/>
                     <filter string="Over 90 Days in Arrears"
@@ -315,12 +333,21 @@
                     <separator/>
                     <filter string="Disbursed This Month"
                             name="this_month"
+<<<<<<< HEAD
+                            domain="[('disbursement_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Maturing This Month"
+                            name="maturing"
+                            domain="[
+                                ('maturity_date','&gt;=',context_today().strftime('%Y-%m-%d')),
+                                ('maturity_date','&lt;=',(context_today().replace(day=28)).strftime('%Y-%m-%d'))
+=======
                             domain="[('disbursement_date','&gt;=','2026-03-01')]"/>
                     <filter string="Maturing This Month"
                             name="maturing"
                             domain="[
                                 ('maturity_date','&gt;=','2026-03-01'),
                                 ('maturity_date','&lt;=','2026-03-31')
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
                             ]"/>
                     <group expand="0" string="Group By">
                         <filter string="Status"
@@ -343,5 +370,37 @@
             </field>
         </record>
 
+<<<<<<< HEAD
+        <!-- ================================================================
+             alba.loan — Action Window
+             ================================================================ -->
+        <record id="action_alba_loan_list" model="ir.actions.act_window">
+            <field name="name">Active Loans</field>
+            <field name="res_model">alba.loan</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_alba_loan_search"/>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No loans disbursed yet.
+                </p>
+                <p>
+                    Loans are created automatically when a Loan Application
+                    is disbursed using the Disbursement Wizard.
+                </p>
+            </field>
+        </record>
+
+        <!-- All Loans action (no default filter) -->
+        <record id="action_alba_loan_all" model="ir.actions.act_window">
+            <field name="name">All Loans</field>
+            <field name="res_model">alba.loan</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_alba_loan_search"/>
+            <field name="context">{}</field>
+        </record>
+
+=======
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
     </data>
 </odoo>

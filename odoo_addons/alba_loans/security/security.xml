@@ -18,6 +18,7 @@
              applications on behalf of customers. -->
         <record id="group_loan_user" model="res.groups">
             <field name="name">Loan User</field>
+            <field name="category_id" ref="module_alba_loans"/>
             <field name="comment">
                 Loan Users can view loan products, customers and applications.
                 They may create new customer profiles and draft loan applications,
@@ -30,6 +31,7 @@
              management for approval. Cannot approve or disburse. -->
         <record id="group_loan_officer" model="res.groups">
             <field name="name">Loan Officer</field>
+            <field name="category_id" ref="module_alba_loans"/>
             <field name="implied_ids" eval="[(4, ref('group_loan_user'))]"/>
             <field name="comment">
                 Loan Officers inherit all Loan User permissions and additionally
@@ -43,6 +45,7 @@
         <!-- Full access: can approve, reject, disburse and write off loans. -->
         <record id="group_loan_manager" model="res.groups">
             <field name="name">Loan Manager</field>
+            <field name="category_id" ref="module_alba_loans"/>
             <field name="implied_ids" eval="[(4, ref('group_loan_officer'))]"/>
             <field name="comment">
                 Loan Managers inherit all Loan Officer permissions and additionally

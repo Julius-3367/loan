@@ -242,6 +242,13 @@ class AlbaMpesaTransaction(models.Model):
         ondelete="restrict",
         help="The Daraja configuration record used for this transaction.",
     )
+    investor_id = fields.Many2one(
+        "alba.investor",
+        string="Investor",
+        index=True,
+        ondelete="set null",
+        help="Populated for B2C payouts to investors.",
+    )
 
     # ── Currency / Company ────────────────────────────────────────────────────
 

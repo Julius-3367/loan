@@ -221,10 +221,17 @@
                     <separator/>
                     <filter string="Today"
                             name="today"
+<<<<<<< HEAD
+                            domain="[('payment_date','=',context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="This Month"
+                            name="this_month"
+                            domain="[('payment_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+=======
                             domain="[('payment_date','=','2026-03-23')]"/>
                     <filter string="This Month"
                             name="this_month"
                             domain="[('payment_date','&gt;=','2026-03-01')]"/>
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
                     <group expand="0" string="Group By">
                         <filter string="Status"
                                 name="grp_state"
@@ -328,8 +335,13 @@
                     <filter string="Due This Month"
                             name="due_this_month"
                             domain="[
+<<<<<<< HEAD
+                                ('due_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d')),
+                                ('due_date','&lt;=',(context_today().replace(day=28)).strftime('%Y-%m-%d'))
+=======
                                 ('due_date','&gt;=','2026-03-01'),
                                 ('due_date','&lt;=','2026-03-31')
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
                             ]"/>
                     <group expand="0" string="Group By">
                         <filter string="Loan"
@@ -346,5 +358,17 @@
             </field>
         </record>
 
+<<<<<<< HEAD
+        <!-- Repayment schedule standalone action -->
+        <record id="action_alba_repayment_schedule" model="ir.actions.act_window">
+            <field name="name">Repayment Schedules</field>
+            <field name="res_model">alba.repayment.schedule</field>
+            <field name="view_mode">list</field>
+            <field name="search_view_id" ref="view_alba_repayment_schedule_search"/>
+            <field name="context">{'search_default_overdue': 1}</field>
+        </record>
+
+=======
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
     </data>
 </odoo>

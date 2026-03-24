@@ -63,12 +63,16 @@ Accounting
         "views/customer_views.xml",
         "views/loan_product_views.xml",
         "views/loan_application_views.xml",
+        "views/loan_views.xml",
         "views/repayment_views.xml",
         # ── M-Pesa views ────────────────────────────────────────────────────
         "views/mpesa_config_views.xml",
         "views/mpesa_transaction_views.xml",
+<<<<<<< HEAD
+=======
         # ── Loan views with computed fields (load last to ensure models ready) ─
         "views/loan_views.xml",
+>>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
         # ── Menus (after all actions are defined) ────────────────────────────
         "views/menus.xml",
         # ── Wizards ──────────────────────────────────────────────────────────
