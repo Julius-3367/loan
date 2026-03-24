@@ -335,20 +335,12 @@
                 <filter
                     string="Today"
                     name="today"
-<<<<<<< HEAD
-                    domain="[('create_date','&gt;=',(context_today()).strftime('%Y-%m-%d'))]"
-=======
-                    domain="[('create_date','&gt;=','2026-03-23')]"
->>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
+                    domain="[('create_date','&gt;=','2026-03-24')]"
                 />
                 <filter
                     string="This Month"
                     name="this_month"
-<<<<<<< HEAD
-                    domain="[('create_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d'))]"
-=======
                     domain="[('create_date','&gt;=','2026-03-01')]"
->>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
                 />
                 <group expand="0" string="Group By">
                     <filter
@@ -381,46 +373,5 @@
         </field>
     </record>
 
-<<<<<<< HEAD
-    <!-- ================================================================
-         alba.mpesa.transaction — Action Window
-         ================================================================ -->
-    <record id="action_alba_mpesa_transaction" model="ir.actions.act_window">
-        <field name="name">M-Pesa Transactions</field>
-        <field name="res_model">alba.mpesa.transaction</field>
-        <field name="view_mode">list,kanban,form</field>
-        <field name="search_view_id" ref="view_alba_mpesa_transaction_search" />
-        <field name="context">{}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No M-Pesa transactions recorded yet.
-            </p>
-            <p>
-                Transactions appear here automatically when customers pay via
-                M-Pesa (STK Push or C2B Paybill/Till).  They can also be
-                created manually for reconciliation purposes.
-                Use the <b>Reconcile to Loan</b> button to link a completed
-                transaction to a loan repayment.
-            </p>
-        </field>
-    </record>
-
-    <!-- Needs-attention shortcut action -->
-    <record id="action_alba_mpesa_transaction_needs_attention" model="ir.actions.act_window">
-        <field name="name">M-Pesa — Needs Attention</field>
-        <field name="res_model">alba.mpesa.transaction</field>
-        <field name="view_mode">list,form</field>
-        <field name="domain">[('needs_attention','=',True)]</field>
-        <field name="search_view_id" ref="view_alba_mpesa_transaction_search" />
-        <field name="context">{'search_default_needs_attention': 1}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No unreconciled transactions — great work!
-            </p>
-        </field>
-    </record>
-
-=======
->>>>>>> a7df70a4411c97de30685c694753ad7f6b2b7e78
 </data>
 </odoo>

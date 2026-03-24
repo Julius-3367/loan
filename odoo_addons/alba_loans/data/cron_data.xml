@@ -77,8 +77,7 @@ env['alba.loan'].cron_send_maturity_reminders()
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">7</field>
         <field name="interval_type">days</field>
-        <field name="numbercall">-1</field>
-        <field name="active">True</field>
+                <field name="active">True</field>
         <field name="priority">20</field>
     </record>
 
@@ -118,8 +117,7 @@ env['alba.mpesa.transaction'].cron_query_pending_stk_transactions()
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">30</field>
         <field name="interval_type">minutes</field>
-        <field name="numbercall">-1</field>
-        <field name="active">True</field>
+                <field name="active">True</field>
         <field name="priority">5</field>
     </record>
 
@@ -138,8 +136,7 @@ env['alba.mpesa.transaction'].cron_auto_reconcile()
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">1</field>
         <field name="interval_type">hours</field>
-        <field name="numbercall">-1</field>
-        <field name="active">True</field>
+                <field name="active">True</field>
         <field name="priority">10</field>
     </record>
 
@@ -159,8 +156,7 @@ env['alba.loan'].cron_push_portfolio_stats()
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">6</field>
         <field name="interval_type">hours</field>
-        <field name="numbercall">-1</field>
-        <field name="active">True</field>
+                <field name="active">True</field>
         <field name="priority">20</field>
     </record>
 
