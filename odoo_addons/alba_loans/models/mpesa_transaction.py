@@ -243,7 +243,7 @@ class AlbaMpesaTransaction(models.Model):
         help="The Daraja configuration record used for this transaction.",
     )
     investor_id = fields.Many2one(
-        "alba.investor",
+        "alba.customer",
         string="Investor",
         index=True,
         ondelete="set null",
