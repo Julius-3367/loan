@@ -167,7 +167,7 @@ class AlbaCustomer(models.Model):
     loan_ids = fields.One2many(
         "alba.loan",
         "customer_id",
-        string="Active Loans",
+        string="Loans",
     )
 
     # ── Computed counters ─────────────────────────────────────────────────────
