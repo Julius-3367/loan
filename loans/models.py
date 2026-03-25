@@ -25,17 +25,29 @@ from django.utils import timezone
 class LoanProduct(models.Model):
     """
     Loan Product Configuration Model - SRS 3.1.1
-    Supports: Salary Advances, Business Loans, Asset Financing
+    Supports: Salary Advances, Business Loans, Asset Financing, Bonds, IPF, Staff Loans
+    NOTE: Investor Loans are managed in Odoo only, not in Django client portal
     """
 
-    # Product Categories as per SRS
-    SALARY_ADVANCE = "SALARY_ADVANCE"
-    BUSINESS_LOAN = "BUSINESS_LOAN"
-    ASSET_FINANCING = "ASSET_FINANCING"
+    # Product Categories as per Requirements Questionnaire
+    # NOTE: Investor Loans are managed in Odoo only, not in Django client portal
+    SALARY_ADVANCE = "salary_advance"
+    BUSINESS_LOAN = "business_loan"
+    PERSONAL_LOAN = "personal_loan"
+    IPF_LOAN = "ipf_loan"
+    BID_BOND = "bid_bond"
+    PERFORMANCE_BOND = "performance_bond"
+    STAFF_LOAN = "staff_loan"
+    ASSET_FINANCING = "asset_financing"
 
     PRODUCT_CATEGORY_CHOICES = [
         (SALARY_ADVANCE, "Salary Advance"),
         (BUSINESS_LOAN, "Business Loan"),
+        (PERSONAL_LOAN, "Personal Loan"),
+        (IPF_LOAN, "IPF Loan"),
+        (BID_BOND, "Bid Bond"),
+        (PERFORMANCE_BOND, "Performance Bond"),
+        (STAFF_LOAN, "Staff Loan"),
         (ASSET_FINANCING, "Asset Financing"),
     ]
 
@@ -63,9 +75,13 @@ class LoanProduct(models.Model):
     name = models.CharField("Product Name", max_length=100, unique=True)
     code = models.CharField("Product Code", max_length=20, unique=True)
     category = models.CharField(
-        "Category", max_length=20, choices=PRODUCT_CATEGORY_CHOICES
+        "Category", max_length=30, choices=PRODUCT_CATEGORY_CHOICES
     )
     description = models.TextField("Description", blank=True)
+    
+    # Fee-based products (Bid/Performance Bonds) - no interest
+    is_fee_based = models.BooleanField("Is Fee-based Product", default=False,
+        help_text="Bid bonds and performance bonds are fee-based, not interest-bearing")
 
     # Loan Amount Limits
     min_amount = models.DecimalField(

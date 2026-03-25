@@ -1,37 +1,120 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_alba_loan_product_user,alba.loan.product user,model_alba_loan_product,alba_loans.group_loan_user,1,0,0,0
+
+# ================================================================
+# LOAN PRODUCT ACCESS
+# ================================================================
+access_alba_loan_product_user,alba.loan.product user,model_alba_loan_product,alba_loans.group_relationship_officer,1,0,0,0
 access_alba_loan_product_officer,alba.loan.product officer,model_alba_loan_product,alba_loans.group_loan_officer,1,1,1,0
-access_alba_loan_product_manager,alba.loan.product manager,model_alba_loan_product,alba_loans.group_loan_manager,1,1,1,1
-access_alba_customer_user,alba.customer user,model_alba_customer,alba_loans.group_loan_user,1,0,0,0
+access_alba_loan_product_manager,alba.loan.product manager,model_alba_loan_product,alba_loans.group_operations_manager,1,1,1,1
+access_alba_loan_product_director,alba.loan.product director,model_alba_loan_product,alba_loans.group_director,1,1,1,1
+
+# ================================================================
+# CUSTOMER ACCESS
+# ================================================================
+access_alba_customer_user,alba.customer user,model_alba_customer,alba_loans.group_relationship_officer,1,1,1,0
 access_alba_customer_officer,alba.customer officer,model_alba_customer,alba_loans.group_loan_officer,1,1,1,0
-access_alba_customer_manager,alba.customer manager,model_alba_customer,alba_loans.group_loan_manager,1,1,1,1
-access_alba_loan_application_user,alba.loan.application user,model_alba_loan_application,alba_loans.group_loan_user,1,0,0,0
+access_alba_customer_manager,alba.customer manager,model_alba_customer,alba_loans.group_operations_manager,1,1,1,1
+access_alba_customer_director,alba.customer director,model_alba_customer,alba_loans.group_director,1,1,1,1
+access_alba_customer_business_dev,alba.customer business dev,model_alba_customer,alba_loans.group_business_dev_officer,1,1,1,0
+access_alba_customer_trade,alba.customer trade,model_alba_customer,alba_loans.group_trade_finance_officer,1,1,1,0
+
+# ================================================================
+# LOAN APPLICATION ACCESS
+# ================================================================
+access_alba_loan_application_user,alba.loan.application user,model_alba_loan_application,alba_loans.group_relationship_officer,1,1,1,0
 access_alba_loan_application_officer,alba.loan.application officer,model_alba_loan_application,alba_loans.group_loan_officer,1,1,1,0
-access_alba_loan_application_manager,alba.loan.application manager,model_alba_loan_application,alba_loans.group_loan_manager,1,1,1,1
-access_alba_loan_user,alba.loan user,model_alba_loan,alba_loans.group_loan_user,1,0,0,0
+access_alba_loan_application_manager,alba.loan.application manager,model_alba_loan_application,alba_loans.group_operations_manager,1,1,1,1
+access_alba_loan_application_director,alba.loan.application director,model_alba_loan_application,alba_loans.group_director,1,1,1,1
+access_alba_loan_application_trade,alba.loan.application trade,model_alba_loan_application,alba_loans.group_trade_finance_officer,1,1,1,0
+access_alba_loan_application_business,alba.loan.application business,model_alba_loan_application,alba_loans.group_business_dev_officer,1,1,1,0
+
+# ================================================================
+# ACTIVE LOAN ACCESS
+# ================================================================
+access_alba_loan_user,alba.loan user,model_alba_loan,alba_loans.group_relationship_officer,1,0,0,0
 access_alba_loan_officer,alba.loan officer,model_alba_loan,alba_loans.group_loan_officer,1,1,1,0
-access_alba_loan_manager,alba.loan manager,model_alba_loan,alba_loans.group_loan_manager,1,1,1,1
-access_alba_loan_repayment_user,alba.loan.repayment user,model_alba_loan_repayment,alba_loans.group_loan_user,1,0,0,0
+access_alba_loan_manager,alba.loan manager,model_alba_loan,alba_loans.group_operations_manager,1,1,1,1
+access_alba_loan_director,alba.loan director,model_alba_loan,alba_loans.group_director,1,1,1,1
+access_alba_loan_finance,alba.loan finance,model_alba_loan,alba_loans.group_finance_officer,1,1,0,0
+access_alba_loan_finance_admin,alba.loan finance admin,model_alba_loan,alba_loans.group_finance_admin,1,1,1,0
+
+# ================================================================
+# REPAYMENT ACCESS
+# ================================================================
+access_alba_loan_repayment_user,alba.loan.repayment user,model_alba_loan_repayment,alba_loans.group_relationship_officer,1,0,0,0
 access_alba_loan_repayment_officer,alba.loan.repayment officer,model_alba_loan_repayment,alba_loans.group_loan_officer,1,1,1,0
-access_alba_loan_repayment_manager,alba.loan.repayment manager,model_alba_loan_repayment,alba_loans.group_loan_manager,1,1,1,1
-access_alba_repayment_schedule_user,alba.repayment.schedule user,model_alba_repayment_schedule,alba_loans.group_loan_user,1,0,0,0
+access_alba_loan_repayment_manager,alba.loan.repayment manager,model_alba_loan_repayment,alba_loans.group_operations_manager,1,1,1,1
+access_alba_loan_repayment_finance,alba.loan.repayment finance,model_alba_loan_repayment,alba_loans.group_finance_officer,1,1,1,0
+access_alba_loan_repayment_finance_admin,alba.loan.repayment finance admin,model_alba_loan_repayment,alba_loans.group_finance_admin,1,1,1,1
+access_alba_loan_repayment_director,alba.loan.repayment director,model_alba_loan_repayment,alba_loans.group_director,1,1,1,1
+
+# ================================================================
+# REPAYMENT SCHEDULE ACCESS
+# ================================================================
+access_alba_repayment_schedule_user,alba.repayment.schedule user,model_alba_repayment_schedule,alba_loans.group_relationship_officer,1,0,0,0
 access_alba_repayment_schedule_officer,alba.repayment.schedule officer,model_alba_repayment_schedule,alba_loans.group_loan_officer,1,1,1,0
-access_alba_repayment_schedule_manager,alba.repayment.schedule manager,model_alba_repayment_schedule,alba_loans.group_loan_manager,1,1,1,1
-access_alba_loan_disburse_wizard_officer,alba.loan.disburse.wizard officer,model_alba_loan_disburse_wizard,alba_loans.group_loan_officer,1,1,1,1
-access_alba_loan_disburse_wizard_manager,alba.loan.disburse.wizard manager,model_alba_loan_disburse_wizard,alba_loans.group_loan_manager,1,1,1,1
+access_alba_repayment_schedule_manager,alba.repayment.schedule manager,model_alba_repayment_schedule,alba_loans.group_operations_manager,1,1,1,1
+access_alba_repayment_schedule_director,alba.repayment.schedule director,model_alba_repayment_schedule,alba_loans.group_director,1,1,1,1
+
+# ================================================================
+# COLLECTIONS ACCESS (NEW MODELS)
+# ================================================================
+access_alba_collection_stage_manager,alba.loan.collection.stage manager,model_alba_loan_collection_stage,alba_loans.group_operations_manager,1,1,1,1
+access_alba_collection_stage_director,alba.loan.collection.stage director,model_alba_loan_collection_stage,alba_loans.group_director,1,1,1,1
+access_alba_collection_log_officer,alba.loan.collection.log officer,model_alba_loan_collection_log,alba_loans.group_loan_officer,1,1,1,0
+access_alba_collection_log_manager,alba.loan.collection.log manager,model_alba_loan_collection_log,alba_loans.group_operations_manager,1,1,1,1
+access_alba_collection_log_director,alba.loan.collection.log director,model_alba_loan_collection_log,alba_loans.group_director,1,1,1,1
+
+# ================================================================
+# LOAN RULES ACCESS (NEW MODELS)
+# ================================================================
+access_alba_loan_restructure_manager,alba.loan.restructure manager,model_alba_loan_restructure,alba_loans.group_operations_manager,1,1,1,1
+access_alba_loan_restructure_director,alba.loan.restructure director,model_alba_loan_restructure,alba_loans.group_director,1,1,1,1
+access_alba_loan_reschedule_officer,alba.loan.reschedule officer,model_alba_loan_reschedule,alba_loans.group_loan_officer,1,1,1,0
+access_alba_loan_reschedule_manager,alba.loan.reschedule manager,model_alba_loan_reschedule,alba_loans.group_operations_manager,1,1,1,1
+access_alba_loan_early_settlement_officer,alba.loan.early.settlement officer,model_alba_loan_early_settlement,alba_loans.group_loan_officer,1,1,1,0
+access_alba_loan_early_settlement_manager,alba.loan.early.settlement manager,model_alba_loan_early_settlement,alba_loans.group_operations_manager,1,1,1,1
+access_alba_loan_fee_finance,alba.loan.fee finance,model_alba_loan_fee,alba_loans.group_finance_officer,1,1,1,0
+access_alba_loan_fee_finance_admin,alba.loan.fee finance admin,model_alba_loan_fee,alba_loans.group_finance_admin,1,1,1,1
+
+# ================================================================
+# APPROVAL WORKFLOW ACCESS (NEW MODELS)
+# ================================================================
+access_alba_approval_limit_director,alba.approval.limit director,model_alba_approval_limit,alba_loans.group_director,1,1,1,1
+access_alba_workflow_rule_director,alba.workflow.rule director,model_alba_workflow_rule,alba_loans.group_director,1,1,1,1
+access_alba_sod_rule_director,alba.segregation.of.duties director,model_alba_segregation_of_duties,alba_loans.group_director,1,1,1,1
+
+# ================================================================
+# INVESTOR ACCESS
+# ================================================================
+access_alba_investor_user,alba.investor user,model_alba_investor,alba_loans.group_relationship_officer,1,0,0,0
+access_alba_investor_officer,alba.investor officer,model_alba_investor,alba_loans.group_investor_officer,1,1,1,0
+access_alba_investor_manager,alba.investor manager,model_alba_investor,alba_loans.group_operations_manager,1,1,1,1
+access_alba_investor_finance,alba.investor finance,model_alba_investor,alba_loans.group_finance_officer,1,1,1,0
+access_alba_investor_finance_admin,alba.investor finance admin,model_alba_investor,alba_loans.group_finance_admin,1,1,1,1
+access_alba_investor_director,alba.investor director,model_alba_investor,alba_loans.group_director,1,1,1,1
+access_alba_investor_transaction_officer,alba.investor.transaction officer,model_alba_investor_transaction,alba_loans.group_investor_officer,1,1,1,0
+access_alba_investor_transaction_manager,alba.investor.transaction manager,model_alba_investor_transaction,alba_loans.group_operations_manager,1,1,1,1
+access_alba_investor_transaction_finance,alba.investor.transaction finance,model_alba_investor_transaction,alba_loans.group_finance_officer,1,1,1,1
+access_alba_investor_withdrawal_officer,alba.investor.withdrawal officer,model_alba_investor_withdrawal,alba_loans.group_investor_officer,1,1,1,0
+access_alba_investor_withdrawal_manager,alba.investor.withdrawal manager,model_alba_investor_withdrawal,alba_loans.group_operations_manager,1,1,1,1
+access_alba_investor_withdrawal_finance,alba.investor.withdrawal finance,model_alba_investor_withdrawal,alba_loans.group_finance_officer,1,1,1,1
+
+# ================================================================
+# M-PESA ACCESS
+# ================================================================
 access_alba_mpesa_config_officer,alba.mpesa.config officer,model_alba_mpesa_config,alba_loans.group_loan_officer,1,0,0,0
-access_alba_mpesa_config_manager,alba.mpesa.config manager,model_alba_mpesa_config,alba_loans.group_loan_manager,1,1,1,1
-access_alba_mpesa_transaction_user,alba.mpesa.transaction user,model_alba_mpesa_transaction,alba_loans.group_loan_user,1,0,0,0
+access_alba_mpesa_config_manager,alba.mpesa.config manager,model_alba_mpesa_config,alba_loans.group_operations_manager,1,1,1,1
+access_alba_mpesa_transaction_user,alba.mpesa.transaction user,model_alba_mpesa_transaction,alba_loans.group_relationship_officer,1,0,0,0
 access_alba_mpesa_transaction_officer,alba.mpesa.transaction officer,model_alba_mpesa_transaction,alba_loans.group_loan_officer,1,1,1,0
-access_alba_mpesa_transaction_manager,alba.mpesa.transaction manager,model_alba_mpesa_transaction,alba_loans.group_loan_manager,1,1,1,1
+access_alba_mpesa_transaction_manager,alba.mpesa.transaction manager,model_alba_mpesa_transaction,alba_loans.group_operations_manager,1,1,1,1
+access_alba_mpesa_transaction_finance,alba.mpesa.transaction finance,model_alba_mpesa_transaction,alba_loans.group_finance_officer,1,1,1,1
 access_alba_mpesa_stk_push_wizard_officer,alba.mpesa.stk.push.wizard officer,model_alba_mpesa_stk_push_wizard,alba_loans.group_loan_officer,1,1,1,1
-access_alba_mpesa_stk_push_wizard_manager,alba.mpesa.stk.push.wizard manager,model_alba_mpesa_stk_push_wizard,alba_loans.group_loan_manager,1,1,1,1
-access_alba_investor_user,alba.investor user,model_alba_investor,alba_loans.group_loan_user,1,0,0,0
-access_alba_investor_officer,alba.investor officer,model_alba_investor,alba_loans.group_loan_officer,1,1,1,0
-access_alba_investor_manager,alba.investor manager,model_alba_investor,alba_loans.group_loan_manager,1,1,1,1
-access_alba_investor_transaction_user,alba.investor.transaction user,model_alba_investor_transaction,alba_loans.group_loan_user,1,0,0,0
-access_alba_investor_transaction_officer,alba.investor.transaction officer,model_alba_investor_transaction,alba_loans.group_loan_officer,1,1,1,0
-access_alba_investor_transaction_manager,alba.investor.transaction manager,model_alba_investor_transaction,alba_loans.group_loan_manager,1,1,1,1
-access_alba_investor_withdrawal_user,alba.investor.withdrawal user,model_alba_investor_withdrawal,alba_loans.group_loan_user,1,0,0,0
-access_alba_investor_withdrawal_officer,alba.investor.withdrawal officer,model_alba_investor_withdrawal,alba_loans.group_loan_officer,1,1,1,0
-access_alba_investor_withdrawal_manager,alba.investor.withdrawal manager,model_alba_investor_withdrawal,alba_loans.group_loan_manager,1,1,1,1
+access_alba_mpesa_stk_push_wizard_manager,alba.mpesa.stk.push.wizard manager,model_alba_mpesa_stk_push_wizard,alba_loans.group_operations_manager,1,1,1,1
+
+# ================================================================
+# WIZARD ACCESS
+# ================================================================
+access_alba_loan_disburse_wizard_officer,alba.loan.disburse.wizard officer,model_alba_loan_disburse_wizard,alba_loans.group_loan_officer,1,1,1,1
+access_alba_loan_disburse_wizard_manager,alba.loan.disburse.wizard manager,model_alba_loan_disburse_wizard,alba_loans.group_operations_manager,1,1,1,1
+access_alba_loan_disburse_wizard_director,alba.loan.disburse.wizard director,model_alba_loan_disburse_wizard,alba_loans.group_director,1,1,1,1

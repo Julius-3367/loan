@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- ================================================================
+             Alba Capital — Security Groups & Access Control
+             Based on Business Requirements Questionnaire Section B
+             ================================================================ -->
+
+        <!-- ── Module Categories ───────────────────────────────────────────── -->
+        <record id="module_category_alba_loans" model="ir.module.category">
+            <field name="name">Alba Capital / Loans</field>
+            <field name="description">Loan management and processing</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="module_category_alba_investor" model="ir.module.category">
+            <field name="name">Alba Capital / Investor Management</field>
+            <field name="description">Investor accounts and transactions</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="module_category_alba_accounting" model="ir.module.category">
+            <field name="name">Alba Capital / Accounting & Finance</field>
+            <field name="description">Financial operations and accounting</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <record id="module_category_alba_hr" model="ir.module.category">
+            <field name="name">Alba Capital / HR & Payroll</field>
+            <field name="description">Human resources and payroll management</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- ================================================================
+             USER ROLES (As per Questionnaire Section B)
+             ================================================================ -->
+
+        <!-- 1. Relationship Officer ──────────────────────────────────────────── -->
+        <record id="group_relationship_officer" model="res.groups">
+            <field name="name">Relationship Officer</field>
+            <field name="category_id" ref="module_category_alba_loans"/>
+            <field name="comment">
+                Relationship Officers handle customer acquisition and initial loan application intake.
+                Can create customers, submit loan applications, upload documents, and view customer history.
+                Cannot approve loans or access financial journals.
+            </field>
+        </record>
+
+        <!-- 2. Finance Officer ─────────────────────────────────────────────────── -->
+        <record id="group_finance_officer" model="res.groups">
+            <field name="name">Finance Officer</field>
+            <field name="category_id" ref="module_category_alba_accounting"/>
+            <field name="comment">
+                Finance Officers handle day-to-day financial transactions.
+                Can post journal entries (as preparer), process repayments, reconcile accounts,
+                and generate financial reports. Requires Finance Manager approval for sensitive transactions.
+            </field>
+        </record>
+
+        <!-- 3. Finance & Admin ───────────────────────────────────────────────── -->
+        <record id="group_finance_admin" model="res.groups">
+            <field name="name">Finance &amp; Admin</field>
+            <field name="category_id" ref="module_category_alba_accounting"/>
+            <field name="implied_ids" eval="[(4, ref('group_finance_officer'))]"/>
+            <field name="comment">
+                Finance &amp; Admin role combines finance operations with administrative oversight.
+                Can approve journal entries prepared by Finance Officers, manage bank accounts,
+                handle administrative workflows, and oversee financial controls.
+            </field>
+        </record>
+
+        <!-- 4. Operations Manager ─────────────────────────────────────────────── -->
+        <record id="group_operations_manager" model="res.groups">
+            <field name="name">Operations Manager</field>
+            <field name="category_id" ref="module_category_alba_loans"/>
+            <field name="implied_ids" eval="[(4, ref('group_relationship_officer'))]"/>
+            <field name="comment">
+                Operations Managers oversee loan operations and have approval authority.
+                Can review and approve loan applications, manage loan officers, approve write-offs,
+                and have access to all loan modules. Acts as approver in Segregation of Duties.
+            </field>
+        </record>
+
+        <!-- 5. Director (Admin) ──────────────────────────────────────────────── -->
+        <record id="group_director" model="res.groups">
+            <field name="name">Director</field>
+            <field name="category_id" ref="module_category_alba_loans"/>
+            <field name="implied_ids" eval="[
+                (4, ref('group_operations_manager')),
+                (4, ref('group_finance_admin')),
+                (4, ref('base.group_erp_manager'))
+            ]"/>
+            <field name="comment">
+                Directors have full administrative access across all modules.
+                Can approve high-value loans, authorize write-offs, approve critical journals,
+                manage system configuration, and have final approval authority in all workflows.
+            </field>
+        </record>
+
+        <!-- 6. Trade Finance Officer ──────────────────────────────────────────── -->
+        <record id="group_trade_finance_officer" model="res.groups">
+            <field name="name">Trade Finance Officer</field>
+            <field name="category_id" ref="module_category_alba_loans"/>
+            <field name="comment">
+                Trade Finance Officers specialize in bid bonds, performance bonds, and IPF loans.
+                Can process bond applications, manage trade finance documentation,
+                and handle contract-based financing products.
+            </field>
+        </record>
+
+        <!-- 7. Business Development Officer ─────────────────────────────────────── -->
+        <record id="group_business_dev_officer" model="res.groups">
+            <field name="name">Business Development Officer</field>
+            <field name="category_id" ref="module_category_alba_loans"/>
+            <field name="comment">
+                Business Development Officers focus on SME and business loan products.
+                Can manage business loan applications, conduct business verifications,
+                and support business customer onboarding.
+            </field>
+        </record>
+
+        <!-- 8. Loan Officer (Credit Analyst) ──────────────────────────────────── -->
+        <record id="group_loan_officer" model="res.groups">
+            <field name="name">Loan Officer / Credit Analyst</field>
+            <field name="category_id" ref="module_category_alba_loans"/>
+            <field name="implied_ids" eval="[(4, ref('group_relationship_officer'))]"/>
+            <field name="comment">
+                Loan Officers (Credit Analysts) perform credit analysis and review applications.
+                Can move applications through Under Review and Credit Analysis stages,
+                record employer verifications, guarantor confirmations, and post repayments.
+                Cannot approve or disburse loans.
+            </field>
+        </record>
+
+        <!-- 9. Investor Relations Officer ─────────────────────────────────────── -->
+        <record id="group_investor_officer" model="res.groups">
+            <field name="name">Investor Relations Officer</field>
+            <field name="category_id" ref="module_category_alba_investor"/>
+            <field name="comment">
+                Investor Relations Officers manage investor accounts and transactions.
+                Can create investor profiles, process deposits, handle withdrawal requests,
+                and generate investor statements. Requires Operations Manager approval for withdrawals.
+            </field>
+        </record>
+
+        <!-- 10. HR/Payroll Officer ────────────────────────────────────────────── -->
+        <record id="group_hr_payroll_officer" model="res.groups">
+            <field name="name">HR &amp; Payroll Officer</field>
+            <field name="category_id" ref="module_category_alba_hr"/>
+            <field name="comment">
+                HR &amp; Payroll Officers manage employee data and process payroll.
+                Can manage employee records, process monthly payroll, handle leave management,
+                and process staff loan applications. Requires Finance approval for disbursement.
+            </field>
+        </record>
+
+        <!-- ================================================================
+             LEGACY GROUPS (Kept for backward compatibility)
+             ================================================================ -->
+
+        <!-- ── Loan User (Basic) ─────────────────────────────────────────────── -->
+        <record id="group_loan_user" model="res.groups">
+            <field name="name">Loan User (Basic)</field>
+            <field name="category_id" ref="module_category_alba_loans"/>
+            <field name="comment">Legacy group - Use Relationship Officer instead</field>
+        </record>
+
+        <!-- ── Loan Manager (Full) ────────────────────────────────────────────── -->
+        <record id="group_loan_manager" model="res.groups">
+            <field name="name">Loan Manager (Full)</field>
+            <field name="category_id" ref="module_category_alba_loans"/>
+            <field name="implied_ids" eval="[(4, ref('group_loan_officer'))]"/>
+            <field name="comment">Legacy group - Use Operations Manager instead</field>
+        </record>
+
+        <!-- ================================================================
+             MODULE ACCESS RULES
+             ================================================================ -->
+
+        <!-- Accounting Module Access -->
+        <record id="rule_accounting_access" model="ir.rule">
+            <field name="name">Accounting: Finance, Ops, Director Only</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="groups" eval="[
+                (4, ref('group_finance_officer')),
+                (4, ref('group_finance_admin')),
+                (4, ref('group_director'))
+            ]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Loan Module Access -->
+        <record id="rule_loan_access" model="ir.rule">
+            <field name="name">Loans: Officers, Ops, Finance, Director</field>
+            <field name="model_id" ref="model_alba_loan_application"/>
+            <field name="groups" eval="[
+                (4, ref('group_relationship_officer')),
+                (4, ref('group_loan_officer')),
+                (4, ref('group_operations_manager')),
+                (4, ref('group_finance_admin')),
+                (4, ref('group_director')),
+                (4, ref('group_trade_finance_officer')),
+                (4, ref('group_business_dev_officer'))
+            ]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Investor Module Access -->
+        <record id="rule_investor_access" model="ir.rule">
+            <field name="name">Investor: Finance, Ops, Director</field>
+            <field name="model_id" ref="model_alba_investor"/>
+            <field name="groups" eval="[
+                (4, ref('group_investor_officer')),
+                (4, ref('group_finance_admin')),
+                (4, ref('group_operations_manager')),
+                (4, ref('group_director'))
+            ]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- HR/Payroll Module Access -->
+        <record id="rule_hr_access" model="ir.rule">
+            <field name="name">HR/Payroll: Finance, Ops, Director</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="groups" eval="[
+                (4, ref('group_hr_payroll_officer')),
+                (4, ref('group_finance_admin')),
+                (4, ref('group_operations_manager')),
+                (4, ref('group_director'))
+            ]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+        <!-- Document/Knowledge Access -->
+        <record id="rule_document_access" model="ir.rule">
+            <field name="name">Documents: Authorized/Admin Only</field>
+            <field name="model_id" ref="model_alba_loan_document"/>
+            <field name="groups" eval="[
+                (4, ref('group_loan_officer')),
+                (4, ref('group_operations_manager')),
+                (4, ref('group_director')),
+                (4, ref('group_trade_finance_officer')),
+                (4, ref('group_business_dev_officer'))
+            ]"/>
+            <field name="perm_read" eval="1"/>
+            <field name="perm_write" eval="1"/>
+            <field name="perm_create" eval="1"/>
+            <field name="perm_unlink" eval="0"/>
+        </record>
+
+    </data>
+</odoo>

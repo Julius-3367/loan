@@ -90,17 +90,17 @@
             <field name="is_active">True</field>
         </record>
 
-        <!-- 5. Bid Bond -->
+        <!-- 5. Bid Bond - Fee-based only (NOT a loan product) -->
         <record id="loan_product_bid_bond" model="alba.loan.product">
             <field name="name">Bid Bond</field>
             <field name="code">BID-BOND</field>
             <field name="category">bid_bond</field>
-            <field name="description">Bid bond financing for contractors and tender participants</field>
+            <field name="description">Bid bond financing for contractors and tender participants. Fee-based product (1.5% one-time fee), no interest charged.</field>
             <field name="min_amount">100000</field>
             <field name="max_amount">10000000</field>
             <field name="min_tenure_months">1</field>
             <field name="max_tenure_months">12</field>
-            <field name="interest_rate">1.5</field>
+            <field name="interest_rate">0</field>
             <field name="interest_method">flat_rate</field>
             <field name="repayment_frequency">monthly</field>
             <field name="processing_fee_percentage">0</field>
@@ -111,17 +111,17 @@
             <field name="is_active">True</field>
         </record>
 
-        <!-- 6. Performance Bond -->
+        <!-- 6. Performance Bond - Fee-based only (NOT a loan product) -->
         <record id="loan_product_performance_bond" model="alba.loan.product">
             <field name="name">Performance Bond</field>
             <field name="code">PERF-BOND</field>
             <field name="category">performance_bond</field>
-            <field name="description">Performance bond financing for contract execution</field>
+            <field name="description">Performance bond financing for contract execution. Fee-based product (1% one-time fee), no interest charged.</field>
             <field name="min_amount">100000</field>
             <field name="max_amount">5000000</field>
             <field name="min_tenure_months">1</field>
             <field name="max_tenure_months">12</field>
-            <field name="interest_rate">1</field>
+            <field name="interest_rate">0</field>
             <field name="interest_method">flat_rate</field>
             <field name="repayment_frequency">monthly</field>
             <field name="processing_fee_percentage">0</field>
@@ -174,12 +174,33 @@
             <field name="is_active">True</field>
         </record>
 
-        <!-- 9. Asset Financing -->
-        <record id="loan_product_asset" model="alba.loan.product">
-            <field name="name">Asset Financing</field>
-            <field name="code">ASSET-FIN</field>
+        <!-- 9. Asset Financing - STAFF (5% reducing balance) -->
+        <record id="loan_product_asset_staff" model="alba.loan.product">
+            <field name="name">Asset Financing - Staff</field>
+            <field name="code">ASSET-STAFF</field>
             <field name="category">asset_financing</field>
-            <field name="description">Financing for vehicle and equipment purchases</field>
+            <field name="description">Asset financing for staff employees (vehicles, equipment). Preferential 5% reducing balance rate.</field>
+            <field name="min_amount">50000</field>
+            <field name="max_amount">2000000</field>
+            <field name="min_tenure_months">6</field>
+            <field name="max_tenure_months">48</field>
+            <field name="interest_rate">5</field>
+            <field name="interest_method">reducing_balance</field>
+            <field name="repayment_frequency">monthly</field>
+            <field name="processing_fee_percentage">0</field>
+            <field name="insurance_fee_percentage">0</field>
+            <field name="origination_fee_percentage">0</field>
+            <field name="penalty_rate">5</field>
+            <field name="grace_period_days">30</field>
+            <field name="is_active">True</field>
+        </record>
+
+        <!-- 10. Asset Financing - CLIENT (10% flat rate) -->
+        <record id="loan_product_asset_client" model="alba.loan.product">
+            <field name="name">Asset Financing - Client</field>
+            <field name="code">ASSET-CLIENT</field>
+            <field name="category">asset_financing</field>
+            <field name="description">Asset financing for external clients (vehicles, equipment). 10% flat rate.</field>
             <field name="min_amount">50000</field>
             <field name="max_amount">2000000</field>
             <field name="min_tenure_months">6</field>

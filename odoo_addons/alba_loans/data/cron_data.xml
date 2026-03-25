@@ -160,5 +160,43 @@ env['alba.loan'].cron_push_portfolio_stats()
         <field name="priority">20</field>
     </record>
 
+    <!-- ================================================================
+         Cron 9: Collections Workflow Automation (daily)
+         Processes collection stages and sends automated reminders for
+         overdue loans based on their current collection stage.
+         ================================================================ -->
+    <record id="cron_alba_collections_workflow" model="ir.cron">
+        <field name="name">Alba Loans — Collections Workflow Automation (Daily)</field>
+        <field name="model_id" ref="alba_loans.model_alba_loan_collection_cron" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.loan.collection.cron'].cron_process_collection_stages()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active">True</field>
+        <field name="priority">5</field>
+    </record>
+
+    <!-- ================================================================
+         Cron 10: Default Interest Continuation (daily)
+         Continues accruing interest for loans in default (overdue/npl)
+         as per loan rules configuration.
+         ================================================================ -->
+    <record id="cron_alba_default_interest" model="ir.cron">
+        <field name="name">Alba Loans — Default Interest Continuation (Daily)</field>
+        <field name="model_id" ref="alba_loans.model_alba_loan_interest_cron" />
+        <field name="state">code</field>
+        <field name="code">
+env['alba.loan.interest.cron'].cron_continue_default_interest()
+        </field>
+        <field name="user_id" ref="base.user_root" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active">True</field>
+        <field name="priority">5</field>
+    </record>
+
 </data>
 </odoo>

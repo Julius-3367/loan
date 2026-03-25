@@ -357,13 +357,15 @@ class AlbaLoanRepayment(models.Model):
             
             # 2. Allocate to penalties
             # Calculate penalty based on overdue days and penalty rate
+            # FIX: Daily penalty rate = monthly rate / 30
             if entry.due_date and entry.due_date < fields.Date.today():
                 loan_product = self.loan_id.loan_product_id
                 if loan_product and loan_product.penalty_rate > 0:
                     days_overdue = (fields.Date.today() - entry.due_date).days
                     overdue_amount = entry.balance_due
-                    daily_penalty = loan_product.penalty_rate / 100
-                    penalty_owed = overdue_amount * daily_penalty * days_overdue
+                    # Convert monthly penalty rate to daily: rate / 100 / 30
+                    daily_penalty_rate = (loan_product.penalty_rate / 100) / 30
+                    penalty_owed = overdue_amount * daily_penalty_rate * days_overdue
                     pay_penalty = min(remaining, penalty_owed)
                     penalty += pay_penalty
                     remaining -= pay_penalty

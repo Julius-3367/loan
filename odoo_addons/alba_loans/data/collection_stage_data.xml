@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- ================================================================
+             Alba Capital Default Collection Stages
+             Based on Requirements Questionnaire Section D
+             ================================================================ -->
+        
+        <!-- Stage 1: Reminder (1-30 Days) -->
+        <record id="collection_stage_reminder" model="alba.loan.collection.stage">
+            <field name="name">Reminder Stage (1-30 Days)</field>
+            <field name="stage_code">reminder</field>
+            <field name="stage_number">1</field>
+            <field name="min_days_overdue">1</field>
+            <field name="max_days_overdue">30</field>
+            <field name="auto_send_reminder">True</field>
+            <field name="sms_template">Dear Customer, your loan payment of KES {amount} is {days} days overdue. Please pay immediately to avoid penalties. Alba Capital.</field>
+            <field name="create_activity">False</field>
+            <field name="additional_penalty_rate">0.0</field>
+        </record>
+        
+        <!-- Stage 2: Collections (31-60 Days) -->
+        <record id="collection_stage_collection" model="alba.loan.collection.stage">
+            <field name="name">Collections Stage (31-60 Days)</field>
+            <field name="stage_code">collection</field>
+            <field name="stage_number">2</field>
+            <field name="min_days_overdue">31</field>
+            <field name="max_days_overdue">60</field>
+            <field name="auto_send_reminder">True</field>
+            <field name="sms_template">Dear Customer, your loan is now {days} days overdue. Our collections team will contact you shortly. Alba Capital.</field>
+            <field name="create_activity">True</field>
+            <field name="escalate_to" ref="alba_loans.group_operations_manager"/>
+            <field name="additional_penalty_rate">0.0</field>
+        </record>
+        
+        <!-- Stage 3: Recovery (61-90 Days) -->
+        <record id="collection_stage_recovery" model="alba.loan.collection.stage">
+            <field name="name">Recovery Stage (61-90 Days)</field>
+            <field name="stage_code">recovery</field>
+            <field name="stage_number">3</field>
+            <field name="min_days_overdue">61</field>
+            <field name="max_days_overdue">90</field>
+            <field name="auto_send_reminder">True</field>
+            <field name="sms_template">URGENT: Your loan is {days} days overdue. Final notice before legal action. Contact us immediately. Alba Capital.</field>
+            <field name="create_activity">True</field>
+            <field name="escalate_to" ref="alba_loans.group_director"/>
+            <field name="additional_penalty_rate">1.0</field>
+        </record>
+        
+        <!-- Stage 4: Legal (90+ Days) -->
+        <record id="collection_stage_legal" model="alba.loan.collection.stage">
+            <field name="name">Legal Stage (90+ Days)</field>
+            <field name="stage_code">legal</field>
+            <field name="stage_number">4</field>
+            <field name="min_days_overdue">91</field>
+            <field name="max_days_overdue">9999</field>
+            <field name="auto_send_reminder">False</field>
+            <field name="create_activity">True</field>
+            <field name="escalate_to" ref="alba_loans.group_director"/>
+            <field name="additional_penalty_rate">0.0</field>
+        </record>
+        
+    </data>
+</odoo>

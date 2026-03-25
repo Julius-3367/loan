@@ -51,11 +51,13 @@ Accounting
     },
     "data": [
         # ── Security — always first ──────────────────────────────────────────
-        "security/security.xml",
+        "security/security_groups.xml",
         "security/ir.model.access.csv",
         # ── Master data / sequences ──────────────────────────────────────────
         "data/sequence_data.xml",
         "data/loan_product_data.xml",
+        "data/collection_stage_data.xml",
+        "data/approval_limit_data.xml",
         # ── Scheduled actions (crons) ────────────────────────────────────────
         "data/cron_data.xml",
         # ── Actions — must load before views that reference them ─────────────
