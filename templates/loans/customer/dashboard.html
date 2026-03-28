@@ -235,8 +235,7 @@
                             Total Borrowed
                         </p>
                         <p class="text-xl font-bold text-gray-900">
-                            KES {{ total_borrowed|floatformat:2|default:"0.00"
-                            }}
+                            KES {{ total_borrowed|floatformat:2|default:"0.00" }}
                         </p>
                     </div>
                 </div>
@@ -270,8 +269,7 @@
                             Outstanding
                         </p>
                         <p class="text-xl font-bold text-gray-900">
-                            KES {{
-                            total_outstanding|floatformat:2|default:"0.00" }}
+                            KES {{ total_outstanding|floatformat:2|default:"0.00" }}
                         </p>
                     </div>
                 </div>
@@ -298,8 +296,8 @@
                     </a>
                 </div>
                 <div class="divide-y divide-gray-200">
-                    {% if recent_applications %} {% for app in
-                    recent_applications %}
+                    {% if recent_applications %}
+                    {% for app in recent_applications %}
                     <a
                         href="{% url 'loans:application_detail' app.pk %}"
                         class="block hover:bg-gray-50 transition"
@@ -316,9 +314,7 @@
                                         {{ app.loan_product.name }}
                                     </p>
                                     <p class="text-xs text-gray-500 mt-1">
-                                        KES {{
-                                        app.requested_amount|floatformat:2 }} -
-                                        {{ app.tenure_months }} months
+                                        KES {{ app.requested_amount|floatformat:2 }} - {{ app.tenure_months }} months
                                     </p>
                                 </div>
                                 <div class="ml-4">
@@ -334,7 +330,8 @@
                             </div>
                         </div>
                     </a>
-                    {% endfor %} {% else %}
+                    {% endfor %}
+                    {% else %}
                     <div class="px-6 py-8 text-center">
                         <svg
                             class="mx-auto h-12 w-12 text-gray-400"
@@ -381,7 +378,8 @@
                     </a>
                 </div>
                 <div class="divide-y divide-gray-200">
-                    {% if my_loans %} {% for loan in my_loans %}
+                    {% if my_loans %}
+                    {% for loan in my_loans %}
                     <a
                         href="{% url 'loans:loan_detail' loan.pk %}"
                         class="block hover:bg-gray-50 transition"
@@ -408,7 +406,7 @@
                                                 ></div>
                                             </div>
                                             <span class="text-xs text-gray-600"
-                                                >{{
+                                                >{{ loan.get_payment_progress_percentage|floatformat:0 }}%</span
                                                 loan.get_payment_progress_percentage|floatformat:0
                                                 }}%</span
                                             >
@@ -419,22 +417,20 @@
                                     <p
                                         class="text-sm font-semibold text-gray-900"
                                     >
-                                        KES {{
-                                        loan.outstanding_balance|floatformat:2
-                                        }}
+                                        KES {{ loan.outstanding_balance|floatformat:2 }}
                                     </p>
                                     <p class="text-xs text-gray-500">
                                         Outstanding
                                     </p>
                                     <p class="text-xs text-gray-500 mt-1">
-                                        Due: {{ loan.next_payment_date|date:"M
-                                        d" }}
+                                        Due: {{ loan.next_payment_date|date:"M d" }}
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </a>
-                    {% endfor %} {% else %}
+                    {% endfor %}
+                    {% else %}
                     <div class="px-6 py-8 text-center">
                         <svg
                             class="mx-auto h-12 w-12 text-gray-400"

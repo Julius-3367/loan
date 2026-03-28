@@ -17,12 +17,7 @@
                         <a href="{% url 'dashboard' %}" class="text-gray-300 hover:text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium transition">
                             Dashboard
                         </a>
-                        {% if user.role == 'HR_OFFICER' %}
-                            <a href="{% url 'hr:dashboard' %}" class="text-gray-300 hover:text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium transition">
-                                HR Management
-                            </a>
-                        {% endif %}
-                        <a href="{% url 'loans:staff_dashboard' %}" class="text-gray-300 hover:text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium transition">
+                        <a href="{% url 'admin_dashboard' %}" class="text-gray-300 hover:text-white inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium transition">
                             Loans
                         </a>
                         <a href="{% url 'user_approval_list' %}" class="border-alba-orange text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">

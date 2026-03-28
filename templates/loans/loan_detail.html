@@ -76,8 +76,7 @@ Capital{% endblock %} {% block body %}
                         Loan {{ loan.loan_number }}
                     </h1>
                     <p class="mt-2 text-sm text-gray-600">
-                        {{ loan.loan_product.name }} - {{
-                        loan.loan_product.get_category_display }}
+                        {{ loan.loan_product.name }} - {{ loan.loan_product.get_category_display }}
                     </p>
                 </div>
                 <span
@@ -109,8 +108,7 @@ Capital{% endblock %} {% block body %}
                                     Principal Amount
                                 </p>
                                 <p class="mt-1 text-lg font-bold text-gray-900">
-                                    KES {{ loan.principal_amount|floatformat:2
-                                    }}
+                                    KES {{ loan.principal_amount|floatformat:2 }}
                                 </p>
                             </div>
                             <div>
@@ -122,8 +120,7 @@ Capital{% endblock %} {% block body %}
                                 <p
                                     class="mt-1 text-lg font-semibold text-gray-900"
                                 >
-                                    {{ loan.interest_rate }}% {{
-                                    loan.get_interest_type_display }}
+                                    {{ loan.interest_rate }}% {{ loan.get_interest_type_display }}
                                 </p>
                             </div>
                             <div>
@@ -145,8 +142,7 @@ Capital{% endblock %} {% block body %}
                                     Outstanding Balance
                                 </p>
                                 <p class="mt-1 text-lg font-bold text-red-600">
-                                    KES {{
-                                    loan.outstanding_balance|floatformat:2 }}
+                                    KES {{ loan.outstanding_balance|floatformat:2 }}
                                 </p>
                             </div>
                             <div>
@@ -159,8 +155,7 @@ Capital{% endblock %} {% block body %}
                                 <p
                                     class="mt-1 text-base font-semibold text-gray-900"
                                 >
-                                    KES {{ loan.installment_amount|floatformat:2
-                                    }}
+                                    KES {{ loan.installment_amount|floatformat:2 }}
                                 </p>
                             </div>
                             <div>
@@ -184,8 +179,7 @@ Capital{% endblock %} {% block body %}
                                     >Payment Progress</span
                                 >
                                 <span class="text-sm font-medium text-gray-700"
-                                    >{{ loan.get_payment_progress_percentage
-                                    }}%</span
+                                    >{{ loan.get_payment_progress_percentage }}%</span
                                 >
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-4">
@@ -196,13 +190,10 @@ Capital{% endblock %} {% block body %}
                             </div>
                             <div class="flex justify-between mt-2">
                                 <span class="text-xs text-gray-500"
-                                    >Paid: KES {{ total_paid|floatformat:2
-                                    }}</span
+                                    >Paid: KES {{ total_paid|floatformat:2 }}</span
                                 >
                                 <span class="text-xs text-gray-500"
-                                    >Remaining: KES {{
-                                    loan.outstanding_balance|floatformat:2
-                                    }}</span
+                                    >Remaining: KES {{ loan.outstanding_balance|floatformat:2 }}</span
                                 >
                             </div>
                         </div>
@@ -241,8 +232,7 @@ Capital{% endblock %} {% block body %}
                                 <p
                                     class="mt-1 text-sm font-semibold text-gray-900"
                                 >
-                                    {{ loan.first_repayment_date|date:"M d, Y"
-                                    }}
+                                    {{ loan.first_repayment_date|date:"M d, Y" }}
                                 </p>
                             </div>
                             <div>
@@ -331,48 +321,37 @@ Capital{% endblock %} {% block body %}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">
-                                            {{ repayment.payment_date|date:"M d,
-                                            Y" }}
+                                            {{ repayment.payment_date|date:"M d, Y" }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div
                                             class="text-sm font-semibold text-gray-900"
                                         >
-                                            KES {{
-                                            repayment.amount_paid|floatformat:2
-                                            }}
+                                            KES {{ repayment.amount_paid|floatformat:2 }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">
-                                            KES {{
-                                            repayment.principal_paid|floatformat:2
-                                            }}
+                                            KES {{ repayment.principal_paid|floatformat:2 }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">
-                                            KES {{
-                                            repayment.interest_paid|floatformat:2
-                                            }}
+                                            KES {{ repayment.interest_paid|floatformat:2 }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">
                                             {% if repayment.penalty_paid %} KES
-                                            {{
-                                            repayment.penalty_paid|floatformat:2
-                                            }} {% else %} - {% endif %}
+                                            {{ repayment.penalty_paid|floatformat:2 }} {% else %} - {% endif %}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
                                             class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800"
                                         >
-                                            {{
-                                            repayment.get_payment_method_display
-                                            }}
+                                            {{ repayment.get_payment_method_display }}
                                         </span>
                                     </td>
                                 </tr>
@@ -587,8 +566,7 @@ Capital{% endblock %} {% block body %}
                                 <p
                                     class="mt-1 text-2xl font-bold text-alba-orange"
                                 >
-                                    KES {{ loan.installment_amount|floatformat:2
-                                    }}
+                                    KES {{ loan.installment_amount|floatformat:2 }}
                                 </p>
                             </div>
 

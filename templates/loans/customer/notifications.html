@@ -1,5 +1,4 @@
-{% extends 'base.html' %} {% block title %}Notifications - Alba Capital{%
-endblock %} {% block body %}
+{% extends 'base.html' %} {% block title %}Notifications - Alba Capital{% endblock %} {% block body %}
 <div class="min-h-screen bg-gray-50">
     <!-- Navigation -->
     <nav class="bg-white shadow sticky top-0 z-40">
@@ -122,9 +121,7 @@ endblock %} {% block body %}
                                 class="inline-flex items-center justify-center w-9 h-9 rounded-full {% if n.notification_type == 'APPLICATION_APPROVED' or n.notification_type == 'KYC_VERIFIED' or n.notification_type == 'ACCOUNT_APPROVED' %}bg-green-100 {% elif n.notification_type == 'APPLICATION_REJECTED' or n.notification_type == 'KYC_REJECTED' or n.notification_type == 'PAYMENT_OVERDUE' %}bg-red-100 {% elif n.notification_type == 'PAYMENT_DUE' %}bg-yellow-100 {% elif n.notification_type == 'LOAN_DISBURSED' or n.notification_type == 'PAYMENT_RECEIVED' %}bg-blue-100 {% else %}bg-gray-100{% endif %}"
                             >
                                 <!-- Application icons -->
-                                {% if n.notification_type ==
-                                'APPLICATION_SUBMITTED' or n.notification_type
-                                == 'APPLICATION_UNDER_REVIEW' %}
+                                {% if n.notification_type == 'APPLICATION_SUBMITTED' or n.notification_type == 'APPLICATION_UNDER_REVIEW' %}
                                 <svg
                                     class="w-5 h-5 text-gray-600"
                                     fill="none"
@@ -138,10 +135,7 @@ endblock %} {% block body %}
                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                     />
                                 </svg>
-                                {% elif n.notification_type ==
-                                'APPLICATION_APPROVED' or n.notification_type ==
-                                'KYC_VERIFIED' or n.notification_type ==
-                                'ACCOUNT_APPROVED' %}
+                                {% elif n.notification_type == 'APPLICATION_APPROVED' or n.notification_type == 'KYC_VERIFIED' or n.notification_type == 'ACCOUNT_APPROVED' %}
                                 <svg
                                     class="w-5 h-5 text-green-600"
                                     fill="none"
@@ -155,9 +149,7 @@ endblock %} {% block body %}
                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                                     />
                                 </svg>
-                                {% elif n.notification_type ==
-                                'APPLICATION_REJECTED' or n.notification_type ==
-                                'KYC_REJECTED' %}
+                                {% elif n.notification_type == 'APPLICATION_REJECTED' or n.notification_type == 'KYC_REJECTED' %}
                                 <svg
                                     class="w-5 h-5 text-red-600"
                                     fill="none"
@@ -171,8 +163,7 @@ endblock %} {% block body %}
                                         d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                                     />
                                 </svg>
-                                {% elif n.notification_type == 'LOAN_DISBURSED'
-                                %}
+                                {% elif n.notification_type == 'LOAN_DISBURSED' %}
                                 <svg
                                     class="w-5 h-5 text-blue-600"
                                     fill="none"
@@ -200,8 +191,7 @@ endblock %} {% block body %}
                                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                                     />
                                 </svg>
-                                {% elif n.notification_type == 'PAYMENT_OVERDUE'
-                                %}
+                                {% elif n.notification_type == 'PAYMENT_OVERDUE' %}
                                 <svg
                                     class="w-5 h-5 text-red-600"
                                     fill="none"
@@ -215,8 +205,7 @@ endblock %} {% block body %}
                                         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                                     />
                                 </svg>
-                                {% elif n.notification_type ==
-                                'PAYMENT_RECEIVED' %}
+                                {% elif n.notification_type == 'PAYMENT_RECEIVED' %}
                                 <svg
                                     class="w-5 h-5 text-blue-600"
                                     fill="none"

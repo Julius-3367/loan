@@ -202,8 +202,7 @@
                             KYC Verification Status
                         </h3>
                         <p class="text-xs text-gray-500 mt-0.5">
-                            {% if kyc_verified %} Verified by {{
-                            customer.kyc_verified_by.get_full_name }} {% elif kyc_completion >= 80 %} Under review — our team will
+                            {% if kyc_verified %} Verified by {{ customer.kyc_verified_by.get_full_name }} {% elif kyc_completion >= 80 %} Under review — our team will
                             confirm within 24 hours {% else %} Complete the
                             checklist below to submit for review {% endif %}
                         </p>

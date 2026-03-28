@@ -873,8 +873,9 @@ class Loan(models.Model):
 
     def get_payment_progress_percentage(self):
         """Calculate payment progress"""
-        if self.total_amount > 0:
-            paid = self.total_amount - self.outstanding_balance
+        if self.total_amount and self.total_amount > 0:
+            outstanding = self.outstanding_balance or 0
+            paid = self.total_amount - outstanding
             return (paid / self.total_amount) * 100
         return 0
 

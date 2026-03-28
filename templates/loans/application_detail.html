@@ -1,5 +1,4 @@
-{% extends 'base.html' %} {% block title %}Application {{
-application.application_number }} - Alba Capital{% endblock %} {% block body %}
+{% extends 'base.html' %} {% block title %}Application {{ application.application_number }} - Alba Capital{% endblock %} {% block body %}
 <div class="min-h-screen bg-gray-50">
     <!-- Navigation -->
     <nav class="bg-white shadow">
@@ -19,12 +18,12 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                             >Dashboard</a
                         >
                         <a
-                            href="{% url 'loans:staff_dashboard' %}"
+                            href="{% url 'admin_dashboard' %}"
                             class="text-sm font-medium text-gray-700 hover:text-alba-orange transition"
                             >Loan Management</a
                         >
                         <a
-                            href="{% url 'loans:applications_list' %}"
+                            href="{% url 'admin_dashboard' %}"
                             class="text-sm font-medium text-alba-orange"
                             >Applications</a
                         >
@@ -654,9 +653,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                     {{ application.loan_product.name }}
                                 </p>
                                 <p class="text-xs text-gray-500">
-                                    {{
-                                    application.loan_product.get_category_display
-                                    }}
+                                    {{ application.loan_product.get_category_display }}
                                 </p>
                             </div>
                             <div>
@@ -668,9 +665,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                 <p
                                     class="mt-1 text-lg font-bold text-alba-orange"
                                 >
-                                    KES {{
-                                    application.requested_amount|floatformat:2
-                                    }}
+                                    KES {{ application.requested_amount|floatformat:2 }}
                                 </p>
                             </div>
                             <div>
@@ -694,9 +689,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                 <p
                                     class="mt-1 text-sm font-semibold text-gray-900"
                                 >
-                                    {{
-                                    application.get_repayment_frequency_display
-                                    }}
+                                    {{ application.get_repayment_frequency_display }}
                                 </p>
                             </div>
                             <div class="col-span-2">
@@ -729,19 +722,15 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                     >Principal Amount:</span
                                 >
                                 <span class="text-sm font-semibold"
-                                    >KES {{ loan_details.principal|floatformat:2
-                                    }}</span
+                                    >KES {{ loan_details.principal|floatformat:2 }}</span
                                 >
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-sm text-gray-600"
-                                    >Interest ({{
-                                    application.loan_product.interest_rate
-                                    }}%):</span
+                                    >Interest ({{ application.loan_product.interest_rate }}%):</span
                                 >
                                 <span class="text-sm font-semibold"
-                                    >KES {{ loan_details.interest|floatformat:2
-                                    }}</span
+                                    >KES {{ loan_details.interest|floatformat:2 }}</span
                                 >
                             </div>
                             <div class="flex justify-between">
@@ -749,8 +738,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                     >Processing Fees:</span
                                 >
                                 <span class="text-sm font-semibold"
-                                    >KES {{ loan_details.fees|floatformat:2
-                                    }}</span
+                                    >KES {{ loan_details.fees|floatformat:2 }}</span
                                 >
                             </div>
                             <div class="pt-3 border-t border-gray-200">
@@ -761,8 +749,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                     >
                                     <span
                                         class="text-sm font-bold text-alba-orange"
-                                        >KES {{ loan_details.total|floatformat:2
-                                        }}</span
+                                        >KES {{ loan_details.total|floatformat:2 }}</span
                                     >
                                 </div>
                             </div>
@@ -770,15 +757,11 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                 <div class="flex justify-between">
                                     <span
                                         class="text-base font-semibold text-gray-900"
-                                        >{{
-                                        application.get_repayment_frequency_display
-                                        }} Installment:</span
+                                        >{{ application.get_repayment_frequency_display }} Installment:</span
                                     >
                                     <span
                                         class="text-lg font-bold text-alba-navy"
-                                        >KES {{
-                                        loan_details.installment|floatformat:2
-                                        }}</span
+                                        >KES {{ loan_details.installment|floatformat:2 }}</span
                                     >
                                 </div>
                             </div>
@@ -827,8 +810,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                     >Employment Score:</span
                                 >
                                 <span class="font-medium"
-                                    >{{ credit_score.employment_score
-                                    }}/25</span
+                                    >{{ credit_score.employment_score }}/25</span
                                 >
                             </div>
                             <div class="flex justify-between text-sm">
@@ -836,8 +818,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                     >Credit History:</span
                                 >
                                 <span class="font-medium"
-                                    >{{ credit_score.credit_history_score
-                                    }}/20</span
+                                    >{{ credit_score.credit_history_score }}/20</span
                                 >
                             </div>
                             <div class="flex justify-between text-sm">
@@ -845,8 +826,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                     >Existing Obligations:</span
                                 >
                                 <span class="font-medium"
-                                    >{{ credit_score.existing_obligations_score
-                                    }}/15</span
+                                    >{{ credit_score.existing_obligations_score }}/15</span
                                 >
                             </div>
                             <div class="flex justify-between text-sm">
@@ -883,8 +863,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                         <h3 class="text-lg font-semibold text-gray-900">
                             Uploaded Documents
                         </h3>
-                        {% if is_customer_owner and application.status ==
-                        'DRAFT' %}
+                        {% if is_customer_owner and application.status == 'DRAFT' %}
                         <a
                             href="{% url 'loans:upload_document' application.pk %}"
                             class="text-sm font-medium text-alba-orange hover:text-alba-navy"
@@ -1035,8 +1014,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                 ID Number
                             </p>
                             <p class="mt-1 text-sm text-gray-900">
-                                {{ application.customer.id_number|default:"Not
-                                provided" }}
+                                {{ application.customer.id_number|default:"Not provided" }}
                             </p>
                         </div>
                         <div>
@@ -1046,9 +1024,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                 Monthly Income
                             </p>
                             <p class="mt-1 text-sm font-semibold text-gray-900">
-                                KES {{
-                                application.customer.monthly_income|floatformat:2|default:"Not
-                                provided" }}
+                                KES {{ application.customer.monthly_income|floatformat:2|default:"Not provided" }}
                             </p>
                         </div>
                         <div>
@@ -1058,9 +1034,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                 Employment
                             </p>
                             <p class="mt-1 text-sm text-gray-900">
-                                {{
-                                application.customer.get_employment_status_display
-                                }}
+                                {{ application.customer.get_employment_status_display }}
                             </p>
                             {% if application.customer.employer_name %}
                             <p class="text-xs text-gray-500">
@@ -1097,9 +1071,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                     <span class="text-xs text-gray-600"
                                         >Face Recognition:</span
                                     >
-                                    {% if
-                                    application.customer.face_recognition_verified
-                                    %}
+                                    {% if application.customer.face_recognition_verified %}
                                     <span
                                         class="inline-flex px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800"
                                         >Verified</span
@@ -1116,15 +1088,12 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                     <span class="text-xs text-gray-600"
                                         >Employer Verification:</span
                                     >
-                                    {% if employer_verification and
-                                    employer_verification.status == 'VERIFIED'
-                                    %}
+                                    {% if employer_verification and employer_verification.status == 'VERIFIED' %}
                                     <span
                                         class="inline-flex px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800"
                                         >Verified</span
                                     >
-                                    {% elif employer_verification and
-                                    employer_verification.status == 'PENDING' %}
+                                    {% elif employer_verification and employer_verification.status == 'PENDING' %}
                                     <span
                                         class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-800"
                                         >Pending</span
@@ -1173,8 +1142,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                         </h3>
                     </div>
                     <div class="p-6 space-y-3">
-                        {% if is_customer_owner %} {% if application.status ==
-                        'DRAFT' %}
+                        {% if is_customer_owner %} {% if application.status == 'DRAFT' %}
                         <a
                             href="{% url 'loans:submit_application' application.pk %}"
                             class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 transition"
@@ -1190,8 +1158,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                         >
                             KYC Verification Required
                         </div>
-                        {% endif %} {% if not
-                        application.customer.face_recognition_verified %}
+                        {% endif %} {% if not application.customer.face_recognition_verified %}
                         <div
                             class="block w-full px-4 py-2 text-center border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50"
                         >
@@ -1221,24 +1188,21 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                         >
                             Start Review
                         </a>
-                        {% endif %} {% if application.status == 'UNDER_REVIEW'
-                        %}
+                        {% endif %} {% if application.status == 'UNDER_REVIEW' %}
                         <a
                             href="{% url 'loans:process_application' application.pk %}"
                             class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 transition"
                         >
                             Continue Review
                         </a>
-                        {% endif %} {% if application.status ==
-                        'CREDIT_ANALYSIS' %}
+                        {% endif %} {% if application.status == 'CREDIT_ANALYSIS' %}
                         <a
                             href="{% url 'loans:process_application' application.pk %}"
                             class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition"
                         >
                             Credit Analysis
                         </a>
-                        {% endif %} {% if application.status ==
-                        'PENDING_APPROVAL' %}
+                        {% endif %} {% if application.status == 'PENDING_APPROVAL' %}
                         <a
                             href="{% url 'loans:process_application' application.pk %}"
                             class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition"
@@ -1254,8 +1218,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                         >
                             Customer KYC Not Verified
                         </div>
-                        {% endif %} {% if not
-                        application.customer.face_recognition_verified %}
+                        {% endif %} {% if not application.customer.face_recognition_verified %}
                         <div
                             class="block w-full px-4 py-2 text-center border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50"
                         >
@@ -1264,8 +1227,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                         {% endif %}
 
                         <!-- Employer Verification -->
-                        {% if application.customer.employer_name and not
-                        employer_verification %}
+                        {% if application.customer.employer_name and not employer_verification %}
                         <div
                             class="block w-full px-4 py-2 text-center border border-yellow-300 rounded-md text-sm font-medium text-yellow-700 bg-yellow-50"
                         >
@@ -1274,7 +1236,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                         {% endif %} {% endif %}
 
                         <a
-                            href="{% if is_staff %}{% url 'loans:applications_list' %}{% else %}{% url 'loans:my_applications' %}{% endif %}"
+                            href="{% if is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'loans:my_applications' %}{% endif %}"
                             class="block w-full px-4 py-2 text-center border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition"
                         >
                             Back to Applications
@@ -1323,9 +1285,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                                 <p
                                                     class="text-xs text-gray-500"
                                                 >
-                                                    {{
-                                                    application.created_at|date:"M
-                                                    d, Y g:i A" }}
+                                                    {{ application.created_at|date:"M d, Y g:i A" }}
                                                 </p>
                                             </div>
                                         </div>
@@ -1365,9 +1325,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                                 <p
                                                     class="text-xs text-gray-500"
                                                 >
-                                                    {{
-                                                    application.submitted_at|date:"M
-                                                    d, Y g:i A" }}
+                                                    {{ application.submitted_at|date:"M d, Y g:i A" }}
                                                 </p>
                                             </div>
                                         </div>
@@ -1413,9 +1371,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                         </div>
                                     </div>
                                 </li>
-                                {% endif %} {% if
-                                application.customer.face_recognition_verified
-                                %}
+                                {% endif %} {% if application.customer.face_recognition_verified %}
                                 <li>
                                     <div class="relative pb-8">
                                         <div class="relative flex space-x-3">
@@ -1485,16 +1441,13 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                                 <p
                                                     class="text-xs text-gray-500"
                                                 >
-                                                    {{
-                                                    application.reviewed_at|date:"M
-                                                    d, Y g:i A" }}
+                                                    {{ application.reviewed_at|date:"M d, Y g:i A" }}
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
                                 </li>
-                                {% endif %} {% if application.status ==
-                                'CREDIT_ANALYSIS' %}
+                                {% endif %} {% if application.status == 'CREDIT_ANALYSIS' %}
                                 <li>
                                     <div class="relative pb-8">
                                         <div class="relative flex space-x-3">
@@ -1529,8 +1482,7 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                         </div>
                                     </div>
                                 </li>
-                                {% endif %} {% if application.status ==
-                                'PENDING_APPROVAL' %}
+                                {% endif %} {% if application.status == 'PENDING_APPROVAL' %}
                                 <li>
                                     <div class="relative pb-8">
                                         <div class="relative flex space-x-3">
@@ -1596,16 +1548,12 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                                 <p
                                                     class="text-xs text-gray-500"
                                                 >
-                                                    {{
-                                                    application.approved_at|date:"M
-                                                    d, Y g:i A" }}
+                                                    {{ application.approved_at|date:"M d, Y g:i A" }}
                                                 </p>
                                                 <p
                                                     class="text-xs text-gray-500"
                                                 >
-                                                    By: {{
-                                                    application.approved_by.get_full_name
-                                                    }}
+                                                    By: {{ application.approved_by.get_full_name }}
                                                 </p>
                                             </div>
                                         </div>
@@ -1641,18 +1589,13 @@ application.application_number }} - Alba Capital{% endblock %} {% block body %}
                                                 <p
                                                     class="text-xs text-gray-500"
                                                 >
-                                                    {{
-                                                    application.rejected_at|date:"M
-                                                    d, Y g:i A" }}
+                                                    {{ application.rejected_at|date:"M d, Y g:i A" }}
                                                 </p>
-                                                {% if
-                                                application.rejection_reason %}
+                                                {% if application.rejection_reason %}
                                                 <p
                                                     class="text-xs text-red-600 mt-1"
                                                 >
-                                                    {{
-                                                    application.rejection_reason
-                                                    }}
+                                                    {{ application.rejection_reason }}
                                                 </p>
                                                 {% endif %}
                                             </div>

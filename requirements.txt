@@ -1,5 +1,5 @@
 # Core Framework
-Django==5.0.2
+Django==6.0.3
 python-decouple==3.8
 
 # Database
