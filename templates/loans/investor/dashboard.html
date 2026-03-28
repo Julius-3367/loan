@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}Investor Dashboard - Alba Capital{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+  <!-- Navigation -->
+  <nav class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center space-x-8">
+          <div class="flex items-center">
+            <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+            <span class="ml-3 px-2 py-1 text-xs font-semibold bg-green-600 text-white rounded">Investor</span>
+          </div>
+          <div class="hidden md:flex space-x-4">
+            <a href="{% url 'loans:investor_dashboard' %}" class="text-sm font-medium text-green-600">Dashboard</a>
+            <a href="{% url 'loans:my_investments' %}" class="text-sm font-medium text-gray-700 hover:text-green-600 transition">My Investments</a>
+            <a href="{% url 'loans:investor_notifications' %}" class="text-sm font-medium text-gray-700 hover:text-green-600 transition">Notifications</a>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span class="text-sm text-gray-700 font-semibold">{{ user.get_full_name }}</span>
+          <a href="{% url 'loans:investor_profile' %}" class="text-sm text-gray-500 hover:text-green-600 transition">Profile</a>
+          <a href="{% url 'logout' %}" class="text-sm text-red-500 hover:text-red-700 transition">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- KYC alert -->
+    {% if not profile.is_kyc_complete %}
+    <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start space-x-3">
+      <svg class="h-5 w-5 text-yellow-500 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+      </svg>
+      <div>
+        <p class="text-sm font-medium text-yellow-800">KYC Incomplete</p>
+        <p class="text-sm text-yellow-700 mt-1">
+          Your KYC profile is not complete. Please
+          <a href="{% url 'loans:investor_profile' %}" class="underline font-medium">update your profile</a>
+          to access all features.
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Page header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Investor Dashboard</h1>
+      <p class="mt-1 text-sm text-gray-500">Welcome back, {{ user.get_full_name }}. Here's your portfolio overview.</p>
+    </div>
+
+    <!-- Stats cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Active Investments</p>
+        <p class="mt-2 text-3xl font-bold text-alba-navy">{{ active_count }}</p>
+        <a href="{% url 'loans:my_investments' %}?state=active" class="mt-2 inline-block text-xs text-green-600 hover:underline">View all &rarr;</a>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Amount Invested</p>
+        <p class="mt-2 text-3xl font-bold text-alba-navy">KES {{ total_invested|floatformat:0 }}</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Current Balance</p>
+        <p class="mt-2 text-3xl font-bold text-green-600">KES {{ total_balance|floatformat:0 }}</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total Interest Earned</p>
+        <p class="mt-2 text-3xl font-bold text-blue-600">KES {{ total_interest|floatformat:0 }}</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Active Investments -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+          <h2 class="text-base font-semibold text-gray-900">Active Investments</h2>
+          <a href="{% url 'loans:my_investments' %}" class="text-sm text-green-600 hover:underline">View all</a>
+        </div>
+        {% if investments %}
+        <ul class="divide-y divide-gray-100">
+          {% for inv in investments %}
+          <li class="p-4 hover:bg-gray-50 transition">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-sm font-semibold text-gray-900">{{ inv.investment_number }}</p>
+                <p class="text-xs text-gray-500">{{ inv.get_investment_type_display }} &bull; {{ inv.interest_rate }}% p.a.</p>
+                {% if inv.maturity_date %}
+                <p class="text-xs text-gray-400 mt-0.5">Matures: {{ inv.maturity_date }}</p>
+                {% endif %}
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-bold text-green-600">KES {{ inv.current_balance|floatformat:0 }}</p>
+                <a href="{% url 'loans:investment_detail' inv.pk %}" class="text-xs text-blue-500 hover:underline">Details</a>
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="p-8 text-center text-gray-400 text-sm">No active investments yet.</div>
+        {% endif %}
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="p-6 border-b border-gray-100">
+          <h2 class="text-base font-semibold text-gray-900">Recent Transactions</h2>
+        </div>
+        {% if recent_transactions %}
+        <ul class="divide-y divide-gray-100">
+          {% for tx in recent_transactions %}
+          <li class="p-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-sm font-semibold text-gray-900">{{ tx.get_transaction_type_display }}</p>
+                <p class="text-xs text-gray-500">{{ tx.investment.investment_number }} &bull; {{ tx.transaction_date }}</p>
+                {% if tx.reference %}
+                <p class="text-xs text-gray-400">Ref: {{ tx.reference }}</p>
+                {% endif %}
+              </div>
+              <div class="text-right">
+                {% if tx.transaction_type == 'withdrawal' or tx.transaction_type == 'penalty' %}
+                <p class="text-sm font-bold text-red-600">- KES {{ tx.amount|floatformat:2 }}</p>
+                {% else %}
+                <p class="text-sm font-bold text-green-600">+ KES {{ tx.amount|floatformat:2 }}</p>
+                {% endif %}
+                <span class="text-xs px-1.5 py-0.5 rounded
+                  {% if tx.status == 'completed' %}bg-green-100 text-green-700
+                  {% elif tx.status == 'pending' %}bg-yellow-100 text-yellow-700
+                  {% else %}bg-red-100 text-red-700{% endif %}">
+                  {{ tx.get_status_display }}
+                </span>
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="p-8 text-center text-gray-400 text-sm">No transactions yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

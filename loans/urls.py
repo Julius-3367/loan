@@ -63,4 +63,29 @@ urlpatterns = [
     ),
     # AJAX
     path("api/calculate-loan/", views.calculate_loan, name="calculate_loan"),
+
+    # ── Investor Portal ─────────────────────────────────────────────────────
+    path("investor/", views.investor_dashboard, name="investor_dashboard"),
+    path("investor/profile/", views.investor_profile, name="investor_profile"),
+    path("investor/investments/", views.my_investments, name="my_investments"),
+    path(
+        "investor/investments/<int:pk>/",
+        views.investment_detail,
+        name="investment_detail",
+    ),
+    path(
+        "investor/investments/<int:pk>/statement/",
+        views.download_investment_statement,
+        name="download_investment_statement",
+    ),
+    path(
+        "investor/notifications/",
+        views.investor_notifications,
+        name="investor_notifications",
+    ),
+    path(
+        "investor/notifications/<int:pk>/read/",
+        views.investor_mark_notification_read,
+        name="investor_mark_notification_read",
+    ),
 ]

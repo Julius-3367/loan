@@ -464,3 +464,313 @@ def page_not_found(request, exception=None):
 
 def server_error(request):
     return render(request, "500.html", status=500)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STAFF PORTAL VIEWS
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def staff_required(view_func):
+    """Decorator: must be logged in with a staff role."""
+    from functools import wraps
+
+    STAFF_ROLES = {
+        User.ADMIN,
+        User.CREDIT_OFFICER,
+        User.FINANCE_OFFICER,
+        User.HR_OFFICER,
+        User.MANAGEMENT,
+    }
+
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            from django.conf import settings
+            return redirect(f"{settings.LOGIN_URL}?next={request.path}")
+        if not (request.user.is_superuser or request.user.role in STAFF_ROLES):
+            messages.error(request, "Access denied. Staff access only.")
+            return redirect("dashboard")
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped
+
+
+@login_required
+@staff_required
+def staff_loan_applications(request):
+    """
+    Credit officer / finance officer: view and filter all loan applications.
+    """
+    from loans.models import LoanApplication, LoanProduct
+
+    qs = LoanApplication.objects.select_related(
+        "customer__user", "loan_product"
+    ).order_by("-created_at")
+
+    # Filters
+    status_filter = request.GET.get("status", "")
+    product_filter = request.GET.get("product", "")
+    search = request.GET.get("q", "").strip()
+
+    if status_filter:
+        qs = qs.filter(status=status_filter)
+    if product_filter:
+        qs = qs.filter(loan_product__id=product_filter)
+    if search:
+        qs = qs.filter(
+            application_number__icontains=search
+        ) | qs.filter(
+            customer__user__first_name__icontains=search
+        ) | qs.filter(
+            customer__user__last_name__icontains=search
+        ) | qs.filter(
+            customer__user__email__icontains=search
+        )
+
+    # Stats for top cards
+    stats = {
+        "total": LoanApplication.objects.count(),
+        "pending": LoanApplication.objects.filter(status="SUBMITTED").count(),
+        "under_review": LoanApplication.objects.filter(status="UNDER_REVIEW").count(),
+        "approved": LoanApplication.objects.filter(status="APPROVED").count(),
+        "rejected": LoanApplication.objects.filter(status="REJECTED").count(),
+    }
+
+    context = {
+        "applications": qs[:100],  # Cap at 100 rows; paginate if needed
+        "status_filter": status_filter,
+        "product_filter": product_filter,
+        "search": search,
+        "status_choices": LoanApplication.APPLICATION_STATUS_CHOICES,
+        "products": LoanProduct.objects.filter(is_active=True),
+        "stats": stats,
+    }
+    return render(request, "core/staff/loan_applications.html", context)
+
+
+@login_required
+@staff_required
+def staff_application_detail(request, pk):
+    """
+    Detailed view of a single loan application for credit officer review.
+    Allows status transitions: submit_review, approve, reject, request_info, disburse.
+    """
+    from loans.models import (
+        GuarantorVerification,
+        LoanApplication,
+        LoanDocument,
+        LoanRepayment,
+    )
+
+    application = get_object_or_404(
+        LoanApplication.objects.select_related("customer__user", "loan_product"), pk=pk
+    )
+    documents = LoanDocument.objects.filter(application=application)
+    guarantors = GuarantorVerification.objects.filter(application=application)
+
+    # Previous repayment history for this customer
+    past_repayments = LoanRepayment.objects.filter(
+        loan__customer=application.customer
+    ).order_by("-payment_date")[:10]
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        note = request.POST.get("note", "").strip()
+        allowed_transitions = {
+            "submit_review": ("SUBMITTED", "UNDER_REVIEW"),
+            "approve": ("UNDER_REVIEW", "APPROVED"),
+            "reject": ("UNDER_REVIEW", "REJECTED"),
+            "request_info": (None, "INFORMATION_REQUIRED"),  # any state
+            "disburse": ("APPROVED", "DISBURSED"),
+        }
+
+        if action in allowed_transitions:
+            required_from, to_status = allowed_transitions[action]
+            if required_from is None or application.status == required_from:
+                old_status = application.status
+                application.status = to_status
+                if action == "approve":
+                    application.approved_by = request.user
+                    from django.utils import timezone
+                    application.approved_at = timezone.now()
+                if action == "reject" and note:
+                    application.rejection_reason = note
+                application.save(update_fields=[
+                    "status", "approved_by", "approved_at", "rejection_reason"
+                ])
+                create_audit_log(
+                    user=request.user,
+                    action=f"APPLICATION_{action.upper()}",
+                    model_name="LoanApplication",
+                    object_id=application.pk,
+                    description=(
+                        f"{application.application_number} status changed "
+                        f"{old_status} → {to_status}. {note}"
+                    ),
+                    request=request,
+                )
+                # Notify customer
+                from loans.models import Notification
+                notif_type_map = {
+                    "approve": Notification.APPLICATION_APPROVED,
+                    "reject": Notification.APPLICATION_REJECTED,
+                    "submit_review": Notification.APPLICATION_UNDER_REVIEW,
+                    "disburse": Notification.LOAN_DISBURSED,
+                    "request_info": Notification.GENERAL,
+                }
+                Notification.create_for_user(
+                    user=application.customer.user,
+                    notification_type=notif_type_map.get(action, Notification.GENERAL),
+                    title=f"Application {application.application_number} Update",
+                    message=(
+                        f"Your application status has changed to "
+                        f"{application.get_status_display()}."
+                        + (f" Note: {note}" if note else "")
+                    ),
+                    loan_application=application,
+                )
+                # Send email/SMS via notification service
+                from core.services.notifications import NotificationService
+                if action == "approve":
+                    NotificationService.application_approved(application)
+                elif action == "reject":
+                    NotificationService.application_rejected(application)
+                elif action == "disburse":
+                    from loans.models import Loan
+                    loan_obj = Loan.objects.filter(application=application).first()
+                    if loan_obj:
+                        NotificationService.loan_disbursed(loan_obj)
+                messages.success(
+                    request, f"Application {action.replace('_', ' ')} successfully."
+                )
+            else:
+                messages.error(
+                    request,
+                    f"Cannot {action}: application is in status '{application.get_status_display()}'.",
+                )
+        else:
+            messages.error(request, "Unknown action.")
+        return redirect("staff_application_detail", pk=pk)
+
+    context = {
+        "application": application,
+        "documents": documents,
+        "guarantors": guarantors,
+        "past_repayments": past_repayments,
+        "can_review": application.status == "SUBMITTED",
+        "can_approve": application.status == "UNDER_REVIEW",
+        "can_reject": application.status == "UNDER_REVIEW",
+        "can_disburse": application.status == "APPROVED",
+    }
+    return render(request, "core/staff/application_detail.html", context)
+
+
+@login_required
+@staff_required
+def staff_customers(request):
+    """
+    Staff list of all customers with KYC status, search, filter.
+    """
+    from loans.models import Customer
+
+    customers = Customer.objects.select_related("user").order_by("-created_at")
+
+    search = request.GET.get("q", "").strip()
+    kyc_filter = request.GET.get("kyc", "")
+    employment_filter = request.GET.get("employment", "")
+
+    if search:
+        customers = customers.filter(
+            user__first_name__icontains=search
+        ) | customers.filter(
+            user__last_name__icontains=search
+        ) | customers.filter(
+            user__email__icontains=search
+        ) | customers.filter(
+            id_number__icontains=search
+        )
+    if kyc_filter:
+        customers = customers.filter(kyc_verified=(kyc_filter == "true"))
+    if employment_filter:
+        customers = customers.filter(employment_status=employment_filter)
+
+    context = {
+        "customers": customers[:200],
+        "search": search,
+        "kyc_filter": kyc_filter,
+        "employment_filter": employment_filter,
+        "employment_choices": Customer.EMPLOYMENT_STATUS_CHOICES,
+        "total_customers": Customer.objects.count(),
+        "kyc_verified_count": Customer.objects.filter(kyc_verified=True).count(),
+    }
+    return render(request, "core/staff/customers.html", context)
+
+
+@login_required
+@staff_required
+def staff_customer_detail(request, pk):
+    """
+    Staff view of a single customer: KYC info, all applications, active loans.
+    """
+    from loans.models import Customer, Loan, LoanApplication
+
+    customer = get_object_or_404(Customer.objects.select_related("user"), pk=pk)
+    applications = LoanApplication.objects.filter(customer=customer).order_by("-created_at")
+    loans = Loan.objects.filter(customer=customer).order_by("-disbursement_date")
+
+    context = {
+        "customer": customer,
+        "applications": applications,
+        "loans": loans,
+    }
+    return render(request, "core/staff/customer_detail.html", context)
+
+
+@login_required
+@staff_required
+def staff_loan_portfolio(request):
+    """
+    Management / finance officer: portfolio-level stats.
+    """
+    from decimal import Decimal
+
+    from django.db.models import Count, Sum
+
+    from loans.models import Loan, LoanApplication, LoanRepayment
+
+    # Application pipeline
+    pipeline = LoanApplication.objects.values("status").annotate(
+        count=Count("id")
+    ).order_by("status")
+
+    # Active loan portfolio
+    active_loans = Loan.objects.filter(status="ACTIVE")
+    portfolio_summary = active_loans.aggregate(
+        total_principal=Sum("principal_amount"),
+        total_outstanding=Sum("outstanding_balance"),
+    )
+
+    # Repayments this month
+    from datetime import date
+    today = date.today()
+    month_start = today.replace(day=1)
+    monthly_repayments = LoanRepayment.objects.filter(
+        payment_date__gte=month_start
+    ).aggregate(total=Sum("amount_paid"))
+
+    # Overdue loans (maturity_date passed but still active)
+    overdue_count = Loan.objects.filter(
+        status="ACTIVE",
+        maturity_date__lt=today,
+    ).count()
+
+    context = {
+        "pipeline": {item["status"]: item["count"] for item in pipeline},
+        "total_principal": portfolio_summary["total_principal"] or Decimal("0"),
+        "total_outstanding": portfolio_summary["total_outstanding"] or Decimal("0"),
+        "monthly_repayments": monthly_repayments["total"] or Decimal("0"),
+        "active_loan_count": active_loans.count(),
+        "overdue_count": overdue_count,
+    }
+    return render(request, "core/staff/loan_portfolio.html", context)

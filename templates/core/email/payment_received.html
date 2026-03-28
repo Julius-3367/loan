@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px;">
+  <div style="max-width:600px; margin: auto; background: white; border-radius: 8px; overflow:hidden;">
+    <div style="background: #27ae60; padding: 24px; text-align:center;">
+      <h1 style="color: white; margin:0; font-size:22px;">Payment Confirmed ✓</h1>
+    </div>
+    <div style="padding: 28px;">
+      <p>Dear {{ user.first_name }},</p>
+      <p>We have received your payment. Here is your receipt:</p>
+      <table style="width:100%; border-collapse:collapse; margin:16px 0;">
+        <tr style="background:#f0fff4;"><td style="padding:8px 12px; font-weight:bold;">Amount Paid</td><td style="padding:8px 12px; color:#27ae60; font-weight:bold;">KES {{ repayment.amount_paid }}</td></tr>
+        <tr><td style="padding:8px 12px; font-weight:bold;">Loan</td><td style="padding:8px 12px;">{{ loan.loan_number }}</td></tr>
+        <tr style="background:#f0fff4;"><td style="padding:8px 12px; font-weight:bold;">Date</td><td style="padding:8px 12px;">{{ repayment.payment_date }}</td></tr>
+        <tr><td style="padding:8px 12px; font-weight:bold;">Outstanding Balance</td><td style="padding:8px 12px;">KES {{ loan.outstanding_balance }}</td></tr>
+      </table>
+    </div>
+    <div style="background:#f9f9f9; padding:16px; text-align:center; font-size:11px; color:#999;">Alba Capital Ltd | Regulated by Central Bank of Kenya</div>
+  </div>
+</body>
+</html>

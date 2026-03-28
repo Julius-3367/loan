@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Notifications - Alba Capital Investor{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+  <nav class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center space-x-8">
+          <div class="flex items-center">
+            <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+            <span class="ml-3 px-2 py-1 text-xs font-semibold bg-green-600 text-white rounded">Investor</span>
+          </div>
+          <div class="hidden md:flex space-x-4">
+            <a href="{% url 'loans:investor_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-green-600 transition">Dashboard</a>
+            <a href="{% url 'loans:my_investments' %}" class="text-sm font-medium text-gray-700 hover:text-green-600 transition">My Investments</a>
+            <a href="{% url 'loans:investor_notifications' %}" class="text-sm font-medium text-green-600">Notifications</a>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="{% url 'loans:investor_profile' %}" class="text-sm text-gray-500 hover:text-green-600 transition">Profile</a>
+          <a href="{% url 'logout' %}" class="text-sm text-red-500 hover:text-red-700 transition">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6 flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Notifications</h1>
+        {% if unread_count %}
+        <p class="mt-1 text-sm text-gray-500">You have <span class="font-semibold text-green-600">{{ unread_count }}</span> unread notification{{ unread_count|pluralize }}.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if notifications %}
+    <ul class="space-y-3">
+      {% for notif in notifications %}
+      <li class="bg-white rounded-xl border {% if not notif.is_read %}border-green-200 shadow-sm{% else %}border-gray-100{% endif %} p-5 flex justify-between items-start space-x-4">
+        <div class="flex-1">
+          <div class="flex items-center space-x-2 mb-1">
+            {% if not notif.is_read %}
+            <span class="w-2 h-2 rounded-full bg-green-500 shrink-0"></span>
+            {% endif %}
+            <p class="text-sm font-semibold text-gray-900">{{ notif.title }}</p>
+            <span class="text-xs text-gray-400">{{ notif.created_at|date:"d M Y, H:i" }}</span>
+          </div>
+          <p class="text-sm text-gray-600">{{ notif.message }}</p>
+          {% if notif.priority == 'HIGH' or notif.priority == 'URGENT' %}
+          <span class="mt-1 inline-block px-2 py-0.5 text-xs rounded bg-red-100 text-red-700">{{ notif.get_priority_display }}</span>
+          {% endif %}
+        </div>
+        {% if not notif.is_read %}
+        <a href="{% url 'loans:investor_mark_notification_read' notif.pk %}" class="shrink-0 text-xs text-green-600 hover:underline whitespace-nowrap">Mark read</a>
+        {% else %}
+        <span class="shrink-0 text-xs text-gray-300">Read</span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+      </svg>
+      <p class="mt-4 text-gray-500 font-medium">No notifications yet</p>
+      <p class="mt-1 text-sm text-gray-400">You're all caught up!</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

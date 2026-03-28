@@ -229,6 +229,18 @@
             </p>
         </div>
 
+        {% if profile_incomplete %}
+        <div class="mb-6 bg-amber-50 border border-amber-300 rounded-lg p-4 flex items-start gap-3">
+            <svg class="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <div>
+                <p class="text-sm font-semibold text-amber-800">Profile Incomplete</p>
+                <p class="text-sm text-amber-700 mt-0.5">You can save a draft now, but you must <a href="{% url 'loans:customer_profile' %}" class="underline font-medium">complete your profile</a> (ID number, employment status, monthly income) before submitting.</p>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- ═══════════════ INTERACTIVE LOAN CALCULATOR WIDGET ═══════════════ -->
         <div
             id="loanCalculatorWidget"
@@ -900,7 +912,7 @@
 
                         <!-- Form actions -->
                         <div
-                            class="mt-8 pt-6 border-t border-gray-200 flex justify-between"
+                            class="mt-8 pt-6 border-t border-gray-200 flex justify-between items-center gap-3 flex-wrap"
                         >
                             <a
                                 href="{% url 'loans:customer_dashboard' %}"
@@ -908,12 +920,24 @@
                             >
                                 Cancel
                             </a>
-                            <button
-                                type="submit"
-                                class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 transition"
-                            >
-                                Create Application
-                            </button>
+                            <div class="flex gap-3">
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="draft"
+                                    class="px-5 py-2 border border-gray-400 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition"
+                                >
+                                    Save as Draft
+                                </button>
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="submit"
+                                    class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-alba-orange hover:bg-opacity-90 transition"
+                                >
+                                    Submit Application
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>

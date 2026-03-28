@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px;">
+  <div style="max-width:600px; margin: auto; background: white; border-radius: 8px; overflow:hidden;">
+    <div style="background: #1a2f5e; padding: 24px; text-align:center;">
+      <h1 style="color: white; margin:0; font-size:22px;">Alba Capital</h1>
+    </div>
+    <div style="padding: 28px;">
+      <h2 style="color: #27ae60;">Application Approved ✓</h2>
+      <p>Dear {{ user.first_name }},</p>
+      <p>Congratulations! Your loan application <strong>{{ application.application_number }}</strong> for <strong>KES {{ application.requested_amount }}</strong> has been <strong>approved</strong>.</p>
+      <p>Funds will be disbursed to your registered account shortly. You will receive a confirmation SMS once the disbursement is complete.</p>
+    </div>
+    <div style="background:#f9f9f9; padding:16px; text-align:center; font-size:11px; color:#999;">Alba Capital Ltd | Regulated by Central Bank of Kenya</div>
+  </div>
+</body>
+</html>

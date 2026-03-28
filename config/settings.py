@@ -179,3 +179,10 @@ ODOO_USERNAME = config("ODOO_USERNAME", default="")
 ODOO_API_KEY = config("ODOO_API_KEY", default="")
 ODOO_WEBHOOK_SECRET = config("ODOO_WEBHOOK_SECRET", default="")
 ODOO_TIMEOUT = config("ODOO_TIMEOUT", default=30, cast=int)
+
+# SMS Settings (Onfon Media)
+ONFON_API_KEY = config("ONFON_API_KEY", default="")
+ONFON_SENDER_ID = config("ONFON_SENDER_ID", default="ALBACAP")
+
+# Site URL (used in notification emails)
+SITE_URL = config("SITE_URL", default="http://localhost:8000")

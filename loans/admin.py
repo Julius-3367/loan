@@ -628,3 +628,101 @@ class LoanDocumentAdmin(admin.ModelAdmin):
         return format_html('<a href="{}">{}</a>', url, obj.application.application_number)
     application_link.short_description = 'Application'
 
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# INVESTOR PORTAL ADMIN
+# ─────────────────────────────────────────────────────────────────────────────
+
+from .models import Investment, InvestmentTransaction, InvestorProfile  # noqa: E402
+
+
+class InvestmentInline(admin.TabularInline):
+    model = Investment
+    extra = 0
+    fields = ("investment_number", "investment_type", "principal_amount",
+              "interest_rate", "start_date", "maturity_date", "state", "current_balance")
+    readonly_fields = ("investment_number", "current_balance")
+    show_change_link = True
+
+
+@admin.register(InvestorProfile)
+class InvestorProfileAdmin(admin.ModelAdmin):
+    list_display = ("investor_number", "user", "kyc_status", "get_active_balance", "created_at")
+    list_filter = ("kyc_status",)
+    search_fields = ("investor_number", "user__email", "user__first_name", "user__last_name", "id_number")
+    readonly_fields = ("investor_number", "created_at", "updated_at")
+    inlines = [InvestmentInline]
+
+    fieldsets = (
+        ("Investor", {
+            "fields": ("user", "investor_number", "odoo_investor_id", "kyc_status")
+        }),
+        ("Identity", {
+            "fields": ("id_type", "id_number", "date_of_birth", "gender", "nationality")
+        }),
+        ("Address", {
+            "fields": ("physical_address", "county")
+        }),
+        ("Payout", {
+            "fields": ("preferred_payment_method", "mpesa_number",
+                       "bank_name", "bank_account_number", "bank_branch")
+        }),
+        ("Timestamps", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",),
+        }),
+    )
+
+
+class InvestmentTransactionInline(admin.TabularInline):
+    model = InvestmentTransaction
+    extra = 0
+    fields = ("transaction_date", "transaction_type", "amount", "balance_after",
+              "reference", "status")
+    readonly_fields = ("created_at",)
+    ordering = ("-transaction_date",)
+
+
+@admin.register(Investment)
+class InvestmentAdmin(admin.ModelAdmin):
+    list_display = ("investment_number", "investor", "investment_type",
+                    "principal_amount", "current_balance", "interest_rate",
+                    "start_date", "maturity_date", "state")
+    list_filter = ("state", "investment_type", "compounding_frequency")
+    search_fields = ("investment_number", "investor__investor_number",
+                     "investor__user__email")
+    readonly_fields = ("investment_number", "created_at", "updated_at")
+    inlines = [InvestmentTransactionInline]
+
+    fieldsets = (
+        ("Investment", {
+            "fields": ("investor", "investment_number", "odoo_investment_id",
+                       "investment_type", "state")
+        }),
+        ("Terms", {
+            "fields": ("principal_amount", "interest_rate", "compounding_frequency",
+                       "start_date", "maturity_date")
+        }),
+        ("Balances", {
+            "fields": ("current_balance", "total_interest_earned")
+        }),
+        ("Notes", {
+            "fields": ("notes",),
+            "classes": ("collapse",),
+        }),
+        ("Timestamps", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",),
+        }),
+    )
+
+
+@admin.register(InvestmentTransaction)
+class InvestmentTransactionAdmin(admin.ModelAdmin):
+    list_display = ("investment", "transaction_type", "amount", "balance_after",
+                    "transaction_date", "status", "reference")
+    list_filter = ("transaction_type", "status", "transaction_date")
+    search_fields = ("reference", "investment__investment_number",
+                     "investment__investor__user__email")
+    readonly_fields = ("created_at",)

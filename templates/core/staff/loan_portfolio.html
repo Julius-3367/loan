@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Loan Portfolio - Staff Portal{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+  <nav class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center space-x-8">
+          <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+          <span class="ml-3 px-2 py-1 text-xs font-semibold bg-alba-navy text-white rounded">Staff</span>
+          <div class="hidden md:flex space-x-4">
+            <a href="{% url 'staff_loan_applications' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange">Applications</a>
+            <a href="{% url 'staff_customers' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange">Customers</a>
+            <a href="{% url 'staff_loan_portfolio' %}" class="text-sm font-medium text-alba-orange">Portfolio</a>
+          </div>
+        </div>
+        <div class="flex items-center">
+          <a href="{% url 'logout' %}" class="text-sm text-red-500 hover:text-red-700">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Loan Portfolio</h1>
+      <p class="text-sm text-gray-500 mt-1">Real-time portfolio metrics.</p>
+    </div>
+
+    <!-- Portfolio summary cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Active Loans</p>
+        <p class="mt-2 text-3xl font-bold text-alba-navy">{{ active_loan_count }}</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total Principal (KES)</p>
+        <p class="mt-2 text-3xl font-bold text-alba-navy">{{ total_principal|floatformat:0 }}</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Outstanding Balance (KES)</p>
+        <p class="mt-2 text-3xl font-bold text-red-600">{{ total_outstanding|floatformat:0 }}</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Overdue Loans</p>
+        <p class="mt-2 text-3xl font-bold {% if overdue_count > 0 %}text-red-600{% else %}text-green-600{% endif %}">{{ overdue_count }}</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Application pipeline -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="p-5 border-b border-gray-100">
+          <h2 class="font-semibold text-gray-900">Application Pipeline</h2>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          {% for status, count in pipeline.items %}
+          <li class="px-5 py-3 flex justify-between items-center">
+            <span class="text-sm text-gray-700">{{ status }}</span>
+            <span class="text-sm font-bold text-gray-900 bg-gray-100 px-3 py-0.5 rounded-full">{{ count }}</span>
+          </li>
+          {% empty %}
+          <li class="p-6 text-center text-gray-400 text-sm">No applications yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Monthly repayments -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="p-5 border-b border-gray-100">
+          <h2 class="font-semibold text-gray-900">This Month's Collections</h2>
+        </div>
+        <div class="p-8 text-center">
+          <p class="text-xs uppercase tracking-wide text-gray-500 mb-2">Total Repayments Received</p>
+          <p class="text-4xl font-bold text-green-600">KES {{ monthly_repayments|floatformat:0 }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick links -->
+    <div class="mt-6 flex space-x-4 flex-wrap gap-3">
+      <a href="{% url 'staff_loan_applications' %}?status=SUBMITTED" class="px-4 py-2 text-sm font-semibold text-white bg-yellow-600 rounded-lg hover:opacity-90 transition">
+        Review Pending Applications
+      </a>
+      <a href="{% url 'staff_loan_applications' %}?status=APPROVED" class="px-4 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:opacity-90 transition">
+        Process Disbursements
+      </a>
+      <a href="{% url 'staff_customers' %}?kyc=false" class="px-4 py-2 text-sm font-semibold text-white bg-alba-navy rounded-lg hover:opacity-90 transition">
+        Pending KYC
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

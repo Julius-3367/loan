@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px;">
+  <div style="max-width:600px; margin: auto; background: white; border-radius: 8px; overflow:hidden;">
+    <div style="background: #1a2f5e; padding: 24px; text-align:center;"><h1 style="color:white; margin:0; font-size:22px;">Alba Capital</h1></div>
+    <div style="padding: 28px;">
+      <h2 style="color:#e74c3c;">KYC Verification Update Required</h2>
+      <p>Dear {{ user.first_name }},</p>
+      <p>We were unable to verify your identity documents.{% if reason %} Reason: <strong>{{ reason }}</strong>.{% endif %}</p>
+      <p>Please log in and update your documents (clear photos of your ID, bank statement, and face photo).</p>
+    </div>
+    <div style="background:#f9f9f9; padding:16px; text-align:center; font-size:11px; color:#999;">Alba Capital Ltd | Regulated by Central Bank of Kenya</div>
+  </div>
+</body>
+</html>

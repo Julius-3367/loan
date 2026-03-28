@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px;">
+  <div style="max-width:600px; margin: auto; background: white; border-radius: 8px; overflow:hidden;">
+    <div style="background: #1a2f5e; padding: 24px; text-align:center;">
+      <h1 style="color: white; margin:0; font-size:22px;">Alba Capital</h1>
+    </div>
+    <div style="padding: 28px;">
+      <h2 style="color: #e74c3c;">Application Update</h2>
+      <p>Dear {{ user.first_name }},</p>
+      <p>After careful review, we regret to inform you that application <strong>{{ application.application_number }}</strong> was not approved at this time.</p>
+      {% if application.rejection_reason %}<p><strong>Reason:</strong> {{ application.rejection_reason }}</p>{% endif %}
+      <p>You are welcome to reapply after 30 days or contact our office to discuss your options.</p>
+    </div>
+    <div style="background:#f9f9f9; padding:16px; text-align:center; font-size:11px; color:#999;">Alba Capital Ltd | Regulated by Central Bank of Kenya</div>
+  </div>
+</body>
+</html>

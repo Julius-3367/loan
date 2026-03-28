@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Account Approved</title></head>
+<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px;">
+  <div style="max-width:600px; margin: auto; background: white; border-radius: 8px; overflow:hidden;">
+    <div style="background: #1a2f5e; padding: 24px; text-align:center;">
+      <h1 style="color: white; margin:0; font-size:22px;">Alba Capital</h1>
+      <p style="color: #e8a020; margin:4px 0 0; font-size:12px; letter-spacing:2px;">MICROFINANCE ERP</p>
+    </div>
+    <div style="padding: 28px;">
+      <h2 style="color: #1a2f5e;">Account Approved ✓</h2>
+      <p>Dear {{ user.first_name }},</p>
+      <p>We are pleased to inform you that your Alba Capital account has been <strong>approved</strong>.</p>
+      <p>You can now log in to apply for loans and access our full range of financial products.</p>
+      <div style="text-align:center; margin: 24px 0;">
+        <a href="{{ login_url }}" style="background:#e8a020; color:white; padding:12px 28px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:14px;">
+          Log In Now
+        </a>
+      </div>
+      <p style="color:#555;">If you did not register with Alba Capital, please ignore this email.</p>
+    </div>
+    <div style="background:#f9f9f9; padding:16px; text-align:center; font-size:11px; color:#999;">
+      Alba Capital Ltd | Regulated by Central Bank of Kenya<br>
+      This is an automated message. Please do not reply.
+    </div>
+  </div>
+</body>
+</html>

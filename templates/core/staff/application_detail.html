@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% block title %}{{ application.application_number }} - Staff Review{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-gray-50">
+  <nav class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center space-x-8">
+          <span class="text-2xl font-bold text-alba-navy">Alba Capital</span>
+          <span class="ml-3 px-2 py-1 text-xs font-semibold bg-alba-navy text-white rounded">Staff</span>
+          <div class="hidden md:flex space-x-4">
+            <a href="{% url 'staff_loan_applications' %}" class="text-sm font-medium text-alba-orange">Applications</a>
+            <a href="{% url 'staff_customers' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange">Customers</a>
+            <a href="{% url 'staff_loan_portfolio' %}" class="text-sm font-medium text-gray-700 hover:text-alba-orange">Portfolio</a>
+          </div>
+        </div>
+        <div class="flex items-center">
+          <a href="{% url 'logout' %}" class="text-sm text-red-500 hover:text-red-700">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="mb-4 text-sm text-gray-500 flex items-center space-x-2">
+      <a href="{% url 'staff_loan_applications' %}" class="hover:text-alba-orange">Applications</a>
+      <span>/</span>
+      <span class="text-gray-700 font-medium">{{ application.application_number }}</span>
+    </nav>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="mb-4 p-3 rounded-lg text-sm {% if message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-red-50 text-red-700 border border-red-200{% endif %}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="flex justify-between items-start mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ application.application_number }}</h1>
+        <p class="text-sm text-gray-500 mt-1">{{ application.loan_product.name }} &bull; Requested: KES {{ application.requested_amount|floatformat:0 }}</p>
+      </div>
+      <span class="px-3 py-1.5 rounded-full text-sm font-semibold
+        {% if application.status == 'SUBMITTED' %}bg-yellow-100 text-yellow-700
+        {% elif application.status == 'UNDER_REVIEW' %}bg-blue-100 text-blue-700
+        {% elif application.status == 'APPROVED' %}bg-green-100 text-green-700
+        {% elif application.status == 'REJECTED' %}bg-red-100 text-red-700
+        {% elif application.status == 'DISBURSED' %}bg-purple-100 text-purple-700
+        {% else %}bg-gray-100 text-gray-600{% endif %}">
+        {{ application.get_status_display }}
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left column: customer & application info -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Customer Info -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+            <h2 class="font-semibold text-gray-900">Customer Information</h2>
+            <a href="{% url 'staff_customer_detail' application.customer.pk %}" class="text-xs text-alba-orange hover:underline">Full Profile &rarr;</a>
+          </div>
+          <div class="p-5 grid grid-cols-2 gap-4 text-sm">
+            <div><p class="text-xs text-gray-500">Full Name</p><p class="font-semibold">{{ application.customer.user.get_full_name }}</p></div>
+            <div><p class="text-xs text-gray-500">Email</p><p>{{ application.customer.user.email }}</p></div>
+            <div><p class="text-xs text-gray-500">Phone</p><p>{{ application.customer.user.phone|default:"—" }}</p></div>
+            <div><p class="text-xs text-gray-500">ID Number</p><p>{{ application.customer.id_number|default:"—" }}</p></div>
+            <div><p class="text-xs text-gray-500">Employer</p><p>{{ application.customer.employer_name|default:"—" }}</p></div>
+            <div><p class="text-xs text-gray-500">Monthly Income</p><p>KES {{ application.customer.monthly_income|default:"—"|floatformat:0 }}</p></div>
+            <div><p class="text-xs text-gray-500">Employment Status</p><p>{{ application.customer.get_employment_status_display }}</p></div>
+            <div><p class="text-xs text-gray-500">KYC</p>
+              <span class="px-2 py-0.5 rounded-full text-xs font-semibold {% if application.customer.kyc_verified %}bg-green-100 text-green-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                {% if application.customer.kyc_verified %}Verified{% else %}Pending{% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Application Details -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="p-5 border-b border-gray-100"><h2 class="font-semibold text-gray-900">Application Details</h2></div>
+          <div class="p-5 grid grid-cols-2 gap-4 text-sm">
+            <div><p class="text-xs text-gray-500">Product</p><p class="font-semibold">{{ application.loan_product.name }}</p></div>
+            <div><p class="text-xs text-gray-500">Requested Amount</p><p class="font-semibold text-alba-navy">KES {{ application.requested_amount|floatformat:0 }}</p></div>
+            <div><p class="text-xs text-gray-500">Tenure</p><p>{{ application.tenure_months }} months</p></div>
+            <div><p class="text-xs text-gray-500">Submitted</p><p>{{ application.submitted_at|date:"d M Y H:i"|default:"Draft" }}</p></div>
+            {% if application.approved_by %}
+            <div><p class="text-xs text-gray-500">Approved By</p><p>{{ application.approved_by.get_full_name }}</p></div>
+            <div><p class="text-xs text-gray-500">Approved At</p><p>{{ application.approved_at|date:"d M Y H:i" }}</p></div>
+            {% endif %}
+            {% if application.rejection_reason %}
+            <div class="col-span-2"><p class="text-xs text-gray-500">Rejection Reason</p><p class="text-red-600">{{ application.rejection_reason }}</p></div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="p-5 border-b border-gray-100"><h2 class="font-semibold text-gray-900">Documents ({{ documents.count }})</h2></div>
+          {% if documents %}
+          <ul class="divide-y divide-gray-100">
+            {% for doc in documents %}
+            <li class="p-4 flex justify-between items-center">
+              <div>
+                <p class="text-sm font-medium text-gray-900">{{ doc.get_document_type_display }}</p>
+                {% if doc.description %}<p class="text-xs text-gray-500">{{ doc.description }}</p>{% endif %}
+              </div>
+              <div class="flex items-center space-x-3">
+                <span class="text-xs px-2 py-0.5 rounded-full {% if doc.is_validated %}bg-green-100 text-green-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                  {% if doc.is_validated %}Validated{% else %}Pending Validation{% endif %}
+                </span>
+                {% if doc.document_file %}
+                <a href="{{ doc.document_file.url }}" target="_blank" class="text-xs text-blue-500 hover:underline">View</a>
+                {% endif %}
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <div class="p-6 text-center text-gray-400 text-sm">No documents uploaded.</div>
+          {% endif %}
+        </div>
+
+        <!-- Guarantors -->
+        {% if guarantors %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="p-5 border-b border-gray-100"><h2 class="font-semibold text-gray-900">Guarantors ({{ guarantors.count }})</h2></div>
+          <ul class="divide-y divide-gray-100">
+            {% for g in guarantors %}
+            <li class="p-4 grid grid-cols-2 gap-3 text-sm">
+              <div><p class="text-xs text-gray-500">Name</p><p class="font-medium">{{ g.guarantor_name }}</p></div>
+              <div><p class="text-xs text-gray-500">Phone</p><p>{{ g.guarantor_phone }}</p></div>
+              <div><p class="text-xs text-gray-500">ID Number</p><p>{{ g.guarantor_id_number|default:"—" }}</p></div>
+              <div><p class="text-xs text-gray-500">Status</p>
+                <span class="px-2 py-0.5 text-xs rounded-full
+                  {% if g.status == 'APPROVED' %}bg-green-100 text-green-700
+                  {% elif g.status == 'REJECTED' %}bg-red-100 text-red-700
+                  {% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                  {{ g.get_status_display }}
+                </span>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <!-- Past repayment history -->
+        {% if past_repayments %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="p-5 border-b border-gray-100"><h2 class="font-semibold text-gray-900">Customer Repayment History</h2></div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                <tr>
+                  <th class="px-5 py-2 text-left">Date</th>
+                  <th class="px-5 py-2 text-left">Loan</th>
+                  <th class="px-5 py-2 text-right">Amount (KES)</th>
+                  <th class="px-5 py-2 text-center">Method</th>
+                  <th class="px-5 py-2 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                {% for rep in past_repayments %}
+                <tr>
+                  <td class="px-5 py-2 text-gray-600">{{ rep.payment_date }}</td>
+                  <td class="px-5 py-2 font-mono text-xs">{{ rep.loan.loan_number }}</td>
+                  <td class="px-5 py-2 text-right font-semibold">{{ rep.amount_paid|floatformat:2 }}</td>
+                  <td class="px-5 py-2 text-center text-gray-500">{{ rep.payment_method|default:"—" }}</td>
+                  <td class="px-5 py-2 text-center">
+                    <span class="px-2 py-0.5 text-xs rounded-full {% if rep.status == 'CONFIRMED' %}bg-green-100 text-green-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">{{ rep.get_status_display }}</span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Right column: Actions -->
+      <div class="space-y-4">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h2 class="font-semibold text-gray-900 mb-4">Actions</h2>
+
+          {% if can_review %}
+          <form method="post" class="mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="submit_review">
+            <button type="submit" class="w-full py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+              Move to Under Review
+            </button>
+          </form>
+          {% endif %}
+
+          {% if can_approve %}
+          <form method="post" class="mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="approve">
+            <button type="submit" class="w-full py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition"
+              onclick="return confirm('Approve this application?')">
+              Approve Application
+            </button>
+          </form>
+
+          <form method="post" class="mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject">
+            <div class="mb-2">
+              <label class="block text-xs font-medium text-gray-600 mb-1">Rejection Reason</label>
+              <textarea name="note" rows="2" placeholder="Enter reason…"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"></textarea>
+            </div>
+            <button type="submit" class="w-full py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
+              onclick="return confirm('Reject this application?')">
+              Reject Application
+            </button>
+          </form>
+          {% endif %}
+
+          {% if can_disburse %}
+          <form method="post" class="mb-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="disburse">
+            <button type="submit" class="w-full py-2 text-sm font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition"
+              onclick="return confirm('Mark as disbursed? This cannot be undone.')">
+              Mark as Disbursed
+            </button>
+          </form>
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="request_info">
+            <div class="mb-2">
+              <label class="block text-xs font-medium text-gray-600 mb-1">Request More Information</label>
+              <textarea name="note" rows="2" placeholder="What information is needed?"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"></textarea>
+            </div>
+            <button type="submit" class="w-full py-2 text-sm font-semibold text-gray-700 bg-yellow-100 rounded-lg hover:bg-yellow-200 border border-yellow-200 transition">
+              Request Information
+            </button>
+          </form>
+        </div>
+
+        <!-- Loan product terms quick reference -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h2 class="font-semibold text-gray-900 mb-3 text-sm">Product Terms</h2>
+          <dl class="space-y-2 text-xs">
+            <div class="flex justify-between"><dt class="text-gray-500">Min Amount</dt><dd>KES {{ application.loan_product.min_amount|floatformat:0 }}</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">Max Amount</dt><dd>KES {{ application.loan_product.max_amount|floatformat:0 }}</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">Interest Rate</dt><dd>{{ application.loan_product.interest_rate }}%</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">Method</dt><dd>{{ application.loan_product.get_interest_method_display }}</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">Min Tenure</dt><dd>{{ application.loan_product.min_tenure_months }} mo</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">Max Tenure</dt><dd>{{ application.loan_product.max_tenure_months }} mo</dd></div>
+            <div class="flex justify-between"><dt class="text-gray-500">Requires Guarantor</dt><dd>{% if application.loan_product.requires_guarantor %}Yes{% else %}No{% endif %}</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

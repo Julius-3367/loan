@@ -1488,3 +1488,319 @@ class LoanDocument(models.Model):
 
     def __str__(self):
         return f"{self.get_document_type_display()} - {self.application.application_number}"
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# INVESTOR PORTAL MODELS
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+class InvestorProfile(models.Model):
+    """
+    Investor profile linked to a User with role=INVESTOR.
+    Mirrors alba.investor in Odoo for the self-service portal.
+    """
+
+    ID_NATIONAL = "national_id"
+    ID_PASSPORT = "passport"
+    ID_ALIEN = "alien_id"
+    ID_TYPE_CHOICES = [
+        (ID_NATIONAL, "National ID"),
+        (ID_PASSPORT, "Passport"),
+        (ID_ALIEN, "Alien ID / Foreign Certificate"),
+    ]
+
+    KYC_PENDING = "pending"
+    KYC_PARTIAL = "partial"
+    KYC_COMPLETE = "complete"
+    KYC_VERIFIED = "verified"
+    KYC_REJECTED = "rejected"
+    KYC_STATUS_CHOICES = [
+        (KYC_PENDING, "Pending"),
+        (KYC_PARTIAL, "Partially Complete"),
+        (KYC_COMPLETE, "Complete — Awaiting Verification"),
+        (KYC_VERIFIED, "Verified"),
+        (KYC_REJECTED, "Rejected"),
+    ]
+
+    GENDER_CHOICES = [
+        ("male", "Male"),
+        ("female", "Female"),
+        ("other", "Other / Prefer not to say"),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        ("bank_transfer", "Bank Transfer"),
+        ("mpesa", "M-Pesa"),
+    ]
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="investor_profile",
+    )
+    investor_number = models.CharField(
+        "Investor Number", max_length=20, unique=True, blank=True, db_index=True
+    )
+    odoo_investor_id = models.IntegerField(
+        "Odoo Investor ID", null=True, blank=True, db_index=True
+    )
+
+    id_type = models.CharField(
+        "ID Type", max_length=20, choices=ID_TYPE_CHOICES, default=ID_NATIONAL
+    )
+    id_number = models.CharField("ID / Passport Number", max_length=50, blank=True)
+    date_of_birth = models.DateField("Date of Birth", null=True, blank=True)
+    gender = models.CharField(
+        "Gender", max_length=10, choices=GENDER_CHOICES, blank=True
+    )
+    nationality = models.CharField("Nationality", max_length=50, default="Kenyan")
+
+    physical_address = models.TextField("Physical Address", blank=True)
+    county = models.CharField("County", max_length=50, blank=True)
+
+    bank_name = models.CharField("Bank Name", max_length=100, blank=True)
+    bank_account_number = models.CharField("Bank Account Number", max_length=50, blank=True)
+    bank_branch = models.CharField("Bank Branch", max_length=100, blank=True)
+    mpesa_number = models.CharField("M-Pesa Number", max_length=15, blank=True)
+    preferred_payment_method = models.CharField(
+        "Preferred Payment Method",
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        default="mpesa",
+    )
+
+    kyc_status = models.CharField(
+        "KYC Status",
+        max_length=20,
+        choices=KYC_STATUS_CHOICES,
+        default=KYC_PENDING,
+        db_index=True,
+    )
+
+    created_at = models.DateTimeField("Created At", auto_now_add=True)
+    updated_at = models.DateTimeField("Updated At", auto_now=True)
+
+    class Meta:
+        db_table = "investor_profiles"
+        verbose_name = "Investor Profile"
+        verbose_name_plural = "Investor Profiles"
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} ({self.investor_number or 'No #'})"
+
+    @property
+    def full_name(self):
+        return self.user.get_full_name()
+
+    @property
+    def is_kyc_complete(self):
+        return self.kyc_status in (self.KYC_COMPLETE, self.KYC_VERIFIED)
+
+    def get_active_balance(self):
+        from django.db.models import Sum
+        return (
+            self.investments.filter(state=Investment.ACTIVE).aggregate(
+                total=Sum("current_balance")
+            )["total"]
+            or Decimal("0.00")
+        )
+
+    def get_total_interest_earned(self):
+        from django.db.models import Sum
+        return (
+            self.investments.aggregate(total=Sum("total_interest_earned"))["total"]
+            or Decimal("0.00")
+        )
+
+    def save(self, *args, **kwargs):
+        if not self.investor_number:
+            last = InvestorProfile.objects.order_by("-id").first()
+            seq = (last.id + 1) if last else 1
+            self.investor_number = f"ALBA-INV-{seq:04d}"
+        super().save(*args, **kwargs)
+
+
+class Investment(models.Model):
+    """
+    Investment account for an investor.
+    Mirrors alba.investment in Odoo.
+    """
+
+    FIXED_TERM = "fixed_term"
+    OPEN_ENDED = "open_ended"
+    TYPE_CHOICES = [
+        (FIXED_TERM, "Fixed Term"),
+        (OPEN_ENDED, "Open Ended"),
+    ]
+
+    ACTIVE = "active"
+    MATURED = "matured"
+    WITHDRAWN = "withdrawn"
+    SUSPENDED = "suspended"
+    STATE_CHOICES = [
+        (ACTIVE, "Active"),
+        (MATURED, "Matured"),
+        (WITHDRAWN, "Withdrawn"),
+        (SUSPENDED, "Suspended"),
+    ]
+
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    ANNUALLY = "annually"
+    COMPOUNDING_CHOICES = [
+        (MONTHLY, "Monthly"),
+        (QUARTERLY, "Quarterly"),
+        (ANNUALLY, "Annually"),
+    ]
+
+    investor = models.ForeignKey(
+        InvestorProfile,
+        on_delete=models.PROTECT,
+        related_name="investments",
+    )
+    investment_number = models.CharField(
+        "Investment Number", max_length=20, unique=True, blank=True, db_index=True
+    )
+    odoo_investment_id = models.IntegerField(
+        "Odoo Investment ID", null=True, blank=True, db_index=True
+    )
+
+    investment_type = models.CharField(
+        "Investment Type", max_length=20, choices=TYPE_CHOICES, default=FIXED_TERM
+    )
+
+    principal_amount = models.DecimalField(
+        "Principal Amount", max_digits=14, decimal_places=2
+    )
+    interest_rate = models.DecimalField(
+        "Annual Interest Rate (%)",
+        max_digits=6,
+        decimal_places=4,
+        help_text="Annual rate as percentage e.g. 12.0000 for 12%",
+    )
+    compounding_frequency = models.CharField(
+        "Compounding Frequency",
+        max_length=20,
+        choices=COMPOUNDING_CHOICES,
+        default=MONTHLY,
+    )
+
+    start_date = models.DateField("Start Date")
+    maturity_date = models.DateField("Maturity Date", null=True, blank=True)
+
+    state = models.CharField(
+        "Status", max_length=20, choices=STATE_CHOICES, default=ACTIVE, db_index=True
+    )
+
+    current_balance = models.DecimalField(
+        "Current Balance", max_digits=14, decimal_places=2, default=Decimal("0.00")
+    )
+    total_interest_earned = models.DecimalField(
+        "Total Interest Earned",
+        max_digits=14,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    notes = models.TextField("Notes", blank=True)
+
+    created_at = models.DateTimeField("Created At", auto_now_add=True)
+    updated_at = models.DateTimeField("Updated At", auto_now=True)
+
+    class Meta:
+        db_table = "investor_investments"
+        verbose_name = "Investment"
+        verbose_name_plural = "Investments"
+        ordering = ["-start_date", "-id"]
+        indexes = [
+            models.Index(fields=["investor", "state"]),
+            models.Index(fields=["investment_number"]),
+        ]
+
+    def __str__(self):
+        return f"{self.investment_number} — {self.investor.full_name}"
+
+    def save(self, *args, **kwargs):
+        if not self.investment_number:
+            last = Investment.objects.order_by("-id").first()
+            seq = (last.id + 1) if last else 1
+            self.investment_number = f"INV{seq:05d}"
+        super().save(*args, **kwargs)
+
+    @property
+    def is_active(self):
+        return self.state == self.ACTIVE
+
+    @property
+    def days_to_maturity(self):
+        if not self.maturity_date:
+            return None
+        from django.utils import timezone
+        delta = self.maturity_date - timezone.now().date()
+        return delta.days
+
+
+class InvestmentTransaction(models.Model):
+    """
+    Individual investment transactions: deposits, withdrawals, interest credits.
+    """
+
+    DEPOSIT = "deposit"
+    WITHDRAWAL = "withdrawal"
+    INTEREST_CREDIT = "interest_credit"
+    PENALTY = "penalty"
+    ADJUSTMENT = "adjustment"
+    TYPE_CHOICES = [
+        (DEPOSIT, "Deposit"),
+        (WITHDRAWAL, "Withdrawal"),
+        (INTEREST_CREDIT, "Interest Credit"),
+        (PENALTY, "Penalty"),
+        (ADJUSTMENT, "Adjustment"),
+    ]
+
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    REVERSED = "reversed"
+    STATUS_CHOICES = [
+        (PENDING, "Pending"),
+        (COMPLETED, "Completed"),
+        (FAILED, "Failed"),
+        (REVERSED, "Reversed"),
+    ]
+
+    investment = models.ForeignKey(
+        Investment, on_delete=models.PROTECT, related_name="transactions"
+    )
+    transaction_type = models.CharField(
+        "Transaction Type", max_length=20, choices=TYPE_CHOICES, db_index=True
+    )
+    amount = models.DecimalField("Amount", max_digits=14, decimal_places=2)
+    reference = models.CharField("Reference", max_length=100, blank=True, db_index=True)
+    description = models.TextField("Description", blank=True)
+    status = models.CharField(
+        "Status", max_length=20, choices=STATUS_CHOICES, default=COMPLETED, db_index=True
+    )
+    transaction_date = models.DateField("Transaction Date", default=timezone.now)
+    balance_after = models.DecimalField(
+        "Balance After", max_digits=14, decimal_places=2, default=Decimal("0.00")
+    )
+    odoo_transaction_id = models.IntegerField(
+        "Odoo Transaction ID", null=True, blank=True
+    )
+
+    created_at = models.DateTimeField("Created At", auto_now_add=True)
+
+    class Meta:
+        db_table = "investor_transactions"
+        verbose_name = "Investment Transaction"
+        verbose_name_plural = "Investment Transactions"
+        ordering = ["-transaction_date", "-created_at"]
+        indexes = [
+            models.Index(fields=["investment", "transaction_type"]),
+            models.Index(fields=["transaction_date"]),
+        ]
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} {self.amount} — {self.investment.investment_number}"
