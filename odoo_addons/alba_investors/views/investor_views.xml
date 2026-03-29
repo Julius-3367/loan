@@ -144,7 +144,7 @@
                         <page string="Investments" name="investments">
                             <field name="investment_ids"
                                    mode="list"
-                                   context="{'default_investor_id': active_id}">
+                                   context="{'default_investor_id': id}">
                                 <list string="Investments"
                                       decoration-success="state == 'active'"
                                       decoration-muted="state in ('matured','withdrawn')"
@@ -302,7 +302,7 @@
                 <field name="partner_id"     string="Name"/>
                 <field name="investor_number" string="Investor #"/>
                 <field name="id_number"       string="ID / Passport"/>
-                <separator/>
+                 
                 <filter string="KYC Pending"
                         name="kyc_pending"
                         domain="[('kyc_status','=','pending')]"/>
@@ -315,7 +315,7 @@
                 <filter string="KYC Rejected"
                         name="kyc_rejected"
                         domain="[('kyc_status','=','rejected')]"/>
-                <separator/>
+                 
                 <filter string="Active"
                         name="active"
                         domain="[('state','=','active')]"/>
@@ -325,11 +325,10 @@
                 <filter string="Blacklisted"
                         name="blacklisted"
                         domain="[('state','=','blacklisted')]"/>
-                <separator/>
+                 
                 <filter string="Archived"
                         name="archived"
                         domain="[('active','=',False)]"/>
-                <group expand="0" string="Group By">
                     <filter string="KYC Status"
                             name="grp_kyc"
                             context="{'group_by':'kyc_status'}"/>
@@ -342,7 +341,6 @@
                     <filter string="Nationality"
                             name="grp_nationality"
                             context="{'group_by':'nationality'}"/>
-                </group>
             </search>
         </field>
     </record>

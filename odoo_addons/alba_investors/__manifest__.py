@@ -38,11 +38,12 @@ Manages the full investor lifecycle for Alba Capital:
         "data/cron_data.xml",
         # Views
         "views/investor_views.xml",
-        "views/investment_views.xml",
         "views/investment_statement_views.xml",
-        "views/menus.xml",
-        # Wizards
+        "views/investment_views.xml",
+        # Wizards (must come before menus.xml so action xmlids exist)
         "wizard/generate_statement_wizard_views.xml",
+        # Menus (last, after all actions are defined)
+        "views/menus.xml",
     ],
     "demo": [],
     "installable": True,

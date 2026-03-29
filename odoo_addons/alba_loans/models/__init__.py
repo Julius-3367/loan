@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from . import (
-    approval_workflow,
-    collections,
     customer,
     investor,
-    loan,
-    loan_application,
     loan_product,
+    loan_application,
+    loan,
+    approval_workflow,
     loan_repayment,
+    repayment_schedule,
+    collections,
     loan_rules,
     mpesa_config,
     mpesa_transaction,
-    repayment_schedule,
 )

@@ -72,6 +72,12 @@ Accounting
         "views/mpesa_transaction_views.xml",
         # ── Loan views with computed fields (load last to ensure models ready) ─
         "views/loan_views.xml",
+        # ── Collections views (inherits loan_views) ───────────────────────────
+        "views/collections_views.xml",
+        # ── Loan rules views (inherits loan_views) ────────────────────────────
+        "views/loan_rules_views.xml",
+        # ── Approval workflow views ──────────────────────────────────────────
+        "views/approval_workflow_views.xml",
         # ── Menus (after all actions are defined) ────────────────────────────
         "views/menus.xml",
         # ── Wizards ──────────────────────────────────────────────────────────

@@ -812,7 +812,7 @@ class AlbaApiController(http.Controller):
             app_vals = {
                 "django_application_id": django_app_id,
                 "customer_id": customer.id,
-                "product_id": product.id,
+                "loan_product_id": product.id,
                 "requested_amount": self._safe_float(data["requested_amount"]),
                 "tenure_months": self._safe_int(data["tenure_months"], 1),
                 "repayment_frequency": repayment_freq,

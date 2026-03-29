@@ -229,7 +229,6 @@
                             ('period_end','&lt;=',(context_today().replace(day=1) - datetime.timedelta(days=1)).strftime('%Y-%m-%d'))
                         ]"
                     />
-                <group expand="0" string="Group By">
                     <filter
                             string="Investor"
                             name="grp_investor"
@@ -255,7 +254,6 @@
                             name="grp_period"
                             context="{'group_by':'period_start:month'}"
                         />
-                </group>
             </search>
         </field>
     </record>

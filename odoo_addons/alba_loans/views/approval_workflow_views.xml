@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             Approval Limits — Form & List
+             ================================================================ -->
+        <record id="view_alba_approval_limit_form" model="ir.ui.view">
+            <field name="name">alba.approval.limit.form</field>
+            <field name="model">alba.approval.limit</field>
+            <field name="arch" type="xml">
+                <form string="Approval Limit">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" />
+                            <h1><field name="name" placeholder="Rule Name…" /></h1>
+                        </div>
+
+                        <group>
+                            <group string="Rule">
+                                <field name="process_type" />
+                                <field name="active" />
+                                <field name="company_id" groups="base.group_multi_company" />
+                            </group>
+                            <group string="Approver">
+                                <field name="approver_group_id" />
+                                <field name="require_second_approval" />
+                                <field name="second_approver_group_id"
+                                       invisible="not require_second_approval" />
+                            </group>
+                        </group>
+
+                        <group string="Amount Range">
+                            <field name="currency_id" invisible="1" />
+                            <field name="min_amount" />
+                            <field name="max_amount" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_alba_approval_limit_list" model="ir.ui.view">
+            <field name="name">alba.approval.limit.list</field>
+            <field name="model">alba.approval.limit</field>
+            <field name="arch" type="xml">
+                <list string="Approval Limits">
+                    <field name="name" />
+                    <field name="process_type" />
+                    <field name="min_amount" />
+                    <field name="max_amount" />
+                    <field name="approver_group_id" />
+                    <field name="require_second_approval" />
+                    <field name="second_approver_group_id" />
+                    <field name="active" />
+                    <field name="currency_id" column_invisible="1" />
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             Workflow Rules — Form & List
+             ================================================================ -->
+        <record id="view_alba_workflow_rule_form" model="ir.ui.view">
+            <field name="name">alba.workflow.rule.form</field>
+            <field name="model">alba.workflow.rule</field>
+            <field name="arch" type="xml">
+                <form string="Workflow Rule">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" />
+                            <h1><field name="name" placeholder="Rule Name…" /></h1>
+                        </div>
+
+                        <group>
+                            <group string="Transition">
+                                <field name="model_name" />
+                                <field name="from_state" />
+                                <field name="to_state" />
+                                <field name="active" />
+                            </group>
+                            <group string="Authorization">
+                                <field name="required_group_id" />
+                                <field name="condition_domain" />
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_alba_workflow_rule_list" model="ir.ui.view">
+            <field name="name">alba.workflow.rule.list</field>
+            <field name="model">alba.workflow.rule</field>
+            <field name="arch" type="xml">
+                <list string="Workflow Rules">
+                    <field name="name" />
+                    <field name="model_name" />
+                    <field name="from_state" />
+                    <field name="to_state" />
+                    <field name="required_group_id" />
+                    <field name="active" />
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             Segregation of Duties — Form & List
+             ================================================================ -->
+        <record id="view_alba_sod_form" model="ir.ui.view">
+            <field name="name">alba.segregation.of.duties.form</field>
+            <field name="model">alba.segregation.of.duties</field>
+            <field name="arch" type="xml">
+                <form string="Segregation of Duties Rule">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" />
+                            <h1><field name="name" placeholder="Rule Name…" /></h1>
+                        </div>
+
+                        <group>
+                            <group string="Rule">
+                                <field name="process_type" />
+                                <field name="enforce_different_user" />
+                            </group>
+                            <group string="Roles">
+                                <field name="creator_group_id" />
+                                <field name="approver_group_id" />
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_alba_sod_list" model="ir.ui.view">
+            <field name="name">alba.segregation.of.duties.list</field>
+            <field name="model">alba.segregation.of.duties</field>
+            <field name="arch" type="xml">
+                <list string="Segregation of Duties">
+                    <field name="name" />
+                    <field name="process_type" />
+                    <field name="creator_group_id" />
+                    <field name="approver_group_id" />
+                    <field name="enforce_different_user" />
+                </list>
+            </field>
+        </record>
+
+    </data>
+</odoo>

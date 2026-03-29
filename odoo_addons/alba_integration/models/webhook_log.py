@@ -331,3 +331,20 @@ class AlbaWebhookLog(models.Model):
             label = f"[{record.direction[:3].upper()}] {record.event_type} @ {ts}"
             result.append((record.id, label))
         return result
+
+    def cron_purge_old_logs(self):
+        """Delete webhook log records older than the configured retention period."""
+        from datetime import timedelta
+        from odoo.fields import Datetime
+        retention_days = int(
+            self.env['ir.config_parameter'].sudo().get_param(
+                'alba.integration.webhook_log_retention_days', '60'
+            )
+        )
+        cutoff = Datetime.now() - timedelta(days=retention_days)
+        old_logs = self.sudo().search(
+            [('create_date', '<', cutoff)], order='id asc', limit=2000
+        )
+        count = len(old_logs)
+        old_logs.unlink()
+        _logger.info("cron_purge_old_logs: deleted %d webhook log record(s).", count)

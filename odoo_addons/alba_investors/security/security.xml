@@ -18,7 +18,6 @@
              Useful for back-office staff who need visibility but not edit rights. -->
         <record id="group_investor_user" model="res.groups">
             <field name="name">Investor User</field>
-            <field name="category_id" ref="module_alba_investors"/>
             <field name="comment">
                 Investor Users can view investor profiles, investment accounts,
                 interest accrual records and statements.  They cannot create,
@@ -32,7 +31,6 @@
              generate/send statements. Cannot change accounting configuration. -->
         <record id="group_investor_officer" model="res.groups">
             <field name="name">Investor Officer</field>
-            <field name="category_id" ref="module_alba_investors"/>
             <field name="implied_ids" eval="[(4, ref('group_investor_user'))]"/>
             <field name="comment">
                 Investor Officers inherit all Investor User permissions and
@@ -47,7 +45,6 @@
              reverse accruals, delete records, manage all investor data. -->
         <record id="group_investor_manager" model="res.groups">
             <field name="name">Investor Manager</field>
-            <field name="category_id" ref="module_alba_investors"/>
             <field name="implied_ids" eval="[(4, ref('group_investor_officer'))]"/>
             <field name="comment">
                 Investor Managers inherit all Investor Officer permissions and

@@ -1,75 +1,34 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <odoo>
 <data>
 
-    <!-- ================================================================
-         alba.mpesa.transaction — Form View
-         ================================================================ -->
+    
     <record id="view_alba_mpesa_transaction_form" model="ir.ui.view">
         <field name="name">alba.mpesa.transaction.form</field>
         <field name="model">alba.mpesa.transaction</field>
         <field name="arch" type="xml">
             <form string="M-Pesa Transaction">
                 <header>
-                    <button
-                        name="action_reconcile"
-                        string="Reconcile to Loan"
-                        type="object"
-                        class="btn-primary"
-                        icon="fa-link"
-                        invisible="status != 'completed' or is_reconciled"
-                        help="Create a draft repayment record linked to the selected loan."
-                    />
-                    <button
-                        name="action_query_status"
-                        string="Query Status"
-                        type="object"
-                        class="btn-secondary"
-                        icon="fa-refresh"
-                        invisible="transaction_type not in ('stk_push','stk_callback') or status not in ('pending','processing')"
-                        help="Re-query Safaricom for the current transaction status."
-                    />
-                    <button
-                        name="action_auto_match_loan"
-                        string="Auto-Match Loan"
-                        type="object"
-                        class="btn-secondary"
-                        icon="fa-search"
-                        invisible="loan_id != False"
-                        help="Try to match this transaction to a loan via the account reference."
-                    />
-                    <field
-                        name="status"
-                        widget="statusbar"
-                        statusbar_visible="pending,completed,failed"
-                    />
+                    <button name="action_reconcile" string="Reconcile to Loan" type="object" class="btn-primary" icon="fa-link" invisible="status != 'completed' or is_reconciled" help="Create a draft repayment record linked to the selected loan." />
+                    <button name="action_query_status" string="Query Status" type="object" class="btn-secondary" icon="fa-refresh" invisible="transaction_type not in ('stk_push','stk_callback') or status not in ('pending','processing')" help="Re-query Safaricom for the current transaction status." />
+                    <button name="action_auto_match_loan" string="Auto-Match Loan" type="object" class="btn-secondary" icon="fa-search" invisible="loan_id != False" help="Try to match this transaction to a loan via the account reference." />
+                    <field name="status" widget="statusbar" statusbar_visible="pending,completed,failed" />
                 </header>
 
                 <sheet>
-                    <!-- Attention banner -->
-                    <div
-                        class="alert alert-warning"
-                        role="alert"
-                        invisible="not needs_attention"
-                    >
+                    
+                    <div class="alert alert-warning" role="alert" invisible="not needs_attention">
                         <i class="fa fa-exclamation-triangle me-1" />
                         <strong>Needs attention:</strong> This completed payment
                         has not been reconciled to a repayment record yet.
                         Link a loan and click <b>Reconcile to Loan</b>.
                     </div>
 
-                    <!-- Reconciled banner -->
-                    <div
-                        class="alert alert-success"
-                        role="alert"
-                        invisible="not is_reconciled"
-                    >
+                    
+                    <div class="alert alert-success" role="alert" invisible="not is_reconciled">
                         <i class="fa fa-check-circle me-1" />
                         <strong>Reconciled</strong> to repayment
-                        <a
-                            name="repayment_id"
-                            type="object"
-                        >
+                        <a name="repayment_id" type="object">
                             <field name="repayment_id" readonly="1" nolabel="1" />
                         </a>.
                     </div>
@@ -77,28 +36,14 @@
                     <div class="oe_title">
                         <label for="mpesa_code" string="M-Pesa Code" />
                         <h1>
-                            <field
-                                name="mpesa_code"
-                                placeholder="e.g. QGH7YXXXXX (populated after completion)"
-                            />
+                            <field name="mpesa_code" placeholder="e.g. QGH7YXXXXX (populated after completion)" />
                         </h1>
                     </div>
 
                     <group>
                         <group string="Transaction Details">
-                            <field name="transaction_type"
-                                widget="badge"
-                                decoration-info="transaction_type in ('stk_push','stk_callback')"
-                                decoration-success="transaction_type == 'c2b'"
-                                decoration-warning="transaction_type in ('b2c','b2c_result')"
-                            />
-                            <field name="status"
-                                widget="badge"
-                                decoration-success="status == 'completed'"
-                                decoration-warning="status == 'pending'"
-                                decoration-danger="status in ('failed','cancelled')"
-                                decoration-info="status == 'processing'"
-                            />
+                            <field name="transaction_type" widget="badge" decoration-info="transaction_type in ('stk_push','stk_callback')" decoration-success="transaction_type == 'c2b'" decoration-warning="transaction_type in ('b2c','b2c_result')" />
+                            <field name="status" widget="badge" decoration-success="status == 'completed'" decoration-warning="status == 'pending'" decoration-danger="status in ('failed','cancelled')" decoration-info="status == 'processing'" />
                             <field name="amount" />
                             <field name="currency_id" invisible="1" />
                             <field name="phone_number" />
@@ -121,43 +66,25 @@
                         <group string="Links">
                             <field name="loan_id" options="{'no_create': True}" />
                             <field name="repayment_id" readonly="1" />
-                            <field name="investor_id"
-                                options="{'no_create': True}"
-                                invisible="transaction_type not in ('b2c','b2c_result')"
-                            />
+                            <field name="investor_id" options="{'no_create': True}" invisible="transaction_type not in ('b2c','b2c_result')" />
                             <field name="config_id" options="{'no_create': True}" />
                             <field name="company_id" options="{'no_create': True}" />
                         </group>
                         <group string="Daraja Result">
                             <field name="result_code" />
                             <field name="result_desc" />
-                            <field
-                                name="failure_reason"
-                                invisible="status not in ('failed','cancelled')"
-                            />
+                            <field name="failure_reason" invisible="status not in ('failed','cancelled')" />
                         </group>
                     </group>
 
                     <notebook>
                         <page string="Raw Payloads" name="raw">
                             <group>
-                                <field
-                                    name="raw_request"
-                                    nolabel="1"
-                                    widget="text"
-                                    readonly="1"
-                                    placeholder="Raw JSON payload sent to Daraja (populated on creation)."
-                                />
+                                <field name="raw_request" nolabel="1" widget="text" readonly="1" placeholder="Raw JSON payload sent to Daraja (populated on creation)." />
                             </group>
                             <separator string="Response / Callback Body" />
                             <group>
-                                <field
-                                    name="raw_response"
-                                    nolabel="1"
-                                    widget="text"
-                                    readonly="1"
-                                    placeholder="Raw JSON received from Daraja or callback (populated on response/callback)."
-                                />
+                                <field name="raw_response" nolabel="1" widget="text" readonly="1" placeholder="Raw JSON received from Daraja or callback (populated on response/callback)." />
                             </group>
                         </page>
                     </notebook>
@@ -168,34 +95,16 @@
         </field>
     </record>
 
-    <!-- ================================================================
-         alba.mpesa.transaction — List View
-         ================================================================ -->
+    
     <record id="view_alba_mpesa_transaction_list" model="ir.ui.view">
         <field name="name">alba.mpesa.transaction.list</field>
         <field name="model">alba.mpesa.transaction</field>
         <field name="arch" type="xml">
-            <list
-                string="M-Pesa Transactions"
-                decoration-success="status == 'completed' and is_reconciled"
-                decoration-warning="status == 'completed' and not is_reconciled"
-                decoration-danger="status in ('failed','cancelled')"
-                decoration-muted="status == 'reversed'"
-            >
+            <list string="M-Pesa Transactions" decoration-success="status == 'completed' and is_reconciled" decoration-warning="status == 'completed' and not is_reconciled" decoration-danger="status in ('failed','cancelled')" decoration-muted="status == 'reversed'">
                 <field name="create_date" string="Date" />
                 <field name="mpesa_code" />
-                <field name="transaction_type"
-                    widget="badge"
-                    decoration-info="transaction_type in ('stk_push','stk_callback')"
-                    decoration-success="transaction_type == 'c2b'"
-                    decoration-warning="transaction_type in ('b2c','b2c_result')"
-                />
-                <field name="status"
-                    widget="badge"
-                    decoration-success="status == 'completed'"
-                    decoration-warning="status == 'pending'"
-                    decoration-danger="status in ('failed','cancelled')"
-                />
+                <field name="transaction_type" widget="badge" decoration-info="transaction_type in ('stk_push','stk_callback')" decoration-success="transaction_type == 'c2b'" decoration-warning="transaction_type in ('b2c','b2c_result')" />
+                <field name="status" widget="badge" decoration-success="status == 'completed'" decoration-warning="status == 'pending'" decoration-danger="status in ('failed','cancelled')" />
                 <field name="amount" sum="Total" />
                 <field name="phone_number" />
                 <field name="account_reference" />
@@ -210,17 +119,12 @@
         </field>
     </record>
 
-    <!-- ================================================================
-         alba.mpesa.transaction — Kanban View (needs-attention board)
-         ================================================================ -->
+    
     <record id="view_alba_mpesa_transaction_kanban" model="ir.ui.view">
         <field name="name">alba.mpesa.transaction.kanban</field>
         <field name="model">alba.mpesa.transaction</field>
         <field name="arch" type="xml">
-            <kanban
-                default_group_by="status"
-                class="o_kanban_small_column"
-            >
+            <kanban default_group_by="status" class="o_kanban_small_column">
                 <field name="mpesa_code" />
                 <field name="transaction_type" />
                 <field name="status" />
@@ -239,14 +143,8 @@
                                     <t t-esc="record.mpesa_code.value or record.account_reference.value or ('TXN#' + record.id.value)" />
                                 </strong>
                             </div>
-                            <span
-                                t-if="record.needs_attention.raw_value"
-                                class="badge bg-warning text-dark"
-                            >Needs Attention</span>
-                            <span
-                                t-if="record.is_reconciled.raw_value"
-                                class="badge bg-success"
-                            >Reconciled</span>
+                            <span t-if="record.needs_attention.raw_value" class="badge bg-warning text-dark">Needs Attention</span>
+                            <span t-if="record.is_reconciled.raw_value" class="badge bg-success">Reconciled</span>
                         </div>
                         <div class="o_kanban_record_body">
                             <field name="amount" widget="monetary" />
@@ -270,108 +168,6 @@
         </field>
     </record>
 
-    <!-- ================================================================
-         alba.mpesa.transaction — Search View
-         ================================================================ -->
-    <record id="view_alba_mpesa_transaction_search" model="ir.ui.view">
-        <field name="name">alba.mpesa.transaction.search</field>
-        <field name="model">alba.mpesa.transaction</field>
-        <field name="arch" type="xml">
-            <search string="Search M-Pesa Transactions">
-                <field name="mpesa_code" string="M-Pesa Code" />
-                <field name="phone_number" string="Phone" />
-                <field name="account_reference" string="Account Reference" />
-                <field name="checkout_request_id" string="Checkout Request ID" />
-                <field name="loan_id" string="Loan" />
-                <separator />
-                <filter
-                    string="Needs Attention"
-                    name="needs_attention"
-                    domain="[('needs_attention','=',True)]"
-                />
-                <filter
-                    string="Pending"
-                    name="pending"
-                    domain="[('status','=','pending')]"
-                />
-                <filter
-                    string="Completed"
-                    name="completed"
-                    domain="[('status','=','completed')]"
-                />
-                <filter
-                    string="Failed / Cancelled"
-                    name="failed"
-                    domain="[('status','in',['failed','cancelled'])]"
-                />
-                <separator />
-                <filter
-                    string="Reconciled"
-                    name="reconciled"
-                    domain="[('is_reconciled','=',True)]"
-                />
-                <filter
-                    string="Unreconciled Completed"
-                    name="unreconciled"
-                    domain="[('is_reconciled','=',False),('status','=','completed')]"
-                />
-                <separator />
-                <filter
-                    string="STK Push"
-                    name="stk"
-                    domain="[('transaction_type','in',['stk_push','stk_callback'])]"
-                />
-                <filter
-                    string="C2B"
-                    name="c2b"
-                    domain="[('transaction_type','=','c2b')]"
-                />
-                <filter
-                    string="B2C Payouts"
-                    name="b2c"
-                    domain="[('transaction_type','in',['b2c','b2c_result'])]"
-                />
-                <separator />
-                <filter
-                    string="Today"
-                    name="today"
-                    domain="[('create_date','&gt;=','2026-03-24')]"
-                />
-                <filter
-                    string="This Month"
-                    name="this_month"
-                    domain="[('create_date','&gt;=','2026-03-01')]"
-                />
-                <group expand="0" string="Group By">
-                    <filter
-                        string="Status"
-                        name="grp_status"
-                        context="{'group_by':'status'}"
-                    />
-                    <filter
-                        string="Transaction Type"
-                        name="grp_type"
-                        context="{'group_by':'transaction_type'}"
-                    />
-                    <filter
-                        string="Loan"
-                        name="grp_loan"
-                        context="{'group_by':'loan_id'}"
-                    />
-                    <filter
-                        string="Config"
-                        name="grp_config"
-                        context="{'group_by':'config_id'}"
-                    />
-                    <filter
-                        string="Date"
-                        name="grp_date"
-                        context="{'group_by':'create_date:day'}"
-                    />
-                </group>
-            </search>
-        </field>
-    </record>
-
-</data>
+    
+    </data>
 </odoo>

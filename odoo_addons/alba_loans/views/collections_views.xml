@@ -1,0 +1,227 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             Collection Stages — Form & List
+             ================================================================ -->
+        <record id="view_alba_collection_stage_form" model="ir.ui.view">
+            <field name="name">alba.loan.collection.stage.form</field>
+            <field name="model">alba.loan.collection.stage</field>
+            <field name="arch" type="xml">
+                <form string="Collection Stage">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" />
+                            <h1><field name="name" placeholder="Stage Name…" /></h1>
+                        </div>
+
+                        <group>
+                            <group string="Stage Definition">
+                                <field name="stage_code" />
+                                <field name="stage_number" />
+                                <field name="min_days_overdue" />
+                                <field name="max_days_overdue" />
+                                <field name="active" />
+                            </group>
+                            <group string="Fees">
+                                <field name="additional_penalty_rate" />
+                            </group>
+                        </group>
+
+                        <group string="Automated Actions">
+                            <group>
+                                <field name="auto_send_reminder" />
+                                <field name="reminder_template_id"
+                                       invisible="not auto_send_reminder" />
+                                <field name="sms_template"
+                                       invisible="not auto_send_reminder" />
+                            </group>
+                            <group>
+                                <field name="escalate_to" />
+                                <field name="create_activity" />
+                                <field name="activity_type_id"
+                                       invisible="not create_activity" />
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_alba_collection_stage_list" model="ir.ui.view">
+            <field name="name">alba.loan.collection.stage.list</field>
+            <field name="model">alba.loan.collection.stage</field>
+            <field name="arch" type="xml">
+                <list string="Collection Stages" editable="bottom">
+                    <field name="stage_number" string="#" />
+                    <field name="name" />
+                    <field name="stage_code" />
+                    <field name="min_days_overdue" string="Min Days" />
+                    <field name="max_days_overdue" string="Max Days" />
+                    <field name="additional_penalty_rate" string="Extra Penalty (%)" />
+                    <field name="auto_send_reminder" />
+                    <field name="escalate_to" />
+                    <field name="active" />
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             Collection Log — Form & List
+             ================================================================ -->
+        <record id="view_alba_collection_log_form" model="ir.ui.view">
+            <field name="name">alba.loan.collection.log.form</field>
+            <field name="model">alba.loan.collection.log</field>
+            <field name="arch" type="xml">
+                <form string="Collection Activity">
+                    <sheet>
+                        <group>
+                            <group string="Loan">
+                                <field name="loan_id" />
+                                <field name="customer_id" readonly="1" />
+                            </group>
+                            <group string="Activity">
+                                <field name="activity_type" />
+                                <field name="activity_date" />
+                                <field name="user_id" />
+                                <field name="customer_notified" />
+                                <field name="notification_sent"
+                                       invisible="not customer_notified"
+                                       readonly="1" />
+                            </group>
+                        </group>
+
+                        <group string="Outcome">
+                            <field name="outcome" />
+                            <field name="follow_up_required" />
+                            <field name="follow_up_date"
+                                   invisible="not follow_up_required" />
+                        </group>
+
+                        <group string="Description">
+                            <field name="description" nolabel="1"
+                                   placeholder="Describe the collection activity…" />
+                        </group>
+
+                        <group string="Attachments">
+                            <field name="attachment_ids" nolabel="1"
+                                   widget="many2many_binary" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_alba_collection_log_list" model="ir.ui.view">
+            <field name="name">alba.loan.collection.log.list</field>
+            <field name="model">alba.loan.collection.log</field>
+            <field name="arch" type="xml">
+                <list string="Collection Activities"
+                      decoration-danger="outcome == 'refused'"
+                      decoration-success="outcome == 'successful'"
+                      decoration-warning="outcome == 'promised_payment'">
+                    <field name="activity_date" />
+                    <field name="loan_id" />
+                    <field name="customer_id" />
+                    <field name="activity_type" />
+                    <field name="outcome" widget="badge"
+                           decoration-success="outcome == 'successful'"
+                           decoration-warning="outcome == 'promised_payment'"
+                           decoration-danger="outcome in ('refused','escalated')"
+                           decoration-muted="outcome == 'no_response'" />
+                    <field name="follow_up_required" />
+                    <field name="follow_up_date" />
+                    <field name="user_id" />
+                </list>
+            </field>
+        </record>
+
+        <record id="view_alba_collection_log_search" model="ir.ui.view">
+            <field name="name">alba.loan.collection.log.search</field>
+            <field name="model">alba.loan.collection.log</field>
+            <field name="arch" type="xml">
+                <search string="Collection Activities">
+                    <field name="loan_id" />
+                    <field name="customer_id" />
+                    <field name="activity_type" />
+                    <field name="user_id" />
+                    <filter name="follow_up_due" string="Follow-up Due"
+                            domain="[('follow_up_required','=',True),('follow_up_date','&lt;=', context_today().strftime('%Y-%m-%d'))]" />
+                    <filter name="no_response" string="No Response"
+                            domain="[('outcome','=','no_response')]" />
+                    <filter name="promised_payment" string="Promised Payment"
+                            domain="[('outcome','=','promised_payment')]" />
+                    <group expand="0" string="Group By">
+                        <filter name="group_activity_type" string="Activity Type"
+                                context="{'group_by': 'activity_type'}" />
+                        <filter name="group_outcome" string="Outcome"
+                                context="{'group_by': 'outcome'}" />
+                        <filter name="group_user" string="Handled By"
+                                context="{'group_by': 'user_id'}" />
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             Inherited Loan form — Collections tab
+             ================================================================ -->
+        <record id="view_alba_loan_form_collections" model="ir.ui.view">
+            <field name="name">alba.loan.form.collections</field>
+            <field name="model">alba.loan</field>
+            <field name="inherit_id" ref="alba_loans.view_alba_loan_form" />
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="Collections" name="collections"
+                          invisible="days_in_arrears == 0">
+                        <group>
+                            <group string="Collection Stage">
+                                <field name="collection_stage_id" readonly="1" />
+                                <field name="npl_bucket" readonly="1" widget="badge"
+                                       decoration-success="npl_bucket == False"
+                                       decoration-warning="npl_bucket in ('1_30','31_60')"
+                                       decoration-danger="npl_bucket in ('61_90','91_180','over_180')" />
+                                <field name="collection_call_count" readonly="1" />
+                                <field name="last_collection_activity" readonly="1" />
+                            </group>
+                            <group string="Legal Escalation">
+                                <field name="escalated_to_legal" />
+                                <field name="legal_escalation_date"
+                                       invisible="not escalated_to_legal" />
+                                <field name="npl_classification_date" readonly="1" />
+                            </group>
+                        </group>
+
+                        <group string="Legal Remarks"
+                               invisible="not escalated_to_legal">
+                            <field name="legal_remarks" nolabel="1"
+                                   placeholder="Legal remarks and case notes…" />
+                        </group>
+
+                        <field name="collection_log_ids" mode="list"
+                               context="{'default_loan_id': active_id}">
+                            <list string="Collection History"
+                                  decoration-success="outcome == 'successful'"
+                                  decoration-warning="outcome == 'promised_payment'"
+                                  decoration-danger="outcome == 'refused'">
+                                <field name="activity_date" />
+                                <field name="activity_type" />
+                                <field name="description" />
+                                <field name="outcome" widget="badge"
+                                       decoration-success="outcome == 'successful'"
+                                       decoration-warning="outcome == 'promised_payment'"
+                                       decoration-danger="outcome in ('refused','escalated')"
+                                       decoration-muted="outcome == 'no_response'" />
+                                <field name="follow_up_required" />
+                                <field name="follow_up_date" />
+                                <field name="user_id" />
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+            </field>
+        </record>
+
+    </data>
+</odoo>

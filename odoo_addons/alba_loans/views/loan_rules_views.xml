@@ -1,0 +1,373 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+
+        <!-- ================================================================
+             Loan Restructure — Form & List
+             ================================================================ -->
+        <record id="view_alba_loan_restructure_form" model="ir.ui.view">
+            <field name="name">alba.loan.restructure.form</field>
+            <field name="model">alba.loan.restructure</field>
+            <field name="arch" type="xml">
+                <form string="Loan Restructure">
+                    <header>
+                        <button name="action_submit" string="Submit for Approval"
+                                type="object" class="btn-primary"
+                                invisible="state != 'draft'" />
+                        <button name="action_approve" string="Approve"
+                                type="object" class="btn-success"
+                                invisible="state != 'pending'"
+                                groups="alba_loans.group_operations_manager" />
+                        <button name="action_apply" string="Apply Restructure"
+                                type="object" class="btn-warning"
+                                invisible="state != 'approved'"
+                                groups="alba_loans.group_operations_manager" />
+                        <button name="action_reject" string="Reject"
+                                type="object" class="btn-danger"
+                                invisible="state not in ('pending','approved')"
+                                groups="alba_loans.group_operations_manager" />
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,pending,approved,applied" />
+                    </header>
+
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" />
+                            <h1><field name="name" readonly="1" /></h1>
+                        </div>
+
+                        <group>
+                            <group string="Loan">
+                                <field name="loan_id"
+                                       readonly="state != 'draft'" />
+                                <field name="customer_id" readonly="1" />
+                                <field name="currency_id" invisible="1" />
+                            </group>
+                            <group string="Request">
+                                <field name="restructure_date"
+                                       readonly="state != 'draft'" />
+                                <field name="requested_by" readonly="1" />
+                                <field name="approved_by" readonly="1"
+                                       invisible="not approved_by" />
+                                <field name="approved_date" readonly="1"
+                                       invisible="not approved_date" />
+                            </group>
+                        </group>
+
+                        <group string="Restructure Reason">
+                            <field name="reason" nolabel="1"
+                                   readonly="state != 'draft'"
+                                   placeholder="Provide the reason for restructure…" />
+                        </group>
+
+                        <group string="New Terms">
+                            <group>
+                                <field name="new_principal_amount"
+                                       readonly="state != 'draft'" />
+                                <field name="new_interest_rate"
+                                       readonly="state != 'draft'" />
+                                <field name="new_tenure_months"
+                                       readonly="state != 'draft'" />
+                                <field name="new_installment_amount" readonly="1" />
+                            </group>
+                            <group>
+                                <field name="restructure_fee_rate"
+                                       readonly="state != 'draft'" />
+                                <field name="restructure_fee_amount" readonly="1" />
+                                <field name="total_new_payable" readonly="1" />
+                            </group>
+                        </group>
+                    </sheet>
+
+                    <chatter />
+                </form>
+            </field>
+        </record>
+
+        <record id="view_alba_loan_restructure_list" model="ir.ui.view">
+            <field name="name">alba.loan.restructure.list</field>
+            <field name="model">alba.loan.restructure</field>
+            <field name="arch" type="xml">
+                <list string="Loan Restructures"
+                      decoration-info="state == 'draft'"
+                      decoration-warning="state == 'pending'"
+                      decoration-success="state == 'applied'"
+                      decoration-danger="state == 'rejected'">
+                    <field name="name" />
+                    <field name="loan_id" />
+                    <field name="customer_id" />
+                    <field name="restructure_date" />
+                    <field name="new_principal_amount" />
+                    <field name="new_interest_rate" string="New Rate (%)" />
+                    <field name="new_tenure_months" string="New Tenure (M)" />
+                    <field name="restructure_fee_amount" />
+                    <field name="requested_by" />
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'applied'"
+                           decoration-warning="state == 'pending'"
+                           decoration-danger="state == 'rejected'" />
+                    <field name="currency_id" column_invisible="1" />
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             Loan Reschedule — Form & List
+             ================================================================ -->
+        <record id="view_alba_loan_reschedule_form" model="ir.ui.view">
+            <field name="name">alba.loan.reschedule.form</field>
+            <field name="model">alba.loan.reschedule</field>
+            <field name="arch" type="xml">
+                <form string="Loan Reschedule">
+                    <header>
+                        <button name="action_approve" string="Approve"
+                                type="object" class="btn-success"
+                                invisible="state != 'draft'"
+                                groups="alba_loans.group_loan_officer" />
+                        <button name="action_apply" string="Apply"
+                                type="object" class="btn-primary"
+                                invisible="state != 'approved'"
+                                groups="alba_loans.group_loan_officer" />
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,approved,applied" />
+                    </header>
+
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" />
+                            <h1><field name="name" readonly="1" /></h1>
+                        </div>
+
+                        <group>
+                            <group string="Loan">
+                                <field name="loan_id"
+                                       readonly="state != 'draft'" />
+                            </group>
+                            <group string="Date Change">
+                                <field name="original_payment_date"
+                                       readonly="state != 'draft'" />
+                                <field name="new_payment_date"
+                                       readonly="state != 'draft'" />
+                            </group>
+                        </group>
+
+                        <group string="Reason">
+                            <field name="reason" nolabel="1"
+                                   readonly="state != 'draft'"
+                                   placeholder="Reason for rescheduling this payment…" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_alba_loan_reschedule_list" model="ir.ui.view">
+            <field name="name">alba.loan.reschedule.list</field>
+            <field name="model">alba.loan.reschedule</field>
+            <field name="arch" type="xml">
+                <list string="Loan Reschedules"
+                      decoration-success="state == 'applied'"
+                      decoration-info="state == 'draft'">
+                    <field name="name" />
+                    <field name="loan_id" />
+                    <field name="original_payment_date" />
+                    <field name="new_payment_date" />
+                    <field name="reason" />
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'applied'"
+                           decoration-info="state == 'draft'" />
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             Early Settlement — Form & List
+             ================================================================ -->
+        <record id="view_alba_loan_early_settlement_form" model="ir.ui.view">
+            <field name="name">alba.loan.early.settlement.form</field>
+            <field name="model">alba.loan.early.settlement</field>
+            <field name="arch" type="xml">
+                <form string="Early Settlement">
+                    <header>
+                        <button name="action_generate_quote" string="Generate Quote"
+                                type="object" class="btn-primary"
+                                invisible="state != 'draft'" />
+                        <button name="action_accept" string="Accept Quote"
+                                type="object" class="btn-success"
+                                invisible="state != 'quoted'" />
+                        <button name="action_mark_paid" string="Mark as Paid"
+                                type="object" class="btn-warning"
+                                invisible="state != 'accepted'"
+                                groups="alba_loans.group_loan_officer" />
+                        <field name="state" widget="statusbar"
+                               statusbar_visible="draft,quoted,accepted,paid" />
+                    </header>
+
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" />
+                            <h1><field name="name" readonly="1" /></h1>
+                        </div>
+
+                        <group>
+                            <group string="Loan">
+                                <field name="loan_id"
+                                       readonly="state != 'draft'" />
+                                <field name="customer_id" readonly="1" />
+                                <field name="currency_id" invisible="1" />
+                            </group>
+                            <group string="Settlement Date">
+                                <field name="settlement_date"
+                                       readonly="state != 'draft'" />
+                                <field name="discount_percentage"
+                                       readonly="state != 'draft'" />
+                            </group>
+                        </group>
+
+                        <group string="Settlement Calculation" col="4">
+                            <field name="principal_outstanding" readonly="1" />
+                            <field name="accrued_interest" readonly="1" />
+                            <field name="discount_amount" readonly="1" />
+                            <field name="final_settlement_amount" readonly="1" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_alba_loan_early_settlement_list" model="ir.ui.view">
+            <field name="name">alba.loan.early.settlement.list</field>
+            <field name="model">alba.loan.early.settlement</field>
+            <field name="arch" type="xml">
+                <list string="Early Settlements"
+                      decoration-success="state == 'paid'"
+                      decoration-warning="state == 'accepted'"
+                      decoration-info="state in ('draft','quoted')">
+                    <field name="name" />
+                    <field name="loan_id" />
+                    <field name="customer_id" />
+                    <field name="settlement_date" />
+                    <field name="principal_outstanding" />
+                    <field name="accrued_interest" />
+                    <field name="discount_amount" />
+                    <field name="final_settlement_amount" />
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'paid'"
+                           decoration-warning="state == 'accepted'"
+                           decoration-info="state in ('draft','quoted')" />
+                    <field name="currency_id" column_invisible="1" />
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             Loan Fees — Form & List
+             ================================================================ -->
+        <record id="view_alba_loan_fee_form" model="ir.ui.view">
+            <field name="name">alba.loan.fee.form</field>
+            <field name="model">alba.loan.fee</field>
+            <field name="arch" type="xml">
+                <form string="Loan Fee">
+                    <header>
+                        <button name="action_post" string="Post to GL"
+                                type="object" class="btn-primary"
+                                invisible="is_posted"
+                                groups="account.group_account_user" />
+                    </header>
+
+                    <sheet>
+                        <group>
+                            <group string="Fee Details">
+                                <field name="loan_id" />
+                                <field name="fee_type" />
+                                <field name="currency_id" invisible="1" />
+                                <field name="amount" />
+                                <field name="date_applied" />
+                            </group>
+                            <group string="Accounting">
+                                <field name="is_posted" readonly="1" />
+                                <field name="move_id" readonly="1"
+                                       invisible="not is_posted" />
+                            </group>
+                        </group>
+
+                        <group string="Description">
+                            <field name="description" nolabel="1"
+                                   placeholder="Fee description…" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_alba_loan_fee_list" model="ir.ui.view">
+            <field name="name">alba.loan.fee.list</field>
+            <field name="model">alba.loan.fee</field>
+            <field name="arch" type="xml">
+                <list string="Loan Fees"
+                      decoration-muted="is_posted">
+                    <field name="date_applied" />
+                    <field name="loan_id" />
+                    <field name="fee_type" />
+                    <field name="amount" />
+                    <field name="description" />
+                    <field name="is_posted" />
+                    <field name="move_id" />
+                    <field name="currency_id" column_invisible="1" />
+                </list>
+            </field>
+        </record>
+
+        <!-- ================================================================
+             Inherited Loan form — Restructures / Reschedules / Fees tab
+             ================================================================ -->
+        <record id="view_alba_loan_form_loan_rules" model="ir.ui.view">
+            <field name="name">alba.loan.form.loan_rules</field>
+            <field name="model">alba.loan</field>
+            <field name="inherit_id" ref="alba_loans.view_alba_loan_form" />
+            <field name="arch" type="xml">
+                <page name="notes" position="before">
+                    <page string="Restructures" name="restructures">
+                        <field name="restructure_ids" mode="list"
+                               context="{'default_loan_id': active_id}"
+                               groups="alba_loans.group_loan_officer">
+                            <list string="Restructures"
+                                  decoration-success="state == 'applied'"
+                                  decoration-warning="state == 'pending'"
+                                  decoration-danger="state == 'rejected'">
+                                <field name="name" />
+                                <field name="restructure_date" />
+                                <field name="new_principal_amount" />
+                                <field name="new_interest_rate" string="New Rate (%)" />
+                                <field name="new_tenure_months" string="New Tenure" />
+                                <field name="restructure_fee_amount" />
+                                <field name="state" widget="badge"
+                                       decoration-success="state == 'applied'"
+                                       decoration-warning="state in ('draft','pending')"
+                                       decoration-danger="state == 'rejected'" />
+                                <field name="currency_id" column_invisible="1" />
+                            </list>
+                        </field>
+                    </page>
+
+                    <page string="Fees" name="fees">
+                        <field name="fee_ids" mode="list"
+                               context="{'default_loan_id': active_id}"
+                               groups="alba_loans.group_finance_officer">
+                            <list string="Fees" editable="bottom">
+                                <field name="date_applied" />
+                                <field name="fee_type" />
+                                <field name="amount" />
+                                <field name="description" />
+                                <field name="is_posted" />
+                                <field name="move_id" optional="show" />
+                                <field name="currency_id" column_invisible="1" />
+                            </list>
+                        </field>
+                    </page>
+                </page>
+            </field>
+        </record>
+
+    </data>
+</odoo>

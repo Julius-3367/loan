@@ -19,7 +19,6 @@ env['alba.webhook.retry'].cron_process_retry_queue()
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">15</field>
         <field name="interval_type">minutes</field>
-        <field name="numbercall">-1</field>
         <field name="active">True</field>
         <field name="priority">3</field>
     </record>
@@ -41,7 +40,6 @@ env['alba.sync.log'].cron_purge_old_logs()
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">7</field>
         <field name="interval_type">days</field>
-        <field name="numbercall">-1</field>
         <field name="active">True</field>
         <field name="priority">50</field>
     </record>
@@ -66,7 +64,6 @@ if api_key:
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">6</field>
         <field name="interval_type">hours</field>
-        <field name="numbercall">-1</field>
         <field name="active">True</field>
         <field name="priority">30</field>
     </record>
@@ -82,26 +79,11 @@ if api_key:
         <field name="model_id" ref="alba_integration.model_alba_webhook_log" />
         <field name="state">code</field>
         <field name="code">
-import logging
-_logger = logging.getLogger('alba.integration.cron')
-retention_days = int(
-    env['ir.config_parameter'].sudo().get_param(
-        'alba.integration.webhook_log_retention_days', '60'
-    )
-)
-from datetime import timedelta
-cutoff = fields.Datetime.now() - timedelta(days=retention_days)
-old_logs = env['alba.webhook.log'].sudo().search(
-    [('create_date', '&lt;', cutoff)], order='id asc', limit=2000
-)
-count = len(old_logs)
-old_logs.unlink()
-_logger.info('Purged %d webhook log records older than %s days.', count, retention_days)
+env['alba.webhook.log'].sudo().cron_purge_old_logs()
         </field>
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">7</field>
         <field name="interval_type">days</field>
-        <field name="numbercall">-1</field>
         <field name="active">True</field>
         <field name="priority">50</field>
     </record>
@@ -129,7 +111,6 @@ if dead_count > 0:
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">1</field>
         <field name="interval_type">days</field>
-        <field name="numbercall">-1</field>
         <field name="active">True</field>
         <field name="priority">20</field>
     </record>

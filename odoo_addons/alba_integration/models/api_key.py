@@ -42,7 +42,7 @@ class AlbaApiKey(models.Model):
 
     _name = "alba.api.key"
     _description = "Alba Integration API Key"
-    _inherit = ["mail.thread"]
+    _inherit = ["mail.thread", "mail.activity.mixin"]
     _rec_name = "name"
     _order = "name"
 

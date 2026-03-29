@@ -196,6 +196,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         if user.role == User.CUSTOMER:
             return redirect("customer_dashboard")
 
+        if user.role == User.INVESTOR:
+            return redirect("loans:investor_dashboard")
+
         # All staff/admin roles go to admin dashboard
         if user.is_superuser or user.role in [
             User.ADMIN,

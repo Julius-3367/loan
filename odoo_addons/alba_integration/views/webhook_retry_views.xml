@@ -203,23 +203,21 @@
                     name="today"
                     domain="[('create_date','&gt;=',(context_today()).strftime('%Y-%m-%d'))]"
                 />
-                <group expand="0" string="Group By">
-                    <filter
-                        string="Status"
-                        name="grp_status"
-                        context="{'group_by':'status'}"
-                    />
-                    <filter
-                        string="Event Type"
-                        name="grp_event"
-                        context="{'group_by':'event_type'}"
-                    />
-                    <filter
-                        string="API Key"
-                        name="grp_api_key"
-                        context="{'group_by':'api_key_id'}"
-                    />
-                </group>
+                <filter
+                    string="Status"
+                    name="grp_status"
+                    context="{'group_by':'status'}"
+                />
+                <filter
+                    string="Event Type"
+                    name="grp_event"
+                    context="{'group_by':'event_type'}"
+                />
+                <filter
+                    string="API Key"
+                    name="grp_api_key"
+                    context="{'group_by':'api_key_id'}"
+                />
             </search>
         </field>
     </record>

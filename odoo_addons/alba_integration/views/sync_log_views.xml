@@ -246,38 +246,36 @@
                     name="this_month"
                     domain="[('create_date','&gt;=',(context_today().replace(day=1)).strftime('%Y-%m-%d'))]"
                 />
-                <group expand="0" string="Group By">
-                    <filter
-                        string="Direction"
-                        name="grp_direction"
-                        context="{'group_by':'direction'}"
-                    />
-                    <filter
-                        string="Status"
-                        name="grp_status"
-                        context="{'group_by':'status'}"
-                    />
-                    <filter
-                        string="Operation"
-                        name="grp_operation"
-                        context="{'group_by':'operation'}"
-                    />
-                    <filter
-                        string="Odoo Model"
-                        name="grp_model"
-                        context="{'group_by':'odoo_model'}"
-                    />
-                    <filter
-                        string="API Key"
-                        name="grp_api_key"
-                        context="{'group_by':'api_key_id'}"
-                    />
-                    <filter
-                        string="Date"
-                        name="grp_date"
-                        context="{'group_by':'create_date:day'}"
-                    />
-                </group>
+                <filter
+                    string="Direction"
+                    name="grp_direction"
+                    context="{'group_by':'direction'}"
+                />
+                <filter
+                    string="Status"
+                    name="grp_status"
+                    context="{'group_by':'status'}"
+                />
+                <filter
+                    string="Operation"
+                    name="grp_operation"
+                    context="{'group_by':'operation'}"
+                />
+                <filter
+                    string="Odoo Model"
+                    name="grp_model"
+                    context="{'group_by':'odoo_model'}"
+                />
+                <filter
+                    string="API Key"
+                    name="grp_api_key"
+                    context="{'group_by':'api_key_id'}"
+                />
+                <filter
+                    string="Date"
+                    name="grp_date"
+                    context="{'group_by':'create_date:day'}"
+                />
             </search>
         </field>
     </record>

@@ -1,17 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-    Alba Loans — All Actions
-    ========================
-    This file defines all ir.actions.act_window records before any views
-    that reference them. This solves cross-dependency issues where views
-    in one file reference actions defined in another file.
--->
+<?xml version='1.0' encoding='utf-8'?>
 <odoo>
     <data>
 
-        <!-- ================================================================
-             alba.customer — Actions
-             ================================================================ -->
+        
         <record id="action_alba_customer" model="ir.actions.act_window">
             <field name="name">Customers</field>
             <field name="res_model">alba.customer</field>
@@ -28,9 +19,7 @@
             </field>
         </record>
 
-        <!-- ================================================================
-             alba.loan.product — Actions
-             ================================================================ -->
+        
         <record id="action_alba_loan_product" model="ir.actions.act_window">
             <field name="name">Loan Products</field>
             <field name="res_model">alba.loan.product</field>
@@ -48,9 +37,7 @@
             </field>
         </record>
 
-        <!-- ================================================================
-             alba.loan.application — Actions
-             ================================================================ -->
+        
         <record id="action_alba_loan_application" model="ir.actions.act_window">
             <field name="name">Loan Applications</field>
             <field name="res_model">alba.loan.application</field>
@@ -75,9 +62,7 @@
             <field name="context">{}</field>
         </record>
 
-        <!-- ================================================================
-             alba.loan — Actions
-             ================================================================ -->
+        
         <record id="action_alba_loan_list" model="ir.actions.act_window">
             <field name="name">Active Loans</field>
             <field name="res_model">alba.loan</field>
@@ -101,9 +86,7 @@
             <field name="context">{}</field>
         </record>
 
-        <!-- ================================================================
-             alba.loan.repayment — Actions
-             ================================================================ -->
+        
         <record id="action_alba_loan_repayment" model="ir.actions.act_window">
             <field name="name">Repayments</field>
             <field name="res_model">alba.loan.repayment</field>
@@ -120,9 +103,7 @@
             </field>
         </record>
 
-        <!-- ================================================================
-             alba.repayment.schedule — Actions
-             ================================================================ -->
+        
         <record id="action_alba_repayment_schedule" model="ir.actions.act_window">
             <field name="name">Repayment Schedules</field>
             <field name="res_model">alba.repayment.schedule</field>
@@ -130,9 +111,7 @@
             <field name="context">{'search_default_overdue': 1}</field>
         </record>
 
-        <!-- ================================================================
-             alba.mpesa.config — Actions
-             ================================================================ -->
+        
         <record id="action_alba_mpesa_config" model="ir.actions.act_window">
             <field name="name">M-Pesa Configurations</field>
             <field name="res_model">alba.mpesa.config</field>
@@ -149,9 +128,7 @@
             </field>
         </record>
 
-        <!-- ================================================================
-             alba.mpesa.transaction — Actions
-             ================================================================ -->
+        
         <record id="action_alba_mpesa_transaction" model="ir.actions.act_window">
             <field name="name">M-Pesa Transactions</field>
             <field name="res_model">alba.mpesa.transaction</field>
@@ -186,6 +163,122 @@
                 <p class="o_view_nocontent_smiling_face">
                     No unreconciled transactions — great work!
                 </p>
+            </field>
+        </record>
+
+        <!-- Collections -->
+        <record id="action_alba_collection_stage" model="ir.actions.act_window">
+            <field name="name">Collection Stages</field>
+            <field name="res_model">alba.loan.collection.stage</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No collection stages configured yet.</p>
+                <p>Define escalation buckets (1–30, 31–60, 61–90, 90+ days) to automate the collections workflow.</p>
+            </field>
+        </record>
+
+        <record id="action_alba_collection_log" model="ir.actions.act_window">
+            <field name="name">Collection Activities</field>
+            <field name="res_model">alba.loan.collection.log</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No collection activities logged yet.</p>
+            </field>
+        </record>
+
+        <record id="action_alba_collection_log_followup" model="ir.actions.act_window">
+            <field name="name">Follow-ups Due</field>
+            <field name="res_model">alba.loan.collection.log</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('follow_up_required','=',True),('follow_up_date','&lt;=', context_today().strftime('%Y-%m-%d'))]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No follow-ups due — great work!</p>
+            </field>
+        </record>
+
+        <!-- Loan Rules -->
+        <record id="action_alba_loan_restructure" model="ir.actions.act_window">
+            <field name="name">Loan Restructures</field>
+            <field name="res_model">alba.loan.restructure</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No restructure requests yet.</p>
+                <p>Restructures modify a loan's principal, interest rate and tenure. A 3% restructure fee applies.</p>
+            </field>
+        </record>
+
+        <record id="action_alba_loan_restructure_pending" model="ir.actions.act_window">
+            <field name="name">Pending Restructures</field>
+            <field name="res_model">alba.loan.restructure</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('state','=','pending')]</field>
+        </record>
+
+        <record id="action_alba_loan_reschedule" model="ir.actions.act_window">
+            <field name="name">Loan Reschedules</field>
+            <field name="res_model">alba.loan.reschedule</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No reschedule requests yet.</p>
+                <p>Reschedules allow individual payment dates to be moved without changing the loan terms.</p>
+            </field>
+        </record>
+
+        <record id="action_alba_loan_early_settlement" model="ir.actions.act_window">
+            <field name="name">Early Settlements</field>
+            <field name="res_model">alba.loan.early.settlement</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No early settlement quotes yet.</p>
+                <p>Generate a settlement quote for customers who wish to pay off their loan before maturity.</p>
+            </field>
+        </record>
+
+        <record id="action_alba_loan_fee" model="ir.actions.act_window">
+            <field name="name">Loan Fees</field>
+            <field name="res_model">alba.loan.fee</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No additional loan fees yet.</p>
+            </field>
+        </record>
+
+        <!-- Approval Workflow Configuration -->
+        <record id="action_alba_approval_limit" model="ir.actions.act_window">
+            <field name="name">Approval Limits</field>
+            <field name="res_model">alba.approval.limit</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No approval limits configured yet.</p>
+                <p>Define which role can approve transactions at which amount thresholds.</p>
+            </field>
+        </record>
+
+        <record id="action_alba_workflow_rule" model="ir.actions.act_window">
+            <field name="name">Workflow Rules</field>
+            <field name="res_model">alba.workflow.rule</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No workflow rules configured yet.</p>
+            </field>
+        </record>
+
+        <record id="action_alba_segregation_of_duties" model="ir.actions.act_window">
+            <field name="name">Segregation of Duties</field>
+            <field name="res_model">alba.segregation.of.duties</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No SoD rules configured yet.</p>
+                <p>Configure maker-checker controls to prevent the same user from both creating and approving transactions.</p>
             </field>
         </record>
 

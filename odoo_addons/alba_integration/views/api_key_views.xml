@@ -70,7 +70,7 @@
                         </h1>
                         <div class="o_field_widget oe_read_only">
                             <span class="badge badge-pill"
-                                  attrs="{'invisible': [('is_active', '=', True)]}">
+                                  invisible="is_active == True">
                                 Archived
                             </span>
                         </div>
@@ -143,7 +143,7 @@
                             colspan="2"
                         />
                         <div class="alert alert-info" role="alert"
-                             attrs="{'invisible': [('allowed_ips', '!=', False)]}">
+                             invisible="allowed_ips != False">
                             <i class="fa fa-info-circle"/> No IP restrictions are configured.
                             Requests from any IP address will be accepted.
                         </div>
@@ -156,9 +156,9 @@
                             <field
                                 name="log_ids"
                                 readonly="1"
-                                context="{'default_api_key_id': active_id}"
+                                context="{'default_api_key_id': id}"
                             >
-                                <tree
+                                <list
                                     string="Webhook Logs"
                                     decoration-success="status == 'success'"
                                     decoration-danger="status == 'failed'"
@@ -175,7 +175,7 @@
                                     <field name="related_record_id" optional="hide"/>
                                     <!-- Hidden fields for decoration expressions -->
                                     <field name="status" column_invisible="1"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
 
@@ -209,7 +209,7 @@
         <field name="name">alba.api.key.tree</field>
         <field name="model">alba.api.key</field>
         <field name="arch" type="xml">
-            <tree
+            <list
                 string="API Keys"
                 decoration-muted="is_active == False"
             >
@@ -222,7 +222,7 @@
                 <field name="company_id"
                        groups="base.group_multi_company"
                        optional="show"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -263,19 +263,17 @@
                     domain="[('last_used', '=', False)]"
                 />
 
-                <group expand="0" string="Group By">
-                    <filter
-                        string="Company"
-                        name="group_company"
-                        context="{'group_by': 'company_id'}"
-                        groups="base.group_multi_company"
-                    />
-                    <filter
-                        string="Active Status"
-                        name="group_active"
-                        context="{'group_by': 'is_active'}"
-                    />
-                </group>
+                <filter
+                    string="Company"
+                    name="group_company"
+                    context="{'group_by': 'company_id'}"
+                    groups="base.group_multi_company"
+                />
+                <filter
+                    string="Active Status"
+                    name="group_active"
+                    context="{'group_by': 'is_active'}"
+                />
 
             </search>
         </field>
@@ -288,7 +286,7 @@
     <record id="action_alba_api_key" model="ir.actions.act_window">
         <field name="name">API Keys</field>
         <field name="res_model">alba.api.key</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_alba_api_key_search"/>
         <field name="context">{'search_default_filter_active': 1}</field>
         <field name="help" type="html">

@@ -1,250 +1,195 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <odoo>
     <data>
 
-        <!-- ================================================================
-             alba.customer — Form View
-             ================================================================ -->
+        
         <record id="view_alba_customer_form" model="ir.ui.view">
             <field name="name">alba.customer.form</field>
             <field name="model">alba.customer</field>
             <field name="arch" type="xml">
                 <form string="Customer">
                     <header>
-                        <button name="action_verify_kyc"
-                                string="Verify KYC"
-                                type="object"
-                                class="btn-success"
-                                invisible="kyc_status == 'verified'"
-                                groups="alba_loans.group_loan_officer"/>
-                        <button name="action_reject_kyc"
-                                string="Reject KYC"
-                                type="object"
-                                class="btn-danger"
-                                invisible="kyc_status in ('rejected','pending')"
-                                groups="alba_loans.group_loan_officer"/>
-                        <button name="action_blacklist"
-                                string="Blacklist Customer"
-                                type="object"
-                                class="btn-danger"
-                                invisible="blacklisted == True"
-                                groups="alba_loans.group_loan_manager"/>
-                        <field name="kyc_status" widget="statusbar"
-                               statusbar_visible="pending,partial,complete,verified"/>
+                        <button name="action_verify_kyc" string="Verify KYC" type="object" class="btn-success" invisible="kyc_status == 'verified'" groups="alba_loans.group_loan_officer" />
+                        <button name="action_reject_kyc" string="Reject KYC" type="object" class="btn-danger" invisible="kyc_status in ('rejected','pending')" groups="alba_loans.group_loan_officer" />
+                        <button name="action_blacklist" string="Blacklist Customer" type="object" class="btn-danger" invisible="blacklisted == True" groups="alba_loans.group_loan_manager" />
+                        <field name="kyc_status" widget="statusbar" statusbar_visible="pending,partial,complete,verified" />
                     </header>
 
                     <sheet>
-                        <!-- Smart Buttons -->
+                        
                         <div class="oe_button_box" name="button_box">
-                            <button name="action_view_applications"
-                                    type="object"
-                                    class="oe_stat_button"
-                                    icon="fa-file-text-o">
-                                <field name="loan_application_count"
-                                       widget="statinfo"
-                                       string="Applications"/>
+                            <button name="action_view_applications" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                                <field name="loan_application_count" widget="statinfo" string="Applications" />
                             </button>
-                            <button name="action_view_loans"
-                                    type="object"
-                                    class="oe_stat_button"
-                                    icon="fa-money">
-                                <field name="active_loan_count"
-                                       widget="statinfo"
-                                       string="Active Loans"/>
+                            <button name="action_view_loans" type="object" class="oe_stat_button" icon="fa-money">
+                                <field name="active_loan_count" widget="statinfo" string="Active Loans" />
                             </button>
-                            <button name="%(action_alba_loan_list)d"
-                                    type="action"
-                                    class="oe_stat_button"
-                                    icon="fa-balance-scale">
+                            <button name="%(action_alba_loan_list)d" type="action" class="oe_stat_button" icon="fa-balance-scale">
                                 <div class="o_stat_info">
-                                    <field name="outstanding_balance" widget="monetary"/>
+                                    <field name="outstanding_balance" widget="monetary" />
                                     <span class="o_stat_text">Outstanding</span>
                                 </div>
                             </button>
                         </div>
 
-                        <!-- Blacklist warning -->
-                        <div class="alert alert-danger" role="alert"
-                             invisible="blacklisted == False">
+                        
+                        <div class="alert alert-danger" role="alert" invisible="blacklisted == False">
                             <strong>This customer is blacklisted.</strong>
                             No new loans should be disbursed.
                         </div>
 
                         <div class="oe_title">
-                            <label for="partner_id" string="Customer"/>
+                            <label for="partner_id" string="Customer" />
                             <h1>
-                                <field name="partner_id"
-                                       options="{'no_create': False}"
-                                       placeholder="Select or create a contact…"/>
+                                <field name="partner_id" options="{'no_create': False}" placeholder="Select or create a contact…" />
                             </h1>
                         </div>
 
                         <group>
                             <group string="Identity">
-                                <field name="id_type"/>
-                                <field name="id_number"/>
-                                <field name="date_of_birth"/>
-                                <field name="age" readonly="1"/>
-                                <field name="gender"/>
-                                <field name="marital_status"/>
-                                <field name="nationality"/>
+                                <field name="id_type" />
+                                <field name="id_number" />
+                                <field name="date_of_birth" />
+                                <field name="age" readonly="1" />
+                                <field name="gender" />
+                                <field name="marital_status" />
+                                <field name="nationality" />
                             </group>
                             <group string="Location (Kenya)">
-                                <field name="county"/>
-                                <field name="sub_county"/>
-                                <field name="ward"/>
+                                <field name="county" />
+                                <field name="sub_county" />
+                                <field name="ward" />
                             </group>
                         </group>
 
                         <notebook>
 
-                            <!-- ── Employment ─────────────────────────────── -->
+                            
                             <page string="Employment" name="employment">
                                 <group>
                                     <group string="Employment Details">
-                                        <field name="employment_status"/>
-                                        <field name="employer_name"/>
-                                        <field name="employer_phone"/>
-                                        <field name="job_title"/>
-                                        <field name="months_employed"/>
+                                        <field name="employment_status" />
+                                        <field name="employer_name" />
+                                        <field name="employer_phone" />
+                                        <field name="job_title" />
+                                        <field name="months_employed" />
                                     </group>
                                     <group string="Income">
-                                        <field name="monthly_income"/>
-                                        <field name="other_income"/>
-                                        <field name="currency_id" invisible="1"/>
+                                        <field name="monthly_income" />
+                                        <field name="other_income" />
+                                        <field name="currency_id" invisible="1" />
                                     </group>
                                 </group>
                             </page>
 
-                            <!-- ── KYC &amp; Risk ──────────────────────────── -->
+                            
                             <page string="KYC &amp; Risk" name="kyc_risk">
                                 <group>
                                     <group string="KYC Status">
-                                        <field name="kyc_status"/>
-                                        <field name="kyc_verified_by" readonly="1"/>
-                                        <field name="kyc_verified_date" readonly="1"/>
-                                        <field name="blacklisted"/>
+                                        <field name="kyc_status" />
+                                        <field name="kyc_verified_by" readonly="1" />
+                                        <field name="kyc_verified_date" readonly="1" />
+                                        <field name="blacklisted" />
                                     </group>
                                     <group string="Credit &amp; Risk">
-                                        <field name="credit_score"/>
-                                        <field name="risk_rating"/>
-                                        <field name="django_customer_id"
-                                               groups="base.group_system"/>
+                                        <field name="credit_score" />
+                                        <field name="risk_rating" />
+                                        <field name="django_customer_id" groups="base.group_system" />
                                     </group>
                                 </group>
                             </page>
 
-                            <!-- ── Banking ────────────────────────────────── -->
+                            
                             <page string="Banking" name="banking">
                                 <group>
                                     <group string="Bank Details">
-                                        <field name="bank_name"/>
-                                        <field name="bank_account_number"/>
-                                        <field name="bank_branch"/>
+                                        <field name="bank_name" />
+                                        <field name="bank_account_number" />
+                                        <field name="bank_branch" />
                                     </group>
                                     <group string="Mobile Money">
-                                        <field name="mpesa_number"/>
+                                        <field name="mpesa_number" />
                                     </group>
                                 </group>
                             </page>
 
-                            <!-- ── Loan Applications ──────────────────────── -->
+                            
                             <page string="Loan Applications" name="applications">
-                                <field name="loan_application_ids"
-                                       mode="list"
-                                       readonly="1"
-                                       context="{'default_customer_id': id}">
-                                    <list string="Applications" decoration-success="state=='disbursed'"
-                                          decoration-danger="state in ('rejected','cancelled')"
-                                          decoration-info="state not in ('disbursed','rejected','cancelled')">
-                                        <field name="application_number"/>
-                                        <field name="loan_product_id"/>
-                                        <field name="requested_amount"/>
-                                        <field name="approved_amount"/>
-                                        <field name="tenure_months"/>
-                                        <field name="state"/>
-                                        <field name="create_date" string="Applied On"/>
+                                <field name="loan_application_ids" mode="list" readonly="1" context="{'default_customer_id': id}">
+                                    <list string="Applications" decoration-success="state=='disbursed'" decoration-danger="state in ('rejected','cancelled')" decoration-info="state not in ('disbursed','rejected','cancelled')">
+                                        <field name="application_number" />
+                                        <field name="loan_product_id" />
+                                        <field name="requested_amount" />
+                                        <field name="approved_amount" />
+                                        <field name="tenure_months" />
+                                        <field name="state" />
+                                        <field name="create_date" string="Applied On" />
                                     </list>
                                 </field>
                             </page>
 
-                            <!-- ── Notes ─────────────────────────────────── -->
+                            
                             <page string="Notes" name="notes">
-                                <field name="notes"
-                                       placeholder="Internal notes about this customer…"
-                                       nolabel="1"/>
+                                <field name="notes" placeholder="Internal notes about this customer…" nolabel="1" />
                             </page>
 
                         </notebook>
                     </sheet>
 
-                    <chatter/>
+                    <chatter />
                 </form>
             </field>
         </record>
 
-        <!-- ================================================================
-             alba.customer — List View
-             ================================================================ -->
+        
         <record id="view_alba_customer_list" model="ir.ui.view">
             <field name="name">alba.customer.list</field>
             <field name="model">alba.customer</field>
             <field name="arch" type="xml">
-                <list string="Customers"
-                      decoration-danger="blacklisted == True"
-                      decoration-muted="active == False">
-                    <field name="partner_id" string="Name"/>
-                    <field name="id_type"/>
-                    <field name="id_number"/>
-                    <field name="employment_status"/>
-                    <field name="monthly_income"/>
-                    <field name="kyc_status" widget="badge"
-                           decoration-success="kyc_status == 'verified'"
-                           decoration-warning="kyc_status in ('partial','complete')"
-                           decoration-danger="kyc_status == 'rejected'"
-                           decoration-info="kyc_status == 'pending'"/>
-                    <field name="credit_score"/>
-                    <field name="risk_rating" widget="badge"
-                           decoration-success="risk_rating == 'low'"
-                           decoration-warning="risk_rating == 'medium'"
-                           decoration-danger="risk_rating in ('high','very_high')"/>
-                    <field name="active_loan_count" string="Active Loans"/>
-                    <field name="outstanding_balance"/>
-                    <field name="blacklisted" widget="boolean_toggle"/>
-                    <field name="currency_id" column_invisible="1"/>
+                <list string="Customers" decoration-danger="blacklisted == True" decoration-muted="active == False">
+                    <field name="partner_id" string="Name" />
+                    <field name="id_type" />
+                    <field name="id_number" />
+                    <field name="employment_status" />
+                    <field name="monthly_income" />
+                    <field name="kyc_status" widget="badge" decoration-success="kyc_status == 'verified'" decoration-warning="kyc_status in ('partial','complete')" decoration-danger="kyc_status == 'rejected'" decoration-info="kyc_status == 'pending'" />
+                    <field name="credit_score" />
+                    <field name="risk_rating" widget="badge" decoration-success="risk_rating == 'low'" decoration-warning="risk_rating == 'medium'" decoration-danger="risk_rating in ('high','very_high')" />
+                    <field name="active_loan_count" string="Active Loans" />
+                    <field name="outstanding_balance" />
+                    <field name="blacklisted" widget="boolean_toggle" />
+                    <field name="currency_id" column_invisible="1" />
                 </list>
             </field>
         </record>
 
-        <!-- ================================================================
-             alba.customer — Kanban View
-             ================================================================ -->
+        
         <record id="view_alba_customer_kanban" model="ir.ui.view">
             <field name="name">alba.customer.kanban</field>
             <field name="model">alba.customer</field>
             <field name="arch" type="xml">
                 <kanban default_group_by="kyc_status" class="o_kanban_small_column">
-                    <field name="partner_id"/>
-                    <field name="kyc_status"/>
-                    <field name="credit_score"/>
-                    <field name="active_loan_count"/>
-                    <field name="outstanding_balance"/>
-                    <field name="blacklisted"/>
-                    <field name="currency_id"/>
+                    <field name="partner_id" />
+                    <field name="kyc_status" />
+                    <field name="credit_score" />
+                    <field name="active_loan_count" />
+                    <field name="outstanding_balance" />
+                    <field name="blacklisted" />
+                    <field name="currency_id" />
                     <templates>
                         <t t-name="card">
                             <div t-attf-class="oe_kanban_card oe_kanban_global_click #{record.blacklisted.raw_value ? 'border-danger' : ''}">
                                 <div class="o_kanban_record_top">
                                     <div class="o_kanban_record_headings">
                                         <strong class="o_kanban_record_title">
-                                            <field name="partner_id"/>
+                                            <field name="partner_id" />
                                         </strong>
                                     </div>
                                 </div>
                                 <div class="o_kanban_record_body">
-                                    <div>Credit Score: <strong><field name="credit_score"/></strong></div>
-                                    <div>Active Loans: <field name="active_loan_count"/></div>
-                                    <div>Outstanding: <field name="outstanding_balance" widget="monetary"/></div>
+                                    <div>Credit Score: <strong><field name="credit_score" /></strong></div>
+                                    <div>Active Loans: <field name="active_loan_count" /></div>
+                                    <div>Outstanding: <field name="outstanding_balance" widget="monetary" /></div>
                                 </div>
                                 <div class="o_kanban_record_bottom" t-if="record.blacklisted.raw_value">
                                     <span class="badge text-bg-danger">Blacklisted</span>
@@ -256,38 +201,6 @@
             </field>
         </record>
 
-        <!-- ================================================================
-             alba.customer — Search View
-             ================================================================ -->
-        <record id="view_alba_customer_search" model="ir.ui.view">
-            <field name="name">alba.customer.search</field>
-            <field name="model">alba.customer</field>
-            <field name="arch" type="xml">
-                <search string="Search Customers">
-                    <field name="partner_id"/>
-                    <field name="id_number"/>
-                    <field name="employer_name"/>
-                    <field name="county"/>
-                    <separator/>
-                    <filter name="kyc_pending" string="KYC Pending" domain="[('kyc_status','=','pending')]"/>
-                    <filter name="kyc_partial" string="KYC Partial" domain="[('kyc_status','=','partial')]"/>
-                    <filter name="kyc_verified" string="KYC Verified" domain="[('kyc_status','=','verified')]"/>
-                    <filter name="kyc_rejected" string="KYC Rejected" domain="[('kyc_status','=','rejected')]"/>
-                    <separator/>
-                    <filter name="blacklisted" string="Blacklisted" domain="[('blacklisted','=',True)]"/>
-                    <filter name="inactive" string="Archived" domain="[('active','=',False)]"/>
-                    <separator/>
-                    <filter name="employed" string="Employed" domain="[('employment_status','=','employed')]"/>
-                    <filter name="self_employed" string="Self-Employed" domain="[('employment_status','=','self_employed')]"/>
-                    <group expand="0" string="Group By">
-                        <filter name="grp_kyc" string="KYC Status" context="{'group_by':'kyc_status'}"/>
-                        <filter name="grp_risk" string="Risk Rating" context="{'group_by':'risk_rating'}"/>
-                        <filter name="grp_employment" string="Employment Status" context="{'group_by':'employment_status'}"/>
-                        <filter name="grp_county" string="County" context="{'group_by':'county'}"/>
-                    </group>
-                </search>
-            </field>
-        </record>
-
-    </data>
+        
+        </data>
 </odoo>

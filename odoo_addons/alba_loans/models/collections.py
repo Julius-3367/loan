@@ -140,16 +140,16 @@ class AlbaLoan(models.Model):
         ("over_180", "180+ Days"),
     ], string="PAR Bucket", compute="_compute_par", store=True)
     
-    @api.depends("days_overdue")
+    @api.depends("days_in_arrears")
     def _compute_collection_stage(self):
         """Auto-assign collection stage based on days overdue"""
         for rec in self:
-            if rec.days_overdue <= 0:
+            if rec.days_in_arrears <= 0:
                 rec.collection_stage_id = False
             else:
                 stage = self.env["alba.loan.collection.stage"].search([
-                    ("min_days_overdue", "<=", rec.days_overdue),
-                    ("max_days_overdue", ">=", rec.days_overdue),
+                    ("min_days_overdue", "<=", rec.days_in_arrears),
+                    ("max_days_overdue", ">=", rec.days_in_arrears),
                     ("active", "=", True),
                 ], limit=1, order="stage_number asc")
                 rec.collection_stage_id = stage.id if stage else False
@@ -205,7 +205,7 @@ class AlbaLoan(models.Model):
         """Escalate loan to legal department"""
         self.ensure_one()
         
-        if self.days_overdue < 90:
+        if self.days_in_arrears < 90:
             raise UserError(_("Loans can only be escalated to legal after 90 days overdue."))
         
         self.write({
@@ -219,7 +219,7 @@ class AlbaLoan(models.Model):
             "mail.mail_activity_data_todo",
             user_id=self.env.ref("alba_loans.group_director").users[0].id if self.env.ref("alba_loans.group_director").users else self.env.user.id,
             summary=_("Legal action required for %s") % self.loan_number,
-            note=_("Loan %s is %s days overdue and has been escalated to legal.") % (self.loan_number, self.days_overdue),
+            note=_("Loan %s is %s days overdue and has been escalated to legal.") % (self.loan_number, self.days_in_arrears),
         )
         
         # Log the escalation
@@ -229,7 +229,7 @@ class AlbaLoan(models.Model):
             "escalated"
         )
         
-        self.message_post(body=_("<b>ESCALATED TO LEGAL</b><br/>Loan escalated to legal department after %s days overdue.") % self.days_overdue)
+        self.message_post(body=_("<b>ESCALATED TO LEGAL</b><br/>Loan escalated to legal department after %s days overdue.") % self.days_in_arrears)
 
 
 class AlbaLoanCollectionCron(models.Model):
@@ -245,7 +245,7 @@ class AlbaLoanCollectionCron(models.Model):
         # Find all active overdue loans
         overdue_loans = self.env["alba.loan"].search([
             ("state", "=", "active"),
-            ("days_overdue", ">", 0),
+            ("days_in_arrears", ">", 0),
         ])
         
         for loan in overdue_loans:
@@ -274,7 +274,7 @@ class AlbaLoanCollectionCron(models.Model):
         npl_threshold = 90
         npl_loans = self.env["alba.loan"].search([
             ("state", "=", "active"),
-            ("days_overdue", ">=", npl_threshold),
+            ("days_in_arrears", ">=", npl_threshold),
             ("escalated_to_legal", "=", False),
         ])
         
@@ -285,7 +285,7 @@ class AlbaLoanCollectionCron(models.Model):
             
             # Notify management
             loan.message_post(
-                body=_("<b>NPL CLASSIFICATION</b><br/>Loan classified as Non-Performing after %s days overdue.") % loan.days_overdue,
+                body=_("<b>NPL CLASSIFICATION</b><br/>Loan classified as Non-Performing after %s days overdue.") % loan.days_in_arrears,
                 subtype_xmlid="mail.mt_note",
             )
             

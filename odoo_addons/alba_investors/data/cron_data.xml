@@ -17,11 +17,10 @@
             <field name="code">model.action_accrue_all_active_investments()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">months</field>
-            <field name="numbercall">-1</field>
             <field name="active">True</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="priority">5</field>
-            <field name="nextcall" eval="(datetime.datetime.now().replace(day=1, hour=2, minute=0, second=0) + datetime.timedelta(days=32)).replace(day=1)"/>
+            <field name="nextcall">2026-04-01 02:00:00</field>
         </record>
 
         <!-- ── 2. Monthly Statement Generation ──────────────────────────── -->
@@ -38,11 +37,10 @@
             <field name="code">model.action_generate_monthly_statements()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">months</field>
-            <field name="numbercall">-1</field>
             <field name="active">True</field>
             <field name="user_id" ref="base.user_root"/>
             <field name="priority">10</field>
-            <field name="nextcall" eval="(datetime.datetime.now().replace(day=2, hour=3, minute=0, second=0) + datetime.timedelta(days=32)).replace(day=2)"/>
+            <field name="nextcall">2026-04-02 03:00:00</field>
         </record>
 
     </data>

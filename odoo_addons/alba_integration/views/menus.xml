@@ -103,7 +103,7 @@
             name="System Parameters"
             parent="menu_alba_integration_configuration"
             sequence="10"
-            action="base.action_ir_config_parameter_form"
+            action="base.ir_config_list_action"
             groups="alba_integration.group_integration_admin"
         />
 

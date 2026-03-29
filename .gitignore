@@ -11,6 +11,13 @@ venv/
 env/
 ENV/
 
+# Backup files
+*.bak
+*.orig
+*.swp
+*.swo
+*~
+
 # Django
 *.log
 db.sqlite3
@@ -19,16 +26,14 @@ db.sqlite3-journal
 /static/
 /media/
 
-# Environment
+# Environment — NEVER commit secrets
 .env
 .env.local
+.env.*.local
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
 
 # OS
 .DS_Store
@@ -42,5 +47,4 @@ package-lock.json
 .coverage
 htmlcov/
 .pytest_cache/
-db.sqlite3
 *.pyc
