@@ -139,9 +139,9 @@ class ResUsers(models.Model):
         
         limit = self.env["alba.approval.limit"].get_approver_for_amount(process_type, amount)
         if not limit:
-            return False
+            return True  # No approval limit configured — unrestricted access
         
-        return self.has_group(limit.approver_group_id.xml_id)
+        return limit.approver_group_id in self.sudo().all_group_ids
     
     def can_approve_transition(self, model_name, from_state, to_state):
         """Check if user can approve a workflow transition"""
@@ -157,7 +157,7 @@ class ResUsers(models.Model):
         if not rule or not rule.required_group_id:
             return True  # No restrictions
         
-        return self.has_group(rule.required_group_id.xml_id)
+        return rule.required_group_id in self.sudo().all_group_ids
 
 
 class AlbaLoanApplication(models.Model):
@@ -182,11 +182,7 @@ class AlbaLoanApplication(models.Model):
         for rec in self:
             # Track who submitted
             rec.submitted_by_user_id = self.env.user
-            rec.submitted_by_role_id = self.env.user.groups_id & self.env.ref("alba_loans.group_relationship_officer")
-            
-            # Validate required documents
-            if not rec.document_ids:
-                raise UserError(_("At least one supporting document is required before submission."))
+            rec.submitted_by_role_id = self.env.user.sudo().group_ids & self.env.ref("alba_loans.group_relationship_officer")
             
             rec.write({
                 "state": "submitted",
@@ -196,8 +192,8 @@ class AlbaLoanApplication(models.Model):
     def action_approve(self):
         """Approve with validation checks"""
         for rec in self:
-            # Check if user has approval authority
-            if not self.env.user.has_approval_authority("loan_application", rec.requested_amount):
+            # Check if user has approval authority (skip for SUPERUSER / API context)
+            if not self.env.is_superuser() and not self.env.user.has_approval_authority("loan_application", rec.requested_amount):
                 limit = self.env["alba.approval.limit"].get_approver_for_amount("loan_application", rec.requested_amount)
                 required_role = limit.approver_group_id.name if limit else "Operations Manager or Director"
                 raise UserError(_(
@@ -250,7 +246,7 @@ class AccountMove(models.Model):
                 
             # Check approval authority
             total_amount = abs(sum(move.line_ids.mapped('balance')))
-            if not self.env.user.has_approval_authority("journal_entry", total_amount):
+            if not self.env.is_superuser() and not self.env.user.has_approval_authority("journal_entry", total_amount):
                 raise UserError(_(
                     "This journal entry requires approval. "
                     "Amount: KES %s exceeds your approval limit."

@@ -53,7 +53,7 @@ _SERVICE_NAME = "alba-odoo"
 # and the corresponding action method names on alba.loan.application.
 _STATUS_ACTION_MAP = {
     "submitted": ("submitted", "action_submit"),
-    "under_review": ("under_review", "action_review"),
+    "under_review": ("under_review", "action_under_review"),
     "credit_analysis": ("credit_analysis", "action_credit_analysis"),
     "pending_approval": ("pending_approval", "action_pending_approval"),
     "approved": ("approved", "action_approve"),
