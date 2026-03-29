@@ -32,8 +32,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="h-full bg-gray-50">
-    {% block body %}
-    <!-- Messages -->
+    <!-- Messages — shown on all pages regardless of which block child templates override -->
     {% if messages %}
     <div class="fixed top-4 right-4 z-50 space-y-2">
         {% for message in messages %}
@@ -71,6 +70,7 @@
     </div>
     {% endif %}
     
+    {% block body %}
     {% block content %}{% endblock %}
     {% endblock %}
     

@@ -88,6 +88,7 @@ def customer_profile(request):
         form = CustomerProfileForm(request.POST, request.FILES, instance=customer)
         if form.is_valid():
             form.save()
+            customer.refresh_from_db()
             if customer.is_kyc_fully_uploaded() and not customer.kyc_verified:
                 messages.info(
                     request,
@@ -101,7 +102,12 @@ def customer_profile(request):
                 customer.pk,
                 "Updated customer profile",
             )
-            return redirect("loans:customer_dashboard")
+            return redirect("loans:customer_profile")
+        else:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning("customer_profile form invalid for user=%s errors=%s files=%s",
+                           request.user.email, dict(form.errors), list(request.FILES.keys()))
     else:
         form = CustomerProfileForm(instance=customer)
 

@@ -202,6 +202,22 @@ class CustomerProfileForm(forms.ModelForm):
             ),
         }
 
+    _MAX_UPLOAD_MB = 5
+
+    def _validate_file_size(self, file):
+        if file and file.size > self._MAX_UPLOAD_MB * 1024 * 1024:
+            raise ValidationError(f"File size must not exceed {self._MAX_UPLOAD_MB} MB.")
+        return file
+
+    def clean_national_id_file(self):
+        return self._validate_file_size(self.cleaned_data.get("national_id_file"))
+
+    def clean_bank_statement_file(self):
+        return self._validate_file_size(self.cleaned_data.get("bank_statement_file"))
+
+    def clean_face_recognition_photo(self):
+        return self._validate_file_size(self.cleaned_data.get("face_recognition_photo"))
+
 
 class LoanApplicationForm(forms.ModelForm):
     """
