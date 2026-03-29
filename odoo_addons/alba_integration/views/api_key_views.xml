@@ -76,60 +76,53 @@
                         </div>
                     </div>
 
-                    <!-- ── Credentials + Configuration columns ───────── -->
+                    <!-- ── Credentials — full width so long values don't overflow ── -->
+                    <group string="API Credentials" name="credentials">
+                        <field
+                            name="key"
+                            readonly="1"
+                            widget="CopyClipboardChar"
+                            colspan="2"
+                            help="Send this value in the X-Alba-API-Key request header."
+                        />
+                        <field
+                            name="webhook_secret"
+                            readonly="1"
+                            widget="CopyClipboardChar"
+                            colspan="2"
+                            help="HMAC-SHA256 secret used to sign outbound webhook payloads (X-Alba-Signature: sha256=...)."
+                        />
+                        <field
+                            name="full_webhook_url"
+                            readonly="1"
+                            widget="CopyClipboardChar"
+                            string="Outbound Webhook URL"
+                            colspan="2"
+                            help="Computed full URL where Odoo will POST webhook events to Django."
+                        />
+                    </group>
+
+                    <!-- ── Configuration ─────────────────────────────── -->
                     <group>
-
-                        <!-- Left column — credentials (readonly, copyable) -->
-                        <group string="API Credentials" name="credentials">
-
-                            <field
-                                name="key"
-                                readonly="1"
-                                widget="CopyClipboardChar"
-                                help="Send this value in the X-Alba-API-Key request header."
-                            />
-
-                            <field
-                                name="webhook_secret"
-                                readonly="1"
-                                widget="CopyClipboardChar"
-                                help="HMAC-SHA256 secret used to sign outbound webhook payloads (X-Alba-Signature: sha256=...)."
-                            />
-
-                            <field
-                                name="full_webhook_url"
-                                readonly="1"
-                                widget="CopyClipboardChar"
-                                string="Outbound Webhook URL"
-                                help="Computed full URL where Odoo will POST webhook events to Django."
-                            />
-
-                        </group>
-
-                        <!-- Right column — configuration -->
                         <group string="Configuration" name="configuration">
-
                             <field
                                 name="django_base_url"
                                 placeholder="https://portal.albacapital.co.ke"
                                 widget="url"
                             />
-
                             <field
                                 name="webhook_path"
                                 placeholder="/api/v1/webhooks/odoo/"
                             />
-
+                        </group>
+                        <group string="Details" name="details">
                             <field
                                 name="company_id"
                                 groups="base.group_multi_company"
                                 options="{'no_create': True}"
                             />
-
                             <field name="last_used" readonly="1"/>
-
                         </group>
-
                     </group>
 
                     <!-- ── Security / IP restriction ─────────────────── -->
