@@ -11,23 +11,6 @@
                         >
                     </div>
                     <div class="hidden md:flex space-x-4">
-                        {% if is_staff %}
-                        <a
-                            href="{% url 'dashboard' %}"
-                            class="text-sm font-medium text-gray-700 hover:text-alba-orange transition"
-                            >Dashboard</a
-                        >
-                        <a
-                            href="{% url 'admin_dashboard' %}"
-                            class="text-sm font-medium text-gray-700 hover:text-alba-orange transition"
-                            >Loan Management</a
-                        >
-                        <a
-                            href="{% url 'admin_dashboard' %}"
-                            class="text-sm font-medium text-alba-orange"
-                            >Applications</a
-                        >
-                        {% else %}
                         <a
                             href="{% url 'customer_dashboard' %}"
                             class="text-sm font-medium text-gray-700 hover:text-alba-orange transition"
@@ -43,7 +26,6 @@
                             class="text-sm font-medium text-alba-orange"
                             >My Applications</a
                         >
-                        {% endif %}
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -51,13 +33,7 @@
                         <span class="font-semibold"
                             >{{ user.get_full_name }}</span
                         >
-                        {% if is_staff %}
-                        <span class="ml-2 text-xs text-gray-500"
-                            >({{ user.get_role_display }})</span
-                        >
-                        {% endif %}
                     </span>
-                    {% if not is_staff %}
                     <a
                         href="{% url 'loans:notifications' %}"
                         class="relative inline-flex items-center p-2 text-gray-600 hover:text-alba-orange transition"
@@ -84,7 +60,6 @@
                         </span>
                         {% endif %}
                     </a>
-                    {% endif %}
                     <a
                         href="{% url 'logout' %}"
                         class="text-sm font-medium text-gray-600 hover:text-alba-orange transition"
@@ -1083,30 +1058,6 @@
                                     >
                                     {% endif %}
                                 </div>
-                                {% if is_staff %}
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs text-gray-600"
-                                        >Employer Verification:</span
-                                    >
-                                    {% if employer_verification and employer_verification.status == 'VERIFIED' %}
-                                    <span
-                                        class="inline-flex px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800"
-                                        >Verified</span
-                                    >
-                                    {% elif employer_verification and employer_verification.status == 'PENDING' %}
-                                    <span
-                                        class="inline-flex px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-800"
-                                        >Pending</span
-                                    >
-                                    {% else %}
-                                    <span
-                                        class="inline-flex px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-800"
-                                        >Not Started</span
-                                    >
-                                    {% endif %}
-                                </div>
-                                {% endif %}
-                            </div>
                         </div>
 
                         <!-- Credit Score Status -->
@@ -1179,64 +1130,10 @@
                         >
                             Add Guarantor
                         </a>
-                        {% endif %} {% endif %} {% if is_staff %}
-                        <!-- Staff Approval Actions -->
-                        {% if application.status == 'SUBMITTED' %}
-                        <a
-                            href="{% url 'loans:process_application' application.pk %}"
-                            class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition"
-                        >
-                            Start Review
-                        </a>
-                        {% endif %} {% if application.status == 'UNDER_REVIEW' %}
-                        <a
-                            href="{% url 'loans:process_application' application.pk %}"
-                            class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 transition"
-                        >
-                            Continue Review
-                        </a>
-                        {% endif %} {% if application.status == 'CREDIT_ANALYSIS' %}
-                        <a
-                            href="{% url 'loans:process_application' application.pk %}"
-                            class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition"
-                        >
-                            Credit Analysis
-                        </a>
-                        {% endif %} {% if application.status == 'PENDING_APPROVAL' %}
-                        <a
-                            href="{% url 'loans:process_application' application.pk %}"
-                            class="block w-full px-4 py-2 text-center border border-transparent rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition"
-                        >
-                            Approve Application
-                        </a>
-                        {% endif %}
-
-                        <!-- KYC Verification Actions for Staff -->
-                        {% if not application.customer.kyc_verified %}
-                        <div
-                            class="block w-full px-4 py-2 text-center border border-red-300 rounded-md text-sm font-medium text-red-700 bg-red-50"
-                        >
-                            Customer KYC Not Verified
-                        </div>
-                        {% endif %} {% if not application.customer.face_recognition_verified %}
-                        <div
-                            class="block w-full px-4 py-2 text-center border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-blue-50"
-                        >
-                            Face Recognition Not Verified
-                        </div>
-                        {% endif %}
-
-                        <!-- Employer Verification -->
-                        {% if application.customer.employer_name and not employer_verification %}
-                        <div
-                            class="block w-full px-4 py-2 text-center border border-yellow-300 rounded-md text-sm font-medium text-yellow-700 bg-yellow-50"
-                        >
-                            Employment Verification Pending
-                        </div>
                         {% endif %} {% endif %}
 
                         <a
-                            href="{% if is_staff %}{% url 'admin_dashboard' %}{% else %}{% url 'loans:my_applications' %}{% endif %}"
+                            href="{% url 'loans:my_applications' %}"
                             class="block w-full px-4 py-2 text-center border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition"
                         >
                             Back to Applications

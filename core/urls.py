@@ -59,11 +59,4 @@ urlpatterns = [
     path("users/approval/", views.user_approval_list, name="user_approval_list"),
     path("users/approve/<int:user_id>/", views.approve_user, name="approve_user"),
     path("users/reject/<int:user_id>/", views.reject_user, name="reject_user"),
-
-    # ── Staff / Credit Officer Portal ──────────────────────────────────────
-    path("staff/applications/", views.staff_loan_applications, name="staff_loan_applications"),
-    path("staff/applications/<int:pk>/", views.staff_application_detail, name="staff_application_detail"),
-    path("staff/customers/", views.staff_customers, name="staff_customers"),
-    path("staff/customers/<int:pk>/", views.staff_customer_detail, name="staff_customer_detail"),
-    path("staff/portfolio/", views.staff_loan_portfolio, name="staff_loan_portfolio"),
 ]
